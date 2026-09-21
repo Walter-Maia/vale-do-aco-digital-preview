@@ -1,0 +1,110 @@
+/* GERADO por tools/build-map.js — não editar à mão. Câmera do mapa (viewBox 700×620). */
+.net--map {
+  --cam-br: translate(0px, 0px) scale(1);
+  --cam-mg: translate(-946.01px, -813.65px) scale(2.9749);
+  --cam-end: translate(-14213.77px, -11577.4px) scale(30.3663);
+  --inv-mg: 0.33614;
+  --inv-end: 0.03293;
+}
+@keyframes mc-mg {
+  0% { transform: translate(0px, 0px) scale(1); }
+  8.33% { transform: translate(-1.3px, -1.11px) scale(1.0025); }
+  16.67% { transform: translate(-10.47px, -8.96px) scale(1.0204); }
+  25% { transform: translate(-36.07px, -30.87px) scale(1.0705); }
+  33.33% { transform: translate(-89.05px, -76.24px) scale(1.1753); }
+  41.67% { transform: translate(-186.36px, -159.68px) scale(1.3709); }
+  50% { transform: translate(-358.58px, -307.62px) scale(1.7248); }
+  58.33% { transform: translate(-570.6px, -490.06px) scale(2.1701); }
+  66.67% { transform: translate(-740.03px, -636.04px) scale(2.5312); }
+  75% { transform: translate(-855.29px, -735.41px) scale(2.779); }
+  83.33% { transform: translate(-918.53px, -789.94px) scale(2.9155); }
+  91.67% { transform: translate(-942.55px, -810.67px) scale(2.9674); }
+  100% { transform: translate(-946.01px, -813.65px) scale(2.9749); }
+}
+@keyframes mc-end {
+  0% { transform: translate(-946.01px, -813.65px) scale(2.9749); }
+  6.25% { transform: translate(-949.38px, -816.34px) scale(2.9817); }
+  12.5% { transform: translate(-973.17px, -835.3px) scale(3.0294); }
+  18.75% { transform: translate(-1039.59px, -888.3px) scale(3.1629); }
+  25% { transform: translate(-1177.14px, -998.2px) scale(3.4398); }
+  31.25% { transform: translate(-1429.79px, -1200.49px) scale(3.9504); }
+  37.5% { transform: translate(-1875.85px, -1558.74px) scale(4.8562); }
+  43.75% { transform: translate(-2669.78px, -2198.6px) scale(6.4778); }
+  50% { transform: translate(-4143.06px, -3390.28px) scale(9.5046); }
+  56.25% { transform: translate(-6294.67px, -5135.63px) scale(13.9459); }
+  62.5% { transform: translate(-8544.29px, -6963.67px) scale(18.6026); }
+  68.75% { transform: translate(-10601.73px, -8637.17px) scale(22.8683); }
+  75% { transform: translate(-12237.36px, -9968.31px) scale(26.2625); }
+  81.25% { transform: translate(-13345.01px, -10870.02px) scale(28.5621); }
+  87.5% { transform: translate(-13950.81px, -11363.28px) scale(29.8202); }
+  93.75% { transform: translate(-14180.64px, -11550.42px) scale(30.2975); }
+  100% { transform: translate(-14213.77px, -11577.4px) scale(30.3663); }
+}
+@keyframes mo-mg {
+  0% { transform: scale(1); }
+  8.33% { transform: scale(0.99748); }
+  16.67% { transform: scale(0.98001); }
+  25% { transform: scale(0.93413); }
+  33.33% { transform: scale(0.85085); }
+  41.67% { transform: scale(0.72945); }
+  50% { transform: scale(0.57978); }
+  58.33% { transform: scale(0.46081); }
+  66.67% { transform: scale(0.39506); }
+  75% { transform: scale(0.35984); }
+  83.33% { transform: scale(0.343); }
+  91.67% { transform: scale(0.33699); }
+  100% { transform: scale(0.33614); }
+}
+@keyframes mo-end {
+  0% { transform: scale(0.33614); }
+  6.25% { transform: scale(0.33538); }
+  12.5% { transform: scale(0.3301); }
+  18.75% { transform: scale(0.31617); }
+  25% { transform: scale(0.29071); }
+  31.25% { transform: scale(0.25314); }
+  37.5% { transform: scale(0.20592); }
+  43.75% { transform: scale(0.15437); }
+  50% { transform: scale(0.10521); }
+  56.25% { transform: scale(0.07171); }
+  62.5% { transform: scale(0.05376); }
+  68.75% { transform: scale(0.04373); }
+  75% { transform: scale(0.03808); }
+  81.25% { transform: scale(0.03501); }
+  87.5% { transform: scale(0.03353); }
+  93.75% { transform: scale(0.03301); }
+  100% { transform: scale(0.03293); }
+}
+@keyframes mw-mg {
+  0% { stroke-width: 1.3px; }
+  8.33% { stroke-width: 1.2967px; }
+  16.67% { stroke-width: 1.274px; }
+  25% { stroke-width: 1.2144px; }
+  33.33% { stroke-width: 1.1061px; }
+  41.67% { stroke-width: 0.9483px; }
+  50% { stroke-width: 0.7537px; }
+  58.33% { stroke-width: 0.5991px; }
+  66.67% { stroke-width: 0.5136px; }
+  75% { stroke-width: 0.4678px; }
+  83.33% { stroke-width: 0.4459px; }
+  91.67% { stroke-width: 0.4381px; }
+  100% { stroke-width: 0.437px; }
+}
+@keyframes mw-end {
+  0% { stroke-width: 0.437px; }
+  6.25% { stroke-width: 0.436px; }
+  12.5% { stroke-width: 0.4291px; }
+  18.75% { stroke-width: 0.411px; }
+  25% { stroke-width: 0.3779px; }
+  31.25% { stroke-width: 0.3291px; }
+  37.5% { stroke-width: 0.2677px; }
+  43.75% { stroke-width: 0.2007px; }
+  50% { stroke-width: 0.1368px; }
+  56.25% { stroke-width: 0.0932px; }
+  62.5% { stroke-width: 0.0699px; }
+  68.75% { stroke-width: 0.0568px; }
+  75% { stroke-width: 0.0495px; }
+  81.25% { stroke-width: 0.0455px; }
+  87.5% { stroke-width: 0.0436px; }
+  93.75% { stroke-width: 0.0429px; }
+  100% { stroke-width: 0.0428px; }
+}

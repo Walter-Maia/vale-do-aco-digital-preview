@@ -1,0 +1,687 @@
+/* Vale do Aço Digital — landing page
+   Cores oficiais extraídas do CSS da página (Elementor post-169). */
+
+:root {
+  --red: #ff4b22;
+  --orange: #ff7a1a;
+  --amber: #ffae18;
+  --ink: #212121;
+  --ink-2: #222222;
+  --paper: #ffffff;
+  --mist: #f0f0f0;
+
+  --text: #212121;
+  --text-soft: #4d4d4d;
+  --line: rgba(33, 33, 33, 0.14);
+  --line-light: rgba(255, 255, 255, 0.16);
+
+  --font-title: "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-text: Helvetica, "Helvetica Neue", Arial, sans-serif;
+
+  --wrap: 1200px;
+  --gutter: clamp(20px, 4vw, 40px);
+  --section: clamp(72px, 10vw, 136px);
+  --radius: 10px;
+  --header-h: 72px;
+  --ease: cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-h) + 16px);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+img, svg { display: block; max-width: 100%; }
+img { height: auto; }
+h1, h2, h3, p, ul, ol, figure, blockquote { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: calc(var(--wrap) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+.skip {
+  position: absolute; left: 16px; top: -64px; z-index: 100;
+  padding: 10px 16px; border-radius: var(--radius);
+  background: var(--ink); color: #fff; text-decoration: none;
+}
+.skip:focus { top: 12px; }
+
+/* ---------- botões e links ---------- */
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+  min-height: 54px; padding: 14px 26px;
+  border: 0; border-radius: var(--radius);
+  font-family: var(--font-title); font-size: 0.95rem; font-weight: 700;
+  letter-spacing: 0.01em; text-decoration: none; text-align: center;
+  transition: background-color 0.25s var(--ease), transform 0.25s var(--ease);
+}
+.btn--primary { background: var(--red); color: var(--ink); }
+.btn--primary:hover { background: var(--orange); }
+.btn:active { transform: translateY(1px); }
+.btn__arrow {
+  width: 20px; height: 20px; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  transition: transform 0.25s var(--ease);
+}
+.btn:hover .btn__arrow { transform: translateX(4px); }
+
+.link-arrow {
+  display: inline-flex; align-items: center; min-height: 44px;
+  font-family: var(--font-title); font-size: 0.95rem; font-weight: 700;
+  text-decoration: none;
+  background: linear-gradient(var(--red), var(--red)) 0 calc(100% - 8px) / 100% 2px no-repeat;
+  transition: background-size 0.3s var(--ease);
+}
+.link-arrow:hover { background-size: 40% 2px; }
+
+/* ---------- assinatura oficial (SVG do hero-preview) ---------- */
+/* Ícone = PNG oficial embutido via <image>; wordmark, ponto e legenda = vetores do arquivo fornecido. */
+.vad-logo svg { display: block; width: 100%; height: auto; overflow: visible; }
+.vlogo-st0, .vlogo-st1, .vlogo-st2 { fill: #fff; }
+.vlogo-st0, .vlogo-st2 { stroke: #fff; stroke-miterlimit: 10; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+.vlogo-st0 { font-size: 16.25px; font-style: italic; stroke-width: 0.25px; }
+.vlogo-st2 { font-size: 22.39px; }
+.vlogo-st3 { fill: #e63823; }
+.vfrase-base { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 39.24px; stroke-miterlimit: 10; }
+.vfrase-st1 { fill: #ee782b; stroke: #ee782b; }
+.vfrase-st2, .vfrase-st3 { fill: #fff; stroke: #fff; stroke-width: 0.75px; }
+.vfrase-st4 { fill: #e43228; stroke: #e43228; }
+
+/* entrada das partes da assinatura, como no preview: ícone, wordmark, ponto, legenda */
+.js .vad-logo .vlogo-part {
+  opacity: 0; transform-box: fill-box; transform-origin: center;
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.js .vad-logo .vlogo-part-icon { transform: scale(0.85) translateY(-6px); }
+.js .vad-logo .vlogo-part-wordmark { transform: translateX(10px); transition-delay: 0.14s; }
+.js .vad-logo .vlogo-part-dot {
+  transform: scale(0); transition-delay: 0.34s;
+  transition-duration: 0.5s; transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.js .vad-logo .vlogo-part-caption { transform: translateY(8px); transition-delay: 0.42s; }
+.js .vad-logo.is-loaded .vlogo-part { opacity: 1; transform: none; }
+
+/* ---------- intro ---------- */
+/* Reconstrução vetorial do motion de referência (referencias/Vale do aço digital motion intro.mp4),
+   só o trecho Vale do Aço Digital: 0,00–3,27 s do vídeo + o ponto final (4,30–4,60 s do vídeo, antecipado).
+   Os tempos abaixo são os observados no vídeo; tudo dispara com .is-playing. */
+.intro { display: none; }
+.intro-on .intro {
+  position: fixed; inset: 0; z-index: 200; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(60% 48% at 62% 56%, #1b232b 0%, rgba(27, 35, 43, 0) 72%), #070d15;
+  transition: opacity 0.55s var(--ease), visibility 0s 0.55s;
+}
+.intro-lock, .intro-lock body { overflow: hidden; }
+.intro.is-leaving { opacity: 0; visibility: hidden; pointer-events: none; }
+.intro__stage { width: min(78vw, 460px); }
+.intro__mark { display: block; width: 100%; height: auto; overflow: visible; }
+
+.im-cam { transform-origin: 104.6px 72.7px; transform: translate(79.5px, 0) scale(5); }
+.im-lines path, .im-trace, .im-outline path, .im-sweep { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+/* sem vector-effect: non-scaling-stroke — no Chromium ele força repintura a cada quadro do zoom e, combinado a
+   pathLength + dasharray, chegou a travar a pintura. As espessuras estão em unidades do viewBox: as linhas afinam
+   junto com o zoom-out, como no vídeo de referência. Nenhum traço pode ficar abaixo de ~1px de tela: linhas
+   sub-pixel (hairline) travaram a pintura em palcos estreitos — por isso o reforço em telas pequenas mais abaixo. */
+.im-lines path { stroke: #f39a1f; stroke-width: 0.85px; opacity: 0; }
+.im-lines path:nth-child(4n + 1), .im-lines path:nth-child(4n + 2) { stroke: #e9801b; }
+.im-trace { stroke: #f08a1d; stroke-width: 0.34px; opacity: 0; } /* ≈2px de tela com a câmera em ~4,6× */
+.im-trace--spark { stroke: #f7a823; stroke-dasharray: 0.05 1.4; stroke-dashoffset: 0.06; }
+.im-trace--diag { stroke: #e8352a; stroke-dasharray: 0.2 1.4; stroke-dashoffset: 0.21; }
+.im-trace--stem, .im-trace--arc { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.im-sweep { stroke: #fff3dc; stroke-width: 0.9px; stroke-dasharray: 0.14 1.4; stroke-dashoffset: 0.15; opacity: 0; }
+.im-outline path { stroke: #f08a1d; stroke-width: 1px; }
+@media (max-width: 600px) {
+  .im-lines path { stroke-width: 1.3px; }
+  .im-outline path { stroke-width: 1.4px; }
+  .im-trace { stroke-width: 0.5px; }
+  .im-sweep { stroke-width: 1.2px; }
+}
+.im-outline, .im-fill, .im-glow, .im-official, .im-word { opacity: 0; }
+.im-word { fill: #fff; }
+.im-dot { fill: #e63823; transform-box: fill-box; transform-origin: center; transform: scale(0); }
+
+.intro.is-playing .im-cam { animation: im-cam 2.63s linear both; }
+.intro.is-playing .im-trace--spark { animation: im-spark 0.32s linear 0.1s both; }
+.intro.is-playing .im-trace--diag { animation: im-diag 0.28s linear 0.3s both; }
+.intro.is-playing .im-trace--stem { animation: im-draw 0.22s ease-in-out 0.43s both, im-hide 0.3s linear 1.05s forwards; }
+.intro.is-playing .im-trace--arc { animation: im-draw 0.29s ease-in-out 0.63s both, im-hide 0.3s linear 1.05s forwards; }
+.intro.is-playing .im-lines path { animation: im-line-in 0.35s ease-out calc(0.9s + var(--i) * 0.05s) both, im-hide 0.16s linear 2.67s forwards; }
+.intro.is-playing .im-sweep { animation: im-sweep 0.5s ease-in-out 2s both; }
+.intro.is-playing .im-word { animation: im-word 0.27s linear 2.55s both; }
+.intro.is-playing .im-outline { animation: im-outline 0.45s linear 2.63s both; }
+.intro.is-playing .im-fill { animation: im-fill 0.27s linear 2.7s both; }
+.intro.is-playing .im-glow { animation: im-show 0.4s ease-out 2.75s both; }
+.intro.is-playing .im-official { animation: im-show 0.3s linear 3s both; }
+.intro.is-playing .im-dot { animation: im-dot 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) 3.15s both; }
+
+/* câmera: close extremo nos traços → zoom-out contínuo → desliza para a posição da assinatura */
+@keyframes im-cam {
+  0% { transform: translate(79.5px, 0) scale(5); }
+  34% { transform: translate(79.5px, 0) scale(4.3); animation-timing-function: cubic-bezier(0.2, 0.6, 0.3, 1); }
+  61% { transform: translate(79.5px, 0) scale(2.9); animation-timing-function: linear; }
+  88.6% { transform: translate(79.5px, 0) scale(2.2); animation-timing-function: cubic-bezier(0.6, 0, 0.2, 1); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes im-spark { 0% { stroke-dashoffset: 0.06; opacity: 1; } 90% { opacity: 1; } 100% { stroke-dashoffset: -0.62; opacity: 0; } }
+@keyframes im-diag { 0% { stroke-dashoffset: 0.21; opacity: 1; } 90% { opacity: 1; } 100% { stroke-dashoffset: -1.02; opacity: 0; } }
+@keyframes im-draw { 0% { stroke-dashoffset: 1; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 1; } }
+@keyframes im-line-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes im-hide { to { opacity: 0; } }
+@keyframes im-show { from { opacity: 0; } to { opacity: 1; } }
+@keyframes im-sweep { 0% { stroke-dashoffset: 0.15; opacity: 0; } 12%, 85% { opacity: 0.95; } 100% { stroke-dashoffset: -1.02; opacity: 0; } }
+@keyframes im-word { 0% { opacity: 0; } 40% { opacity: 0.45; } 100% { opacity: 1; } }
+@keyframes im-outline { 0% { opacity: 0; } 20%, 64% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes im-fill { 0% { opacity: 0; } 37% { opacity: 0.45; } 100% { opacity: 1; } }
+@keyframes im-dot { 0% { transform: scale(0); fill: #f08a1d; } 100% { transform: scale(1); fill: #e63823; } }
+
+/* ---------- hero (composição do hero-preview) ---------- */
+/* Scrub (html.hero-scrub, ponteiro fino): 280vh desktop / 240vh janela estreita, sticky. Toque (is-play), sem JS, reduced motion,
+   economia de dados ou vídeo com falha: 100svh em fluxo normal. O preview usava 560/320vh; o percurso foi encurtado. */
+.hero { --hero-bg: #251404; position: relative; height: 100vh; height: 100svh; background: var(--hero-bg); color: #fff; }
+.hero-scrub .hero { height: 280vh; }
+.hero__sticky { position: relative; height: 100vh; height: 100svh; overflow: hidden; background: var(--hero-bg); }
+.hero-scrub .hero__sticky { position: sticky; top: 0; }
+.hero__video {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--hero-bg);
+}
+/* dissolução para o fundo do hero: mesmo resultado da antiga máscara (40% → 100%), mas como camada própria animada só por
+   opacity — o <video> fica sem mask e o navegador o compõe pelo caminho barato. Sem JS/estático: opacidade 1 (quadro final). */
+.hero__fade {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(37, 20, 4, 0) 40%, var(--hero-bg) 100%);
+}
+.js .hero.is-scrub .hero__fade, .js .hero.is-play .hero__fade { opacity: 0; visibility: hidden; }
+.hero__shade {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(20, 9, 2, 0.55) 0%, rgba(20, 9, 2, 0) 22%),
+    linear-gradient(to top, rgba(20, 9, 2, 0.72) 0%, rgba(20, 9, 2, 0) 46%);
+}
+.hero__logo {
+  position: absolute; z-index: 3; top: clamp(16px, 3vh, 32px); left: 50%; transform: translateX(-50%);
+  width: clamp(120px, 14vw, 190px);
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.45));
+}
+.hero__loading { position: absolute; inset: 0; z-index: 4; background: var(--hero-bg); display: none; }
+
+.hero__start {
+  position: absolute; z-index: 2; left: 0; right: 0; bottom: clamp(28px, 7vh, 72px);
+  width: 100%; max-width: calc(var(--wrap) + var(--gutter) * 2); margin-inline: auto; padding-inline: var(--gutter);
+  display: none;
+}
+.js .hero__start { display: block; }
+/* sem frase de abertura: o bloco inicial guarda só a indicação de rolagem, e o escurecimento que dava leitura ao texto saiu junto */
+.hero__lead { margin-top: 16px; max-width: 26em; font-size: clamp(1.02rem, 0.95rem + 0.4vw, 1.25rem); line-height: 1.5; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5); }
+.hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; margin-top: 24px; }
+.hero__actions--end { justify-content: center; margin-top: clamp(18px, 3vh, 30px); }
+.link-arrow--light { color: #fff; text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5); background-image: linear-gradient(var(--orange), var(--orange)); }
+.hero__hint {
+  display: flex; align-items: center; gap: 10px; margin-top: clamp(20px, 4vh, 40px);
+  font-family: var(--font-title); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.8);
+}
+.hero__hint span { width: 1px; height: 28px; background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff); }
+
+.hero__end {
+  position: absolute; z-index: 2; left: 50%; bottom: 8vh; transform: translateX(-50%);
+  width: min(100% - var(--gutter) * 2, 640px); text-align: center;
+}
+.hero__phrase { width: min(100%, clamp(340px, 48vw, 640px)); margin-inline: auto; filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.55)); }
+.hero__phrase svg { display: block; width: 100%; height: auto; overflow: visible; }
+/* frase final: entra por tempo quando a personagem se vira (main.js liga .is-on). Cada linha sobe e firma em sequência,
+   os botões vêm depois; na volta tudo sai junto e rápido. Sem JS / modo estático: a frase já está no lugar. */
+.js .hero.is-scrub .hero__end, .js .hero.is-play .hero__end { visibility: hidden; transition: visibility 0s 0.45s; }
+.js .hero.is-scrub .hero__end.is-on, .js .hero.is-play .hero__end.is-on { visibility: visible; transition: visibility 0s; }
+.js .hero.is-scrub .vfrase-row, .js .hero.is-play .vfrase-row,
+.js .hero.is-scrub .hero__actions--end, .js .hero.is-play .hero__actions--end {
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.js .hero.is-scrub .hero__actions--end, .js .hero.is-play .hero__actions--end { transform: translateY(10px); }
+.js .hero .hero__end.is-on .vfrase-row {
+  opacity: 1; transform: none;
+  transition: opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--r, 0) * 0.16s), transform 1.4s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--r, 0) * 0.16s);
+}
+.js .hero .hero__end.is-on .hero__actions--end {
+  opacity: 1; transform: none;
+  transition: opacity 0.9s ease 0.55s, transform 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.55s;
+}
+/* controle da reprodução nativa (toque): abaixo do cabeçalho, 44px de alvo */
+.hero__play {
+  position: absolute; z-index: 3; left: var(--gutter); top: calc(var(--header-h) + 10px);
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 14px 8px 12px; cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.4); border-radius: var(--radius); background: rgba(20, 9, 2, 0.5); color: #fff;
+  font-family: var(--font-title); font-size: 0.76rem; font-weight: 600;
+}
+.hero__play[hidden] { display: none; }
+.hero__play:focus-visible { outline-color: var(--amber); }
+.hero__play-icon { width: 0; height: 0; border-block: 6px solid transparent; border-left: 10px solid currentColor; }
+.hero__play[data-state="playing"] .hero__play-icon { width: 10px; height: 12px; border: 0; border-inline: 3px solid currentColor; }
+/* sem suporte ao vídeo (ou reduced motion via JS): quadro final, 100vh, fluxo normal */
+.js .hero.is-static { height: 100vh; height: 100svh; }
+.js .hero.is-static .hero__sticky { position: relative; }
+.js .hero.is-static .hero__start { display: none; }
+
+/* sem JS o cabeçalho fica no fluxo acima do hero: desconta sua altura para o CTA caber na primeira dobra */
+@media (min-width: 940px) {
+  .no-js .hero, .no-js .hero__sticky { height: calc(100vh - var(--header-h)); height: calc(100svh - var(--header-h)); }
+}
+
+.art-caption {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px;
+  margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line);
+  font-size: 0.82rem; line-height: 1.45; color: var(--text-soft);
+}
+.art-caption > span, .art-caption > ul { flex: 1 1 260px; }
+.art-caption--light { border-top-color: rgba(255, 190, 120, 0.2); color: rgba(255, 255, 255, 0.74); }
+
+.motion-toggle {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 40px; padding: 6px 14px 6px 10px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: transparent; cursor: pointer;
+  font-family: var(--font-title); font-size: 0.76rem; font-weight: 600; color: var(--text);
+  transition: border-color 0.2s;
+}
+.motion-toggle[hidden] { display: none; }
+.motion-toggle:hover { border-color: var(--ink); }
+.motion-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.motion-toggle .i-play { display: none; fill: currentColor; stroke: none; }
+.motion-toggle[aria-pressed="true"] .i-play { display: block; }
+.motion-toggle[aria-pressed="true"] .i-pause { display: none; }
+.motion-toggle--light { border-color: rgba(255, 255, 255, 0.25); color: #fff; }
+.motion-toggle--light:hover { border-color: #fff; }
+
+/* ---------- redes vetoriais ---------- */
+svg.net { width: 100%; height: auto; overflow: visible; }
+
+/* ---------- mapa ---------- */
+/* Brasil inteiro → ponto do Vale do Aço acende → zoom até Minas Gerais → pausa → (com malha municipal) zoom regional
+   e só então conexões locais. Uma projeção, um grupo-câmera; enquadramentos em assets/css/map-camera.css (gerado).
+   O brilho quente foi aprovado só para este mapa. */
+svg.net--map { overflow: hidden; border-radius: var(--radius); }
+.map__cam { transform-origin: 0 0; transform: var(--cam-end); }
+/* sem vector-effect: non-scaling-stroke — em paths grandes (a malha de UFs tem ~45 KB) ele travou a pintura do Chromium.
+   A espessura é compensada animando stroke-width com o inverso da escala da câmera. */
+.map__br, .map__uf, .map__mg, .map__mun { stroke-linejoin: round; }
+.map__br { fill: rgba(255, 122, 26, 0.05); stroke: rgba(255, 196, 140, 0.6); stroke-width: 1.1px; }
+.map__uf { fill: none; stroke: rgba(255, 174, 24, 0.24); stroke-width: 1px; }
+.map__mg { fill: rgba(255, 122, 26, 0.14); stroke: var(--orange); stroke-opacity: 0.85; stroke-width: calc(1.3px * var(--inv-end)); }
+.map__mun { fill: rgba(255, 122, 26, 0.07); stroke: rgba(255, 196, 140, 0.42); stroke-width: calc(1px * var(--inv-end)); }
+.map__mun--rm { fill: rgba(255, 122, 26, 0.2); stroke: var(--orange); stroke-width: calc(1.4px * var(--inv-end)); }
+/* estado final (também sem JS, com reduced motion e ao pausar): último enquadramento, vizinhos apagados */
+.map__br, .map__uf { opacity: 0; }
+.net--map.has-regional .map__mg { opacity: 0.35; }
+
+/* marcador da origem: escala inversa da câmera em torno da coordenada real → tamanho de tela constante */
+.origin { transform-origin: var(--x) var(--y); transform: scale(var(--inv-end)); }
+.origin__halo, .origin__echo { transform-box: fill-box; transform-origin: center; }
+.origin__dot { fill: #fff1d6; stroke: var(--red); stroke-width: 2.5; }
+.origin__echo { fill: none; stroke: var(--amber); stroke-width: 1.5; opacity: 0; }
+.origin__label { fill: #fff; font-family: var(--font-title); font-size: 15px; font-weight: 700; paint-order: stroke; stroke: rgba(26, 10, 6, 0.75); stroke-width: 4px; stroke-linejoin: round; }
+.map__steps { font-family: var(--font-title); font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; fill: rgba(255, 255, 255, 0.45); }
+.map__step:last-of-type { fill: #fff; }
+.map__sep { fill: rgba(255, 255, 255, 0.3); }
+
+/* teia regional: fios do núcleo (Ipatinga) aos municípios + malha secundária entre vizinhos.
+   Espessuras multiplicadas pelo inverso da escala final (~26×) para terem 1–6 px de tela, nunca manchas. */
+.link__glow, .link__line, .link__pulse, .mesh { fill: none; stroke-linecap: round; }
+.mesh { stroke: var(--orange); stroke-opacity: 0.4; stroke-width: calc(1px * var(--inv-end)); }
+.link__glow { stroke: var(--orange); stroke-width: calc(6px * var(--inv-end)); opacity: 0.16; }
+.link__line { stroke: #ffc46b; stroke-width: calc(1.4px * var(--inv-end)); opacity: 0.95; stroke-dasharray: 1; stroke-dashoffset: 0; }
+.link__pulse { stroke: #fff1d6; stroke-width: calc(2.6px * var(--inv-end)); stroke-dasharray: 0.09 1.4; stroke-dashoffset: 0.11; opacity: 0; }
+.mnode { transform-origin: var(--x) var(--y); transform: scale(var(--inv-end)); }
+.mnode__halo { transform-box: fill-box; transform-origin: center; }
+.mnode__core { fill: #fff1d6; }
+.mnode__label { fill: #fff; font-family: var(--font-title); font-size: 12px; font-weight: 600; paint-order: stroke; stroke: rgba(26, 10, 6, 0.8); stroke-width: 3.5px; stroke-linejoin: round; }
+/* rótulo do ponto: "Vale do Aço" nas escalas de país/estado; "Ipatinga" no mapa regional */
+.origin__label--far { opacity: 0; }
+.net--map:not(.has-regional) .origin__label--far { opacity: 1; }
+.net--map:not(.has-regional) .origin__label--near { display: none; }
+.origin__label--near { font-size: 12px; font-weight: 600; }
+
+/* antes de entrar na tela (com JS e movimento permitido) o mapa espera no quadro do Brasil, para não saltar */
+.js .net--map:not(.is-live) .map__cam { transform: var(--cam-br); }
+.js .net--map:not(.is-live) .map__br, .js .net--map:not(.is-live) .map__uf, .js .net--map.has-regional:not(.is-live) .map__mg { opacity: 1; }
+.js .net--map:not(.is-live) .origin { opacity: 0; transform: scale(1); }
+.js .net--map:not(.is-live) .map__regional { opacity: 0; }
+.js .net--map:not(.is-live) .origin__label--far { opacity: 1; }
+.js .net--map:not(.is-live) .origin__label--near { opacity: 0; }
+.js .net--map:not(.is-live) .map__mg { stroke-width: 1.3px; }
+.js .net--map:not(.is-live) .map__step { fill: rgba(255, 255, 255, 0.45); }
+.js .net--map:not(.is-live) .map__step--1 { fill: #fff; }
+
+/* aproximação: toca uma vez ao entrar na seção (ou em "Rever aproximação"); tempos em segundos desde a entrada.
+   Brasil 0–1,5 · ponto 1,5–2,5 · zoom MG 2,5–4,5 · pausa 4,5–5,3 · zoom regional 5,3–7,5 · conexões em loop depois */
+.js .net--map.is-live .map__cam { animation: mc-mg 2s linear 2.5s both; }
+.js .net--map.is-live .origin { animation: mo-in 0.7s ease-out 1.5s both, mo-mg 2s linear 2.5s forwards; }
+.js .net--map.is-live .origin__label--far { animation: im-show 0.5s ease-out 2s both; }
+.js .net--map.is-live .origin__echo { animation: mo-echo 3s ease-out 1.6s infinite; }
+.js .net--map.is-live .origin__halo { animation: mo-halo 3s ease-in-out 1.6s infinite; }
+.js .net--map.is-live .map__br, .js .net--map.is-live .map__uf { animation: m-fade-out 1.3s ease-in-out 2.7s both, mw-mg 2s linear 2.5s both; }
+.js .net--map.is-live .map__mg { animation: mw-mg 2s linear 2.5s both; }
+.js .net--map.is-live .map__step--1 { animation: ms-off 0.6s linear 3.6s both; }
+.js .net--map.is-live .map__step--2 { animation: ms-on 0.6s linear 3.6s both; }
+
+.js .net--map.has-regional.is-live .map__cam { animation: mc-mg 2s linear 2.5s both, mc-end 2.2s linear 5.3s forwards; }
+.js .net--map.has-regional.is-live .origin { animation: mo-in 0.7s ease-out 1.5s both, mo-mg 2s linear 2.5s forwards, mo-end 2.2s linear 5.3s forwards; }
+.js .net--map.has-regional.is-live .map__mg { animation: mw-mg 2s linear 2.5s both, mw-end 2.2s linear 5.3s forwards, m-dim 1.4s ease-in-out 5.8s both; }
+.js .net--map.has-regional.is-live .map__regional { animation: im-show 1.2s ease-out 6.1s both; }
+.js .net--map.has-regional.is-live .origin__label--far { animation: im-show 0.5s ease-out 2s both, im-hide 0.5s linear 5.6s forwards; }
+.js .net--map.has-regional.is-live .origin__label--near { animation: im-show 0.6s ease-out 7s both; }
+.js .net--map.has-regional.is-live .mesh { animation: ml-mesh 6s ease-in-out 7.5s infinite both; }
+.js .net--map.has-regional.is-live .map__step--2 { animation: ms-on 0.6s linear 3.6s both, ms-off 0.6s linear 6.6s forwards; }
+.js .net--map.has-regional.is-live .map__step--3 { animation: ms-on 0.6s linear 6.6s both; }
+.js .net--map.has-regional.is-live .mnode { animation: mn-in 0.5s ease-out calc(7.3s + var(--i) * 0.12s) both; }
+.js .net--map.has-regional.is-live .mnode__halo { animation: mn-halo 6s ease-in-out calc(7.5s + var(--i) * 0.4s) infinite both; transform-box: fill-box; transform-origin: center; }
+.js .net--map.has-regional.is-live .link__line { animation: ml-line 6s linear calc(7.5s + var(--i) * 0.4s) infinite both; }
+.js .net--map.has-regional.is-live .link__glow { animation: ml-glow 6s linear calc(7.5s + var(--i) * 0.4s) infinite both; }
+.js .net--map.has-regional.is-live .link__pulse { animation: ml-pulse 6s linear calc(7.5s + var(--i) * 0.4s) infinite both; }
+
+/* mc-*, mo-mg/end e mw-* são gerados em map-camera.css (escala em log + easeInOutCubic) */
+@keyframes mo-in { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+@keyframes mo-echo { 0% { transform: scale(1); opacity: 0.9; } 60%, 100% { transform: scale(3.2); opacity: 0; } }
+@keyframes mo-halo { 0%, 100% { transform: scale(0.85); opacity: 0.75; } 50% { transform: scale(1.12); opacity: 1; } }
+@keyframes m-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes m-dim { from { opacity: 1; } to { opacity: 0.35; } }
+@keyframes ms-on { from { fill: rgba(255, 255, 255, 0.45); } to { fill: #fff; } }
+@keyframes ms-off { from { fill: #fff; } to { fill: rgba(255, 255, 255, 0.45); } }
+@keyframes mn-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mn-halo { 0%, 44% { transform: scale(0.6); opacity: 0.5; } 56% { transform: scale(1.35); opacity: 1; } 72%, 100% { transform: scale(0.6); opacity: 0.5; } }
+@keyframes ml-mesh { 0%, 30% { stroke-opacity: 0.12; } 55%, 80% { stroke-opacity: 0.5; } 100% { stroke-opacity: 0.12; } }
+@keyframes ml-line { 0% { stroke-dashoffset: 1; opacity: 0; } 4% { stroke-dashoffset: 1; opacity: 0.95; animation-timing-function: ease-in-out; } 34%, 82% { stroke-dashoffset: 0; opacity: 0.95; } 96%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes ml-glow { 0%, 30% { opacity: 0; } 40%, 82% { opacity: 0.2; } 96%, 100% { opacity: 0; } }
+@keyframes ml-pulse { 0%, 36% { stroke-dashoffset: 0.1; opacity: 0; } 38% { stroke-dashoffset: 0.1; opacity: 1; animation-timing-function: ease-in-out; } 54% { stroke-dashoffset: -1.02; opacity: 1; } 56%, 100% { stroke-dashoffset: -1.02; opacity: 0; } }
+
+.key--note { background: transparent; box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.55); }
+
+/* pausa fora da tela / aba oculta: o relógio congela, não reinicia */
+/* (* não alcança pseudo-elementos: o eco do núcleo da rede, .rede__hub::after, seguia animando fora da tela) */
+.js .net.is-paused, .js .net.is-paused *, .js .net.is-paused *::before, .js .net.is-paused *::after,
+.js.is-hidden .net, .js.is-hidden .net *, .js.is-hidden .net *::before, .js.is-hidden .net *::after { animation-play-state: paused !important; }
+/* pausa pedida pela pessoa: volta à composição estática completa */
+.js.motion-off .net, .js.motion-off .net *, .js.motion-off .net *::before, .js.motion-off .net *::after { animation: none !important; }
+
+/* diagramas dos pilares: relógio de 7 s por figura, atrasos dentro dos keyframes; traços-base sempre visíveis.
+   Princípio estudado na OneX (.xart): linha-base + segmento com stroke-dasharray/offset, pausado fora da tela. */
+.pf-base path, .pf-slot { fill: none; stroke: var(--ink); stroke-opacity: 0.22; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.pf-slot { stroke-opacity: 0.12; stroke-width: 3; }
+.pf-box { fill: #fff; stroke: var(--ink); stroke-width: 1.5; }
+.pf-node { fill: #fff; stroke: var(--ink); stroke-width: 1.5; transform-box: fill-box; transform-origin: center; }
+.pf-hub { fill: #fff; stroke: var(--red); stroke-width: 1.8; transform-box: fill-box; transform-origin: center; }
+.pf-hubmark { fill: none; stroke: var(--red); stroke-width: 1.8; stroke-linecap: round; }
+.pf-ring { fill: none; stroke: var(--orange); stroke-width: 1.5; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.pf-pulse { fill: none; stroke: var(--red); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 0.22 1.6; stroke-dashoffset: 0.25; opacity: 0; }
+.pf-write { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 0; }
+.pf-led { fill: var(--red); stroke: var(--red); stroke-width: 1.5; }
+.pf-s-outline { fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 0; }
+.pf-s-fill { fill: rgba(255, 75, 34, 0.1); stroke: none; }
+.pf-s-check { fill: none; stroke: var(--red); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 0; }
+
+.js .net.is-live .pf-pulse { opacity: 1; }
+.js .net.is-live .pf-c-in1 { animation: pf-c-in1 7s linear infinite both; }
+.js .net.is-live .pf-c-in2 { animation: pf-c-in2 7s linear infinite both; }
+.js .net.is-live .pf-c-in3 { animation: pf-c-in3 7s linear infinite both; }
+.js .net.is-live .pf-c-out1 { animation: pf-c-out1 7s linear infinite both; }
+.js .net.is-live .pf-c-out2 { animation: pf-c-out2 7s linear infinite both; }
+.js .net.is-live .pf-c-hub { animation: pf-c-hub 7s linear infinite both; }
+.js .net.is-live .pf-c-ring { animation: pf-c-ring 7s linear infinite both; }
+.js .net.is-live .pf-c-end1 { animation: pf-c-end1 7s linear infinite both; }
+.js .net.is-live .pf-c-end2 { animation: pf-c-end2 7s linear infinite both; }
+/* conectividade: entradas 0–38 % · nó responde 36–50 % · saídas 46–74 % · pontas respondem 70–88 % */
+@keyframes pf-c-in1 { 0%, 4% { stroke-dashoffset: 0.25; animation-timing-function: ease-in-out; } 30%, 100% { stroke-dashoffset: -1.03; } }
+@keyframes pf-c-in2 { 0%, 10% { stroke-dashoffset: 0.25; animation-timing-function: ease-in-out; } 36%, 100% { stroke-dashoffset: -1.03; } }
+@keyframes pf-c-in3 { 0%, 16% { stroke-dashoffset: 0.25; animation-timing-function: ease-in-out; } 38%, 100% { stroke-dashoffset: -1.03; } }
+@keyframes pf-c-hub { 0%, 34% { transform: scale(1); fill: #fff; animation-timing-function: ease-out; } 42% { transform: scale(1.1); fill: #ffe3d9; animation-timing-function: ease-in-out; } 52%, 100% { transform: scale(1); fill: #fff; } }
+@keyframes pf-c-ring { 0%, 36% { transform: scale(0.9); opacity: 0; } 39% { opacity: 0.9; animation-timing-function: ease-out; } 54%, 100% { transform: scale(1.7); opacity: 0; } }
+@keyframes pf-c-out1 { 0%, 46% { stroke-dashoffset: 0.25; animation-timing-function: ease-in-out; } 70%, 100% { stroke-dashoffset: -1.03; } }
+@keyframes pf-c-out2 { 0%, 50% { stroke-dashoffset: 0.25; animation-timing-function: ease-in-out; } 74%, 100% { stroke-dashoffset: -1.03; } }
+@keyframes pf-c-end1 { 0%, 68% { fill: #fff; stroke: var(--ink); transform: scale(1); animation-timing-function: ease-out; } 74% { fill: var(--red); stroke: var(--red); transform: scale(1.3); } 80%, 90% { fill: var(--red); stroke: var(--red); transform: scale(1); } 100% { fill: #fff; stroke: var(--ink); transform: scale(1); } }
+@keyframes pf-c-end2 { 0%, 72% { fill: #fff; stroke: var(--ink); transform: scale(1); animation-timing-function: ease-out; } 78% { fill: var(--red); stroke: var(--red); transform: scale(1.3); } 84%, 90% { fill: var(--red); stroke: var(--red); transform: scale(1); } 100% { fill: #fff; stroke: var(--ink); transform: scale(1); } }
+
+/* dados: pacote k chega (k·14 %) → a linha do servidor k é gravada → o indicador k acende → barramento confirma */
+.js .net.is-live .pf-d-pk { animation: 7s linear infinite both; }
+.js .net.is-live .pf-d-pk[style*="--k:0"] { animation-name: pf-d-pk0; }
+.js .net.is-live .pf-d-pk[style*="--k:1"] { animation-name: pf-d-pk1; }
+.js .net.is-live .pf-d-pk[style*="--k:2"] { animation-name: pf-d-pk2; }
+.js .net.is-live .pf-write[style*="--k:0"] { animation: pf-d-w0 7s linear infinite both; }
+.js .net.is-live .pf-write[style*="--k:1"] { animation: pf-d-w1 7s linear infinite both; }
+.js .net.is-live .pf-write[style*="--k:2"] { animation: pf-d-w2 7s linear infinite both; }
+.js .net.is-live .pf-led[style*="--k:0"] { animation: pf-d-l0 7s linear infinite both; }
+.js .net.is-live .pf-led[style*="--k:1"] { animation: pf-d-l1 7s linear infinite both; }
+.js .net.is-live .pf-led[style*="--k:2"] { animation: pf-d-l2 7s linear infinite both; }
+.js .net.is-live .pf-d-bus { animation: pf-d-bus 7s linear infinite both; }
+@keyframes pf-d-pk0 { 0%, 2% { stroke-dashoffset: 0.25; animation-timing-function: ease-in; } 16%, 100% { stroke-dashoffset: -1.03; } }
+@keyframes pf-d-pk1 { 0%, 16% { stroke-dashoffset: 0.25; animation-timing-function: ease-in; } 30%, 100% { stroke-dashoffset: -1.03; } }
+@keyframes pf-d-pk2 { 0%, 30% { stroke-dashoffset: 0.25; animation-timing-function: ease-in; } 44%, 100% { stroke-dashoffset: -1.03; } }
+@keyframes pf-d-w0 { 0%, 14% { stroke-dashoffset: 1; opacity: 1; animation-timing-function: ease-out; } 30%, 88% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes pf-d-w1 { 0%, 28% { stroke-dashoffset: 1; opacity: 1; animation-timing-function: ease-out; } 44%, 88% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes pf-d-w2 { 0%, 42% { stroke-dashoffset: 1; opacity: 1; animation-timing-function: ease-out; } 58%, 88% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes pf-d-l0 { 0%, 26% { fill: #fff; stroke: var(--ink); } 31%, 90% { fill: var(--red); stroke: var(--red); } 100% { fill: #fff; stroke: var(--ink); } }
+@keyframes pf-d-l1 { 0%, 40% { fill: #fff; stroke: var(--ink); } 45%, 90% { fill: var(--red); stroke: var(--red); } 100% { fill: #fff; stroke: var(--ink); } }
+@keyframes pf-d-l2 { 0%, 54% { fill: #fff; stroke: var(--ink); } 59%, 90% { fill: var(--red); stroke: var(--red); } 100% { fill: #fff; stroke: var(--ink); } }
+@keyframes pf-d-bus { 0%, 60% { stroke-dashoffset: 0.25; animation-timing-function: ease-in-out; } 78%, 100% { stroke-dashoffset: -1.03; } }
+
+/* segurança: contorno 0–30 % · fecho 30–44 % · pulso na borda 46–76 % · estado protegido 74–90 % · dissolve */
+.js .net.is-live .pf-s-outline { animation: pf-s-outline 7s linear infinite both; }
+.js .net.is-live .pf-s-check { animation: pf-s-check 7s linear infinite both; }
+.js .net.is-live .pf-s-run { animation: pf-s-run 7s linear infinite both; stroke-dasharray: 0.12 1.6; }
+.js .net.is-live .pf-s-fill { animation: pf-s-fill 7s linear infinite both; }
+.js .net.is-live .pf-s-side { animation: pf-s-side 7s linear infinite both; stroke: var(--orange); }
+@keyframes pf-s-outline { 0%, 2% { stroke-dashoffset: 1; opacity: 1; animation-timing-function: ease-in-out; } 30%, 90% { stroke-dashoffset: 0; opacity: 1; } 99%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes pf-s-check { 0%, 30% { stroke-dashoffset: 1; opacity: 1; animation-timing-function: ease-out; } 44%, 90% { stroke-dashoffset: 0; opacity: 1; } 99%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes pf-s-run { 0%, 46% { stroke-dashoffset: 0.13; animation-timing-function: ease-in-out; } 76%, 100% { stroke-dashoffset: -1.02; } }
+@keyframes pf-s-fill { 0%, 72% { opacity: 0; animation-timing-function: ease-out; } 80%, 90% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes pf-s-side { 0%, 76% { stroke-dashoffset: 0.25; animation-timing-function: ease-out; } 90%, 100% { stroke-dashoffset: -1.03; } }
+
+/* conexões: malha de fundo do mapa */
+.conexoes__art .net--map {
+  background-image: linear-gradient(rgba(255, 174, 24, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 174, 24, 0.045) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+/* para quem: grade, cartões e mockups animados ficam em publicos.css (componente isolado) */
+
+/* quem faz parte — rede de conexões */
+.rede { position: relative; isolation: isolate; margin-top: clamp(40px, 6vw, 72px); padding-block: 8px; }
+.rede__svg { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.rede__label { display: flex; justify-content: center; }
+.rede__label span {
+  padding: 4px 14px; background: var(--mist);
+  font-family: var(--font-title); font-size: 0.74rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.rede__label--part { margin-top: clamp(28px, 4vw, 44px); }
+.rede__row { display: grid; align-items: center; justify-content: center; }
+.rede__row--artic { grid-template-columns: minmax(0, 340px) 104px minmax(0, 340px); gap: clamp(36px, 7vw, 104px); margin-top: 20px; }
+.rede__row--part { grid-template-columns: repeat(2, minmax(0, 250px)); gap: clamp(36px, 9vw, 150px); margin-top: clamp(52px, 6vw, 72px); }
+.rede__card {
+  background: #fff; border-radius: var(--radius); border: 1.5px solid transparent;
+  transition: border-color 0.3s var(--ease), transform 0.3s var(--ease);
+}
+.rede__card a { display: block; border-radius: var(--radius); }
+.rede__card img { width: 100%; height: auto; }
+.rede__card:hover, .rede__card:focus-within { border-color: rgba(255, 75, 34, 0.55); transform: translateY(-2px); }
+.rede__hub {
+  position: relative; justify-self: center; display: grid; place-items: center;
+  width: 104px; height: 104px; border-radius: 50%; background: #fff; border: 1.5px solid var(--red);
+}
+.rede__hub img { width: 54px; height: auto; }
+.rede__hub::after { content: ""; position: absolute; inset: -1.5px; border-radius: 50%; border: 1.5px solid var(--orange); opacity: 0; }
+
+.rede__base { fill: none; stroke: var(--ink); stroke-opacity: 0.16; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.rede__draw { fill: none; stroke: var(--orange); stroke-opacity: 0.75; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; }
+.rede__pulse { fill: none; stroke: var(--amber); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 0.16 1.6; stroke-dashoffset: 0.19; opacity: 0; }
+.rede__base.is-active { stroke: var(--red); stroke-opacity: 0.7; }
+.rede__svg path { transition: stroke 0.3s, stroke-opacity 0.3s; }
+
+/* 8s: linhas das articuladoras 0–30% → núcleo 30–46% → pulsos aos participantes 46–70% → repouso → dissolução 88–100% */
+.js .rede.is-live .rede__draw { animation: r-draw 8s linear 3.3s infinite both; }
+.js .rede.is-live .rede__pulse { animation: r-pulse 8s linear 3.3s infinite both; }
+.js .rede.is-live .rede__hub { animation: r-hub 8s linear 3.3s infinite both; }
+.js .rede.is-live .rede__hub::after { animation: r-echo 8s linear 3.3s infinite both; }
+.js .rede.is-live .rede__card--part { animation: r-card 8s linear 3.3s infinite both; }
+
+@keyframes r-draw {
+  0% { stroke-dashoffset: 1; opacity: 0; }
+  3% { stroke-dashoffset: 1; opacity: 1; animation-timing-function: ease-in-out; }
+  30%, 88% { stroke-dashoffset: 0; opacity: 1; }
+  99%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+@keyframes r-hub {
+  0%, 29% { transform: scale(1); animation-timing-function: ease-out; }
+  36% { transform: scale(1.07); animation-timing-function: ease-in-out; }
+  46%, 100% { transform: scale(1); }
+}
+@keyframes r-echo {
+  0%, 30% { transform: scale(1); opacity: 0; }
+  32% { transform: scale(1.02); opacity: 0.8; animation-timing-function: ease-out; }
+  48%, 100% { transform: scale(1.6); opacity: 0; }
+}
+@keyframes r-pulse {
+  0%, 45% { stroke-dashoffset: 0.19; opacity: 0; }
+  46% { stroke-dashoffset: 0.19; opacity: 1; animation-timing-function: ease-in-out; }
+  69% { stroke-dashoffset: -1.03; opacity: 1; }
+  70%, 100% { stroke-dashoffset: -1.03; opacity: 0; }
+}
+@keyframes r-card {
+  0%, 66% { border-color: transparent; animation-timing-function: ease-out; }
+  72%, 84% { border-color: rgba(255, 122, 26, 0.7); animation-timing-function: ease-in-out; }
+  96%, 100% { border-color: transparent; }
+}
+
+/* ---- logos dos parceiros: animação própria, uma vez ao entrar na seção ----
+   Ordem (coreografia, não hierarquia comercial): ONEX 0 s → BRNET 1,3 s → Siteflux 2,7 s / Odin Chat 2,9 s → fios 3,3 s.
+   Sem JS, com reduced motion ou ao pausar: só os PNG oficiais, estáticos. Enquanto espera a vez, o logo fica esmaecido. */
+.rede__card, .rede__card a { position: relative; }
+.rede__card { overflow: hidden; }
+.logo-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; }
+
+/* ONEX — roteiro da intro de referência (js/intro.js: volume/glow 0,6–2,5 s · trilhas O→N→E→hub do X 2,5–3,6 s ·
+   X contorno e face laranja 3,6–4,1 s · "data center" 4,1–4,6 s), comprimido de 4,6 s para 2,4 s. Vetores = os do site
+   de referência; no fim entra o PNG oficial (que traz "data center"). */
+.ox-letter { fill: #0d0d0d; fill-opacity: 0; stroke: #0d0d0d; stroke-width: 3; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.ox-trace { fill: none; stroke: var(--orange); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 0.16 1.4; stroke-dashoffset: 0.18; opacity: 0; }
+.ox-x { fill: #f4811f; fill-opacity: 0; stroke: #f4811f; stroke-width: 3; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.ox-halo { opacity: 0; }
+.js .rede.is-live .logo-fx--onex { animation: lf-layer 2.45s linear both; }
+.js .rede.is-live .rede__card--onex .rede__logo { animation: lf-logo-in 0.4s ease-out 2s both; }
+.js .rede.is-live .ox-letter { animation: ox-draw 0.55s cubic-bezier(0.4, 0, 0.2, 1) calc(var(--i) * 0.09s) both, ox-fill 0.4s ease-out calc(0.42s + var(--i) * 0.09s) both; }
+.js .rede.is-live .ox-trace { animation: ox-trace 0.7s cubic-bezier(0.4, 0, 0.3, 1) calc(0.8s + var(--d)) both; }
+.js .rede.is-live .ox-trace--short { animation-duration: 0.4s; }
+.js .rede.is-live .ox-x { animation: ox-draw 0.4s cubic-bezier(0.4, 0, 0.2, 1) 1.42s both, ox-fill 0.3s ease-out 1.7s both; }
+.js .rede.is-live .ox-halo { animation: ox-halo 0.8s ease-out 1.65s both; }
+@keyframes lf-layer { 0%, 82% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes lf-logo-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ox-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes ox-fill { from { fill-opacity: 0; } to { fill-opacity: 1; } }
+@keyframes ox-trace { 0% { stroke-dashoffset: 0.18; opacity: 1; } 85% { opacity: 1; } 100% { stroke-dashoffset: -1.02; opacity: 0; } }
+@keyframes ox-halo { 0% { opacity: 0; } 35% { opacity: 1; } 100% { opacity: 0; } }
+
+/* BRNET — trecho 16,4–20,4 s do vídeo de referência: letras incandescentes em close e inclinadas nivelam (16,4–18,2) →
+   preenchimento quente varre da esquerda para a direita (18,2–18,8) → clarão com riscos horizontais (18,8–19,4) →
+   esfria até a marca limpa (19,4–20,4). O logo só existe em raster: as camadas são gradientes recortados pelo
+   próprio PNG oficial (mask-image), não um vetor redesenhado. Comprimido de 4 s para 1,7 s. */
+.logo-fx--brnet { overflow: hidden; }
+.lf-glow, .lf-hot, .lf-flash { position: absolute; inset: 0; -webkit-mask: url(../img/logo-brnet.png) center / 100% 100% no-repeat; mask: url(../img/logo-brnet.png) center / 100% 100% no-repeat; }
+.lf-hot { background: linear-gradient(100deg, #ff4b22 0%, #ff7a1a 35%, #ffae18 62%, #fff1d6 100%); background-size: 220% 100%; }
+.lf-flash { background: #fff; opacity: 0; }
+.lf-glow { background: linear-gradient(100deg, #ff7a1a, #ffae18); opacity: 0; }
+.lf-streak { position: absolute; left: 4%; right: 4%; top: 48%; height: 2px; opacity: 0; transform: scaleX(0.2); background: linear-gradient(90deg, rgba(255, 174, 24, 0), #ffae18 30%, #fff1d6 50%, #ffae18 70%, rgba(255, 174, 24, 0)); }
+.js .rede.is-live .rede__card--brnet .rede__logo { animation: lf-wait 3s linear both; }
+.js .rede.is-live .logo-fx--brnet { animation: br-layer 1.75s linear 1.3s both; }
+.js .rede.is-live .lf-glow { animation: br-cam 0.95s cubic-bezier(0.25, 0.6, 0.2, 1) 1.3s both, br-glow 1.25s linear 1.3s both; }
+.js .rede.is-live .lf-hot { animation: br-sweep 0.6s cubic-bezier(0.5, 0, 0.3, 1) 1.85s both; }
+.js .rede.is-live .lf-flash { animation: br-flash 0.5s ease-out 2.35s both; }
+.js .rede.is-live .lf-streak { animation: br-streak 0.7s ease-out 2.3s both; }
+@keyframes lf-wait { 0%, 84% { opacity: 0.18; } 100% { opacity: 1; } }
+@keyframes br-layer { 0% { opacity: 0; } 8%, 72% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes br-cam { from { transform: translateX(14%) rotate(-7deg) scale(1.7); } to { transform: none; } }
+@keyframes br-sweep { from { clip-path: inset(0 100% 0 0); background-position: 100% 0; filter: drop-shadow(0 0 6px rgba(255, 122, 26, 0.7)); } to { clip-path: inset(0 0 0 0); background-position: 0 0; filter: drop-shadow(0 0 3px rgba(255, 122, 26, 0.4)); } }
+@keyframes br-glow { 0% { opacity: 0; } 25%, 60% { opacity: 0.55; } 100% { opacity: 0; } }
+@keyframes br-flash { 0% { opacity: 0; } 30% { opacity: 0.9; } 100% { opacity: 0; } }
+@keyframes br-streak { 0% { opacity: 0; transform: scaleX(0.2); } 30% { opacity: 1; } 100% { opacity: 0; transform: scaleX(1); } }
+
+/* Siteflux (SVG oficial, variante ink) e Odin Chat (raster): revelação honesta por máscara sobre a assinatura existente */
+.js .rede.is-live .rede__card--siteflux .rede__logo { animation: sf-reveal 0.75s cubic-bezier(0.3, 0, 0.2, 1) 2.7s both; }
+.js .rede.is-live .rede__card--odin .rede__logo { animation: od-reveal 0.8s cubic-bezier(0.3, 0, 0.2, 1) 2.9s both; }
+/* fantasma esmaecido do próprio logo enquanto espera a vez: o cartão nunca fica vazio */
+.rede__card--siteflux::before, .rede__card--odin::before { content: ""; position: absolute; inset: 0; opacity: 0; pointer-events: none; background: center / 100% 100% no-repeat; }
+.rede__card--siteflux::before { background-image: url(../img/logo-siteflux.svg); }
+.rede__card--odin::before { background-image: url(../img/logo-odinchat.png); }
+.js .rede.is-live .rede__card--siteflux::before { animation: lf-ghost 3.5s linear both; }
+.js .rede.is-live .rede__card--odin::before { animation: lf-ghost 3.75s linear both; }
+@keyframes lf-ghost { 0%, 90% { opacity: 0.16; } 100% { opacity: 0; } }
+@keyframes sf-reveal { 0% { clip-path: inset(0 100% 0 0); opacity: 1; transform: translateX(-10px); } 100% { clip-path: inset(0 0 0 0); opacity: 1; transform: none; } }
+@keyframes od-reveal { 0% { clip-path: circle(0% at 50% 40%); } 55% { clip-path: circle(34% at 50% 40%); } 100% { clip-path: circle(75% at 50% 50%); } }
+
+/* ---------- responsivo ---------- */
+
+@media (max-width: 859px) {
+  /* rede de empresas: eixo vertical — articuladoras lado a lado, núcleo abaixo, participantes depois */
+  .rede__row--artic { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .rede__hub { grid-column: 1 / -1; grid-row: 2; margin-top: 44px; width: 88px; height: 88px; }
+  .rede__hub img { width: 46px; }
+  .rede__row--part { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 52px; }
+}
+
+@media (max-width: 768px) {
+  .hero-scrub .hero { height: 240vh; }
+}
+
+@media (max-width: 599px) {
+  :root { --header-h: 64px; }
+  body { font-size: 1rem; }
+  .hero__actions .btn { width: 100%; }
+  .hero__hint { display: none; }
+  /* a história se mantém com menos nós */
+  .origin__label { font-size: 27px; stroke-width: 7px; }
+  .origin__label--near, .mnode__label { font-size: 22px; stroke-width: 6px; }
+  .map__steps { font-size: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
+  .js .net, .js .net * { animation: none !important; }
+  .js .hero, .hero-scrub .hero { height: 100vh; height: 100svh; }
+  .js .hero__sticky, .hero-scrub .hero__sticky { position: relative; }
+  .js .hero__start { display: none; }
+  .js .hero .hero__fade { opacity: 1; visibility: visible; }
+  .hero__play { display: none; }
+  .js .vad-logo .vlogo-part { opacity: 1; transform: none; transition: none; }
+}
+
+@media print {
+  .motion-toggle, .intro { display: none !important; }
+}

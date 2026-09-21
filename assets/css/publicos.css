@@ -1,0 +1,173 @@
+/* Vale do Aço Digital — #para-quem: grade dos três públicos e mockups animados.
+   Componente isolado (seletores .publicos / .publico / .pq*); carrega depois de styles.css e usa os tokens de :root.
+   Desenhos próprios em SVG no index.html; referência de linguagem: cenas com volume (R3F), sem WebGL nem bibliotecas.
+
+   Estados do visual (.publico__viz):
+     sem classe  → composição final, parada (sem JS, sem IntersectionObserver, reduced motion, impressão)
+     .is-armed   → publicos.js armou: animações aplicadas, pausadas no primeiro quadro
+     .is-playing → parte significativa visível: a sequência toca uma vez (~3,5 s)
+     .is-paused  → saiu da viewport no meio: congela; .pq-hidden na seção = aba oculta
+   Ao terminar, publicos.js remove as classes: volta a valer a composição final, sem nenhuma animação associada. */
+
+.publicos {
+  display: grid; gap: 16px; margin-top: clamp(40px, 6vw, 72px);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "a" "b" "c";
+}
+.publico {
+  position: relative; overflow: hidden; isolation: isolate;
+  display: grid; align-content: start;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "k" "viz" "t" "p";
+  padding: clamp(24px, 3vw, 40px);
+  border-radius: var(--radius);
+}
+.publico--empresas { grid-area: a; background: var(--ink); color: #fff; }
+.publico--profissionais { grid-area: b; background: var(--mist); }
+.publico--pessoas { grid-area: c; background: #fff; border: 1.5px solid var(--ink); }
+
+.publico__k {
+  grid-area: k;
+  font-family: var(--font-title); font-size: 0.74rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.publico__t { grid-area: t; font-family: var(--font-title); font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.2rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+.publico--empresas .publico__t { font-size: clamp(1.9rem, 1.2rem + 2.6vw, 3.1rem); }
+.publico__p { grid-area: p; margin-top: 12px; max-width: 30em; color: var(--text-soft); }
+.publico--empresas .publico__p { color: rgba(255, 255, 255, 0.78); font-size: 1.12rem; }
+
+/* visual: área reservada pela proporção do viewBox; nunca atrás do texto */
+.publico__viz {
+  grid-area: viz; justify-self: start; pointer-events: none;
+  height: clamp(150px, 42vw, 176px); aspect-ratio: 240 / 220;
+  margin-block: 14px 18px;
+}
+.publico__viz svg { width: 100%; height: 100%; }
+.publico--empresas .publico__viz { width: 100%; max-width: 520px; height: auto; aspect-ratio: 520 / 280; margin-block: 18px 22px; }
+
+/* lado a lado: rótulo no alto, título e descrição embaixo, visual à direita */
+@media (min-width: 600px) {
+  .publico--profissionais, .publico--pessoas {
+    grid-template-columns: minmax(min-content, 1fr) minmax(150px, 190px); /* o título nunca quebra: o visual cede */
+    grid-template-rows: auto minmax(20px, 1fr) auto auto;
+    grid-template-areas: "k viz" ". viz" "t viz" "p viz";
+    column-gap: clamp(16px, 2vw, 24px); min-height: 236px;
+  }
+  .publico--profissionais .publico__viz, .publico--pessoas .publico__viz { align-self: center; justify-self: end; width: 100%; height: auto; margin-block: 0; }
+}
+@media (min-width: 700px) {
+  .publico--empresas {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 54%);
+    grid-template-rows: auto minmax(20px, 1fr) auto auto;
+    grid-template-areas: "k viz" ". viz" "t viz" "p viz";
+    column-gap: clamp(20px, 3vw, 40px);
+  }
+  .publico--empresas .publico__viz { align-self: center; justify-self: end; margin-block: 0; }
+}
+/* 860–1179: Empresas em faixa inteira, os dois menores abaixo com o visual sobre o texto */
+@media (min-width: 860px) {
+  .publicos { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "a a" "b c"; }
+  .publico--profissionais, .publico--pessoas {
+    grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: none; column-gap: 12px;
+    grid-template-areas: "k viz" "t t" "p p"; min-height: 0;
+  }
+  .publico--profissionais .publico__viz, .publico--pessoas .publico__viz { align-self: start; justify-self: end; width: auto; height: clamp(168px, 20vw, 188px); margin-block: 0 16px; }
+}
+/* desktop: grade assimétrica — Empresas à esquerda com a cena no alto, Profissionais e Pessoas à direita */
+@media (min-width: 1180px) {
+  .publicos { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); grid-template-areas: "a b" "a c"; }
+  .publico--empresas {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "k" "viz" "t" "p";
+  }
+  .publico--empresas .publico__viz { justify-self: start; margin-block: 20px 24px; }
+  .publico--profissionais, .publico--pessoas {
+    grid-template-columns: minmax(min-content, 1fr) minmax(150px, 190px); /* o título nunca quebra: o visual cede */
+    grid-template-rows: auto minmax(20px, 1fr) auto auto;
+    grid-template-areas: "k viz" ". viz" "t viz" "p viz"; min-height: 236px;
+  }
+  .publico--profissionais .publico__viz, .publico--pessoas .publico__viz { align-self: center; justify-self: end; width: 100%; height: auto; margin-block: 0; }
+}
+
+/* ---------- composição final (vale sem JS) ---------- */
+.publico__viz .pq-a { transform-box: fill-box; transform-origin: center; }
+.publico__viz .pqe-cometa, .publico__viz .pqs-cometa { opacity: 0; }
+.publico__viz .pqs-realce { opacity: 0.3; }
+.publico__viz .pqs-haste { transform-origin: 100% 100%; }
+
+/* ---------- sequência única ---------- */
+.publico__viz { --pq-state: paused; }
+.publico__viz.is-playing { --pq-state: running; }
+.publico__viz.is-paused, .pq-hidden .publico__viz { --pq-state: paused; }
+
+/* sentinela: termina depois da última ação; o animationend dela encerra a cena no JS */
+.publico__viz.is-armed { animation: pq-fim 3.6s linear both; animation-play-state: var(--pq-state); }
+/* as três cenas não encerram no mesmo quadro: a troca para a composição final repinta um SVG por vez */
+.publico--profissionais .publico__viz.is-armed { animation-duration: 3.72s; }
+.publico--pessoas .publico__viz.is-armed { animation-duration: 3.84s; }
+.publico__viz.is-armed .pq-a {
+  animation-duration: 0.4s; animation-timing-function: var(--ease); animation-fill-mode: both;
+  animation-play-state: var(--pq-state);
+}
+
+/* Empresas: módulo acende → sinal percorre o cabo → elo e três módulos recebem o acento → monitor assenta */
+.is-armed .pqe-led { animation-name: pq-acende; animation-duration: 0.3s; }
+.is-armed .pqe-led--1 { animation-delay: 0.3s; }
+.is-armed .pqe-led--2 { animation-delay: 0.42s; }
+.is-armed .pqe-led--3 { animation-delay: 0.54s; }
+.is-armed .pqe-led--4 { animation-delay: 0.66s; }
+.is-armed .pqe-cabo { animation-name: pq-traco; animation-duration: 1s; animation-delay: 0.85s; animation-timing-function: cubic-bezier(0.6, 0, 0.3, 1); }
+.is-armed .pqe-cometa { animation-name: pq-cometa; animation-duration: 1s; animation-delay: 0.85s; animation-timing-function: cubic-bezier(0.6, 0, 0.3, 1); }
+.is-armed .pqe-elo { animation-name: pq-pop; animation-delay: 1.85s; }
+.is-armed .pqe-mod { animation-name: pq-sobe; animation-duration: 0.55s; }
+.is-armed .pqe-ac { animation-name: pq-acende; }
+.is-armed .pqe-mod--1, .is-armed .pqe-ac--1 { animation-delay: 2.1s; }
+.is-armed .pqe-mod--2, .is-armed .pqe-ac--2 { animation-delay: 2.4s; }
+.is-armed .pqe-mod--3, .is-armed .pqe-ac--3 { animation-delay: 2.7s; }
+.is-armed .pqe-led--tela { animation-delay: 3.1s; }
+
+/* Profissionais: as duas folhas se alinham à janela → a ligação entre os módulos se completa */
+.is-armed .pqp-folha { animation-duration: 0.95s; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+.is-armed .pqp-folha--1 { animation-name: pqp-folha-1; animation-delay: 0.35s; }
+.is-armed .pqp-folha--2 { animation-name: pqp-folha-2; animation-delay: 0.5s; }
+.is-armed .pqp-elo { animation-name: pq-traco; animation-duration: 0.7s; animation-delay: 1.55s; animation-timing-function: cubic-bezier(0.6, 0, 0.3, 1); }
+.is-armed .pqp-mod { animation-name: pq-pop; animation-delay: 2.25s; }
+.is-armed .pqp-tag { animation-name: pq-acende; }
+.is-armed .pqp-tag--1 { animation-delay: 2.6s; }
+.is-armed .pqp-tag--2 { animation-delay: 2.78s; }
+
+/* Pessoas: o sinal liga os dois pontos → o cadeado fecha → a borda da placa recebe um realce breve */
+.is-armed .pqs-arco { animation-name: pq-traco; animation-duration: 1s; animation-delay: 0.35s; animation-timing-function: cubic-bezier(0.6, 0, 0.3, 1); }
+.is-armed .pqs-cometa { animation-name: pq-cometa; animation-duration: 1s; animation-delay: 0.35s; animation-timing-function: cubic-bezier(0.6, 0, 0.3, 1); }
+.is-armed .pqs-contato { animation-name: pq-pop; animation-delay: 1.35s; }
+.is-armed .pqs-haste { animation-name: pqs-haste; animation-duration: 0.55s; animation-delay: 1.85s; animation-timing-function: cubic-bezier(0.34, 1.4, 0.64, 1); }
+.is-armed .pqs-corpo { animation-name: pqs-corpo; animation-delay: 2.2s; }
+.is-armed .pqs-realce { animation-name: pqs-realce; animation-duration: 1.1s; animation-delay: 2.3s; animation-timing-function: ease-out; }
+
+@keyframes pq-fim { from { opacity: 1; } to { opacity: 1; } }
+@keyframes pq-acende { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pq-sobe { from { transform: translateY(3px); } to { transform: none; } }
+@keyframes pq-pop { from { opacity: 0; transform: scale(0.55); } to { opacity: 1; transform: none; } }
+@keyframes pq-traco { 0% { stroke-dashoffset: 1; opacity: 0; } 6% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 1; } }
+@keyframes pq-cometa { 0% { stroke-dashoffset: 0.06; opacity: 0; } 8%, 86% { opacity: 1; } 100% { stroke-dashoffset: -0.94; opacity: 0; } }
+@keyframes pqp-folha-1 { from { transform: translate(7px, -5px) rotate(2.5deg); } to { transform: none; } }
+@keyframes pqp-folha-2 { from { transform: translate(-9px, 7px) rotate(-3deg); } to { transform: none; } }
+@keyframes pqs-haste { from { transform: translateY(-6px) rotate(-16deg); } to { transform: none; } }
+@keyframes pqs-corpo { 0%, 100% { transform: none; } 40% { transform: translateY(1.6px); } }
+@keyframes pqs-realce { 0% { opacity: 0; } 35% { opacity: 1; } 100% { opacity: 0.3; } }
+
+/* ponteiro preciso: ajuste curto de profundidade, só com a cena em repouso; nada depende dele */
+@media (hover: hover) and (pointer: fine) {
+  .publico__viz .pq-lift { transition: transform 0.5s var(--ease); }
+  .publico:hover .publico__viz:not(.is-armed) .pq-lift { transform: translateY(-4px); }
+}
+
+/* sem movimento: composição final, mesmo que as classes de estado ainda estejam presentes */
+.js.motion-off .publico__viz, .js.motion-off .publico__viz .pq-a { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .publico__viz, .publico__viz .pq-a { animation: none !important; }
+  .publico__viz .pq-lift { transform: none !important; }
+}
+@media print {
+  .publico__viz, .publico__viz .pq-a { animation: none !important; }
+}

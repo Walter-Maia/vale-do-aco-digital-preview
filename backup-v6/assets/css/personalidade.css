@@ -1,0 +1,151 @@
+/* ==========================================================================
+   Vale do Aço Digital — camada "personalidade" (v1.2)
+   1. #pilares: índice editorial que comanda a ilustração (skill indice-projetos-fundo-imersivo)
+   2. #movimento: foto oficial entra por máscara lateral, uma vez (efeito 04)
+   3. Navegação desktop: letras em rolagem (skill links-rolagem-por-caractere)
+   Só CSS/DOM/SVG; nada aqui depende da pasta raiz (Siteflux).
+   Estados escondidos só existem sob html.pers, classe posta por personalidade.js:
+   se esse script falhar, foto, lista e desenhos ficam visíveis.
+   ========================================================================== */
+
+/* ---------- 1. Pilares ---------- */
+/* painel claro e limpo: cartão branco com fio fino sobre o cinza da seção, sem gradiente, brilho ou grade.
+   Os desenhos voltam às cores originais (tinta + vermelho), que já eram pensadas para fundo claro. */
+.pindex {
+  position: relative; overflow: hidden;
+  margin-top: clamp(40px, 6vw, 72px);
+  padding: clamp(6px, 1vw, 14px) clamp(18px, 3vw, 44px);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: #fff; color: var(--ink);
+}
+.pindex .pilares__list { margin-top: 0; border-bottom: 0; }
+.pindex .pilar {
+  border-top-color: var(--line);
+  /* faixa de seleção: fundo do próprio item (não cria bloco de contenção, não move a lista) */
+  background: linear-gradient(var(--red), var(--red)) 0 50% / 3px 0% no-repeat;
+  transition: background-size 0.3s var(--ease);
+}
+.pindex .pilar:first-child { border-top: 0; }
+.pindex__stage { display: none; }
+.pindex .pf-base path { stroke-dasharray: 1; } /* pathLength=1: permite o desenho curto ao selecionar */
+
+.pilar__btn {
+  display: inline-flex; align-items: center; min-height: 44px; margin: -6px 0; padding: 0;
+  border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; text-align: left;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.pilar__btn:focus-visible { outline-offset: 4px; border-radius: 4px; }
+
+/* seleção (um estado só: índice, faixa e ilustração) */
+.pindex.is-enhanced .pilar { padding-left: clamp(14px, 1.6vw, 22px); }
+.pindex.is-enhanced .pilar:first-child { border-top: 0; }
+.pindex.is-enhanced .pilar.is-active { background-size: 3px 100%; }
+/* ao selecionar, os traços-base se desenham uma vez (0,9 s) e assentam; pausa global, aba oculta e
+   movimento reduzido continuam valendo porque as regras de .net em styles.css cobrem estes elementos */
+.js .pindex.is-enhanced .pilar.is-active .net.is-live .pf-base path { animation: pi-draw 0.9s cubic-bezier(0.5, 0, 0.2, 1) both; }
+.js .pindex.is-enhanced .pilar.is-active .net.is-live .pf-base path:nth-child(2n) { animation-delay: 0.08s; }
+@keyframes pi-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+/* as ilustrações não selecionadas nunca ficam animando escondidas */
+.pindex.is-enhanced .pilar:not(.is-active) .pilar__fig * { animation: none !important; }
+
+@media (min-width: 940px) {
+  /* palco: a lista ocupa a esquerda e o desenho do item ativo ocupa o painel à direita.
+     Os <li> ficam sem position/transform para o SVG se posicionar em relação ao painel. */
+  .pindex.is-enhanced { padding-inline: 0; }
+  .pindex.is-enhanced .pilares__list { width: 47%; }
+  .pindex.is-enhanced .pilar {
+    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-areas: "n t" ". p" ". tag";
+    column-gap: 14px; row-gap: 10px; align-items: start;
+    padding: clamp(24px, 2.6vw, 34px) clamp(22px, 2.6vw, 40px) clamp(24px, 2.6vw, 34px) clamp(24px, 3vw, 44px);
+  }
+  /* só no palco os títulos não escolhidos recuam; no fluxo vertical (toque) todos ficam com contraste pleno */
+  .pindex.is-enhanced .pilar__t { transition: color 0.25s ease; }
+  .pindex.is-enhanced .pilar:not(.is-active) .pilar__t { color: rgba(33, 33, 33, 0.42); }
+  .pindex.is-enhanced .pilar:not(.is-active) .pilar__btn:hover { color: var(--ink); }
+  .pindex.is-enhanced .pilar__n { padding-top: 0.75em; color: var(--text-soft); }
+  .pindex.is-enhanced .pilar.is-active .pilar__n { color: var(--red); }
+  .pindex.is-enhanced .pilar__t { align-self: start; font-size: clamp(1.7rem, 1.1rem + 1.5vw, 2.35rem); }
+  .pindex.is-enhanced .pilar__tag { margin-top: 4px; }
+  .pindex.is-enhanced .pindex__stage {
+    display: block; position: absolute; top: 0; bottom: 0; right: 0; width: 53%;
+    border-left: 1px solid var(--line); background: #fafafa;
+  }
+  .pindex.is-enhanced svg.pilar__fig {
+    position: absolute; z-index: 1; top: 0; bottom: 0; right: 0;
+    width: 53%; height: 100%; max-width: none; box-sizing: border-box; padding: 3% 4%;
+    pointer-events: none;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity 0.26s ease, transform 0.26s var(--ease);
+  }
+  .pindex.is-enhanced .pilar.is-active svg.pilar__fig { opacity: 1; transform: none; }
+  /* o desenho cresce ~2,6×: os traços afinam na mesma medida para não ficarem grosseiros */
+  .pindex.is-enhanced .pf-base path { stroke-width: 0.75; }
+  .pindex.is-enhanced .pf-slot { stroke-width: 1.4; }
+  .pindex.is-enhanced .pf-box, .pindex.is-enhanced .pf-node, .pindex.is-enhanced .pf-ring, .pindex.is-enhanced .pf-led { stroke-width: 0.75; }
+  .pindex.is-enhanced .pf-hub, .pindex.is-enhanced .pf-hubmark, .pindex.is-enhanced .pf-s-outline { stroke-width: 0.9; }
+  .pindex.is-enhanced .pf-pulse, .pindex.is-enhanced .pf-write { stroke-width: 1.4; }
+  .pindex.is-enhanced .pf-s-check { stroke-width: 1.6; }
+}
+
+@media (max-width: 939px) {
+  /* mobile/tablet: fluxo vertical, cada desenho ao lado do seu texto, estático (sem laço contínuo) */
+  .pindex .pilar__fig > :not(.pf-base) { animation: none !important; }
+}
+@media (max-width: 599px) {
+  .pindex { padding-inline: 16px; }
+  .pindex .pilar { grid-template-columns: minmax(0, 1fr) 104px; }
+  .pindex.is-enhanced .pilar { padding-left: 14px; }
+}
+@media (max-width: 419px) {
+  /* telas estreitas: o desenho sobe para a linha do número e o título ganha a largura toda */
+  .pindex .pilar { grid-template-areas: "n fig" "t t" "tag tag" "p p"; align-items: center; }
+  .pindex .pilar__t { margin-top: 6px; overflow-wrap: anywhere; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pindex .pilar, .pindex.is-enhanced svg.pilar__fig, .pindex.is-enhanced .pilar__t { transition: none; }
+  .pindex.is-enhanced svg.pilar__fig { transform: none; }
+}
+@media print { .pindex { border: 0; } }
+
+/* ---------- 2. Foto do movimento ---------- */
+/* a linha da legenda vira um traço próprio para poder se desenhar; parada, é idêntica à borda original */
+.movimento__photo[data-mask] figcaption { position: relative; border-left: 0; }
+.movimento__photo[data-mask] figcaption::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--red); transform-origin: 50% 0; }
+/* camadas: moldura = máscara · imagem = escala interna · legenda = opacidade · traço = scaleY */
+.pers .movimento__photo[data-mask] .movimento__frame { clip-path: inset(0 100% 0 0); }
+.pers .movimento__photo[data-mask] .movimento__frame img { transform: scale(1.035); }
+.pers .movimento__photo[data-mask] figcaption { opacity: 0; }
+.pers .movimento__photo[data-mask] figcaption::before { transform: scaleY(0); }
+.pers .movimento__photo[data-mask].is-shown .movimento__frame { clip-path: inset(0 0 0 0); transition: clip-path 0.8s cubic-bezier(0.65, 0, 0.2, 1); }
+.pers .movimento__photo[data-mask].is-shown .movimento__frame img { transform: scale(1); transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+.pers .movimento__photo[data-mask].is-shown:hover .movimento__frame img { transform: scale(1.05); transition-duration: 1s; }
+.pers .movimento__photo[data-mask].is-shown figcaption { opacity: 1; transition: opacity 0.35s ease 0.75s; }
+.pers .movimento__photo[data-mask].is-shown figcaption::before { transform: scaleY(1); transition: transform 0.5s var(--ease) 0.7s; }
+@media (prefers-reduced-motion: reduce) {
+  .pers .movimento__photo[data-mask] .movimento__frame, .pers .movimento__photo[data-mask].is-shown .movimento__frame { clip-path: none; transition: none; }
+  .pers .movimento__photo[data-mask] .movimento__frame img, .pers .movimento__photo[data-mask].is-shown .movimento__frame img { transform: none; transition: none; }
+  .pers .movimento__photo[data-mask] figcaption, .pers .movimento__photo[data-mask].is-shown figcaption { opacity: 1; transition: none; }
+  .pers .movimento__photo[data-mask] figcaption::before, .pers .movimento__photo[data-mask].is-shown figcaption::before { transform: none; transition: none; }
+}
+@media print {
+  .pers .movimento__photo[data-mask] .movimento__frame { clip-path: none; }
+  .pers .movimento__photo[data-mask] figcaption { opacity: 1; }
+  .pers .movimento__photo[data-mask] figcaption::before { transform: none; }
+}
+
+/* ---------- 3. Letras em rolagem (só cabeçalho desktop; o JS monta .roll) ---------- */
+.roll { display: inline-block; line-height: 1.5; }
+.roll-w { display: inline-block; white-space: nowrap; }
+.roll-c { display: inline-block; height: 1.5em; overflow: hidden; vertical-align: top; }
+.roll-t { display: block; }
+.roll-t > span { display: block; height: 1.5em; }
+.roll-t > span + span { display: none; } /* painel mobile e movimento reduzido: texto comum */
+@media (min-width: 940px) and (prefers-reduced-motion: no-preference) {
+  .roll-t > span + span { display: block; color: var(--red); }
+  .roll-t { transition: transform 0.32s var(--ease) var(--d, 0ms); }
+  .nav__list a.has-roll:focus-visible .roll-t { transform: translateY(-50%); }
+}
+@media (min-width: 940px) and (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+  .nav__list a.has-roll:hover .roll-t { transform: translateY(-50%); }
+}
