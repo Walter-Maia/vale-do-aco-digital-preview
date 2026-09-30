@@ -45,12 +45,12 @@ p, h1, h2, h3 { margin: 0; }
 
 /* ============================ Topo: marcas + frase de entrada ============================ */
 .topo {
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap;   /* frase na mesma linha das marcas */
   padding: calc(57 * var(--u)) calc(148 * var(--u)) 0 calc(178 * var(--u));
 }
 .topo__marcas { width: clamp(220px, calc(424 * var(--u)), 424px); }
 .topo__frase {
-  margin-top: calc(4 * var(--u)); max-width: 8.8em;
+  margin: 0; max-width: 8.8em;
   font-weight: 700; font-size: clamp(16px, calc(28 * var(--u)), 28px); line-height: 1.04; letter-spacing: -.005em;
   text-transform: uppercase; color: var(--creme);
 }
@@ -137,6 +137,27 @@ p, h1, h2, h3 { margin: 0; }
      que fica acima do quadro, desenhando uma aura em volta da cabeça */
   box-shadow: inset 0 0 0 1px rgb(255 245 211 / .075), 0 -26px 50px -30px rgb(0 0 0 / .6);
 }
+/* quadro com vídeo (30/09): o vídeo vertical preenche a placa (recorte central); botão de som no canto de baixo à
+   esquerda (o topo da placa fica sobre o mosaico e sai da tela; a comerciante da foto seguinte encobre o centro-direita). Tablet/celular: placa em 9:16, até 420 px. */
+.quadro__placa.quadro__placa--video { position: relative; padding: 0; gap: 0; overflow: hidden; overflow: clip; background: #120602; }
+.quadro__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; background: #120602; }
+.quadro__som {
+  position: absolute; z-index: 1; bottom: clamp(16px, calc(32 * var(--u)), 32px); left: clamp(16px, calc(32 * var(--u)), 32px);
+  display: grid; place-items: center; width: 44px; height: 44px; padding: 0;   /* só o ícone; o nome acessível fica no rótulo .sr-only */
+  border: 0; border-radius: 999px; background: rgb(18 6 2 / .62); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  color: var(--creme); font: inherit; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; text-shadow: none; cursor: pointer;
+}
+.quadro__som[hidden] { display: none; }
+.quadro__som:hover { background: rgb(18 6 2 / .82); }
+.quadro__som:focus-visible { outline: 2px solid var(--creme); outline-offset: 3px; }
+.quadro__som svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.quadro__som .quadro__som-alto { fill: currentColor; }
+.quadro__som .quadro__som-onda, .quadro__som.is-som .quadro__som-x { display: none; }
+.quadro__som.is-som .quadro__som-onda { display: inline; }
+@media (max-width: 1023.98px) {
+  .quadro:has(.quadro__placa--video) { justify-content: center; }
+  .quadro__placa.quadro__placa--video { flex: 0 1 420px; aspect-ratio: 9 / 16; padding: 0; }
+}
 .quadro__corpo { display: flex; flex-direction: column; gap: var(--q-gap); margin-block: auto; }   /* símbolo + frentes, centrados acima da assinatura */
 .quadro__topo { display: flex; flex-direction: column; align-items: flex-start; gap: clamp(14px, calc(26 * var(--u)), 26px); }
 .quadro__simbolo { width: clamp(64px, calc(148 * var(--u)), 148px); height: auto; overflow: visible; }
@@ -161,7 +182,8 @@ p, h1, h2, h3 { margin: 0; }
 /* ============================ 3 · "Seu negócio mudou": dois planos numa janela ============================ */
 .mudou { position: relative; }
 .mudou__cena { position: relative; aspect-ratio: 1920 / 1051; pointer-events: none; }   /* janela = linhas 24..1075 da foto */
-.mudou__janela { position: absolute; inset: 0; z-index: 3; overflow: hidden; overflow: clip; }
+/* três planos: fundo da loja (z 1) < quadro preto (.quadro, z 2, desce sobre a foto) < comerciante (z 4) */
+.mudou__janela { position: absolute; inset: 0; z-index: 1; overflow: hidden; overflow: clip; }
 .mudou__frente { position: absolute; inset: 0; z-index: 4; clip-path: inset(-14% 0 0 0); }     /* o cabelo pode ultrapassar o topo */
 .mudou__fundo, .mudou__pessoa { position: absolute; left: 0; top: calc(-24 / 1051 * 100%); width: 100%; max-width: none; }
 /* sem degradê no topo da foto: qualquer escurecimento só do plano distante desenha uma aura em volta da cabeça
@@ -279,7 +301,7 @@ p, h1, h2, h3 { margin: 0; }
   body { background-size: 100% auto; }
   .topo { padding: 18px 16px 0; gap: 12px; }
   .topo__marcas { width: clamp(150px, 47vw, 300px); }
-  .topo__frase { font-size: 16px; margin-top: 2px; }
+  .topo__frase { font-size: 16px; }
   .cta__face { padding-left: calc(var(--cta-h) * .62); }
   .cta__mag { gap: calc(var(--cta-h) * .32); }
   .cta--topo { margin-top: 20px; }

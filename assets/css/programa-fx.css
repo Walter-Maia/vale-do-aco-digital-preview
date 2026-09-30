@@ -64,11 +64,11 @@
 .proximo__p[data-px="1"], .tudo__aprox { --px-a: var(--px-corpo-1); }
 .proximo__p[data-px="2"], .tudo__p { --px-a: var(--px-corpo-2); }
 .topo__marcas, .rodape__marcas { --px-a: var(--px-marca); }
-.topo__frase { --px-a: var(--px-chamada); }
+.topo__frase { --px-a: var(--px-marca); }   /* mesmo plano das marcas: frase e marcas andam juntas, sempre alinhadas */
 .cta--topo { --px-a: calc(var(--px-cta) * -1); }
 .cta--final { --px-a: var(--px-cta); }
 .mudou__fundo { --px-a: var(--px-fundo); }
-.mudou__pessoa { --px-a: var(--px-pessoa); }
+.mudou__pessoa { --px-a: var(--px-fundo); }   /* três planos (30/09): a mão apoia no balcão do fundo; mulher e fundo andam juntos e o quadro passa entre eles */
 .mudou__titulo, .final__titulo { --px-a: var(--px-letreiro); } /* limite próprio sobre fotografias */
 .quadro { --px-a: var(--px-quadro); }
 .svc { --px-a: var(--px-servicos); } /* mesma trilha e amplitude: bordas de cada linha permanecem alinhadas */
