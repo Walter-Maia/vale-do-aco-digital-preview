@@ -187,7 +187,7 @@
     root.classList.add('x-on');
     // quem entra por recorte (clip-path) começa 100% recortado, e o observador desconta o recorte: nunca "apareceria".
     // Esses são medidos no laço de scroll (getBoundingClientRect ignora o recorte); são poucos e saem da lista ao entrar.
-    var CLIPPED = { media: 1, tile: 1, row: 1 };
+    var CLIPPED = { media: 1, tile: 1, row: 1, ink: 1 };
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) { return; }

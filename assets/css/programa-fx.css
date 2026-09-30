@@ -1,0 +1,214 @@
+/* Programa Comércio Digital — movimento v3.5 (29/09/2026), sobre programa.css.
+   Um sistema só: abertura do mosaico · reveals de texto · profundidade (parallax) · flutuação ambiente ·
+   janela da foto final · sequência do quadro · resposta dos controles. v3.1 (PROMPT-CORRIGIR-PARALLAX-E-ABERTURA):
+   texto, quadro e cartões entram no parallax; quadro, cartões e pílulas ganham flutuação em camada própria;
+   a abertura passa a ser por foto (nenhuma foto pronta espera a vizinha). Regras:
+   - nada fica oculto sem JS: os estados iniciais exigem html.js (abertura, preparada no <head> antes da primeira
+     pintura) ou html.fx-on + .is-armed (reveals, armados por programa-fx.js só em itens ainda fora da tela);
+   - ?fx=0 (html.fx-off) = composição final estática; ?fx=js força o caminho alternativo do parallax (rAF);
+   - v3.2: dois planos em todas as seções, incluindo títulos, parágrafos, CTAs e rodapé. Parallax usa `transform`;
+     `translate` continua reservado à entrada, centralização e flutuação existentes, sem sobrescrevê-las.
+   - camadas separadas: parallax = `transform` em [data-px] (textos, quadro, cartões e foto final; mosaico estático);
+     flutuação = `translate` em .boia (quadro__placa, servicos, cta__boia); reveal = opacity/clip-path/translate no
+     item armado; hover/press = translate/scale em .svc__face/.cta__face; magnetismo = .cta__mag. Nenhum sobrescreve outro;
+   - prefers-reduced-motion: estado final imediato, sem parallax, zoom, máscara, traço ou magnetismo (vale ao vivo).
+   AJUSTE FINO: só os tokens abaixo (durações, deslocamentos, escalas). */
+:root {
+  --ease: cubic-bezier(.22, 1, .36, 1);          /* entradas e controles */
+  --ease-io: cubic-bezier(.65, 0, .35, 1);       /* máscara que "escreve" o letreiro */
+  --ease-draw: cubic-bezier(.45, 0, .2, 1);      /* traço se desenhando */
+  --ease-mola: cubic-bezier(.34, 1.56, .64, 1);  /* círculos do quadro assentando */
+  --t-ctrl: 190ms;                                /* setas, hover */
+  --t-press: 130ms;
+  /* abertura do mosaico (4.1) */
+  --open-dur: 780ms; --open-fade: 420ms; --open-zoom: 1.035; --open-corte: 14%;
+  /* textos (4.2) */
+  --rv-y: 20px; --rv-linha: 600ms; --rv-escalona: 70ms; --rv-p: 460ms; --rv-p-y: 12px;
+  --traco-dur: 560ms; --traco-atraso: 330ms;
+  /* profundidade (4.1 e 4.3): amplitude máxima a partir do repouso; sinal + = plano mais distante */
+  --px-fundo: clamp(12px, 1.2vw, 23px); --px-pessoa: clamp(6px, .6vw, 11px);
+  /* dois planos: 1 acompanha o primeiro plano (sobe mais rápido); 2 passa mais devagar, em sentido relativo oposto.
+     Títulos viajam mais; parágrafos têm amplitude menor para manter espaço e leitura. Valores ± a partir do centro. */
+  --px-plano-1: -96px; --px-plano-2: 52px; --px-letreiro: -44px;
+  --px-corpo-1: -36px; --px-corpo-2: 28px;
+  --px-marca: 20px; --px-chamada: -36px; --px-cta: 36px;
+  --px-quadro: calc(62 * var(--u)); --px-servicos: 42px; --px-final: 24px;
+  /* flutuação ambiente (v3.1): só quadro, cartões e pílulas; ciclo completo = 2 × duração (animação alternada) */
+  --boia-quadro: 2.5px; --boia-ctrl: 2px; --boia-t-quadro: 4s; --ease-boia: cubic-bezier(.45, 0, .55, 1);
+  /* foto final (4.4) */
+  --fin-dur: 820ms; --fin-zoom: 1.04;
+  /* quadro (4.5): multiplicador de tempo da sequência */
+  --q: 1;
+}
+@media (max-width: 1023.98px) {   /* tablet: menos deslocamento */
+  :root { --px-fundo: 8px; --px-pessoa: 4px;
+    --px-plano-1: -68px; --px-plano-2: 40px; --px-letreiro: -32px; --px-corpo-1: -26px; --px-corpo-2: 20px;
+    --px-marca: 16px; --px-chamada: -28px; --px-cta: 26px;
+    --px-quadro: 28px; --px-servicos: 30px; --px-final: 16px; }
+}
+@media (max-width: 767.98px) {    /* celular: fotos do mosaico estáticas, título em primeiro plano */
+  :root { --open-dur: 560ms; --open-fade: 360ms; --open-zoom: 1.02; --rv-y: 12px; --rv-linha: 520ms; --rv-escalona: 60ms; --rv-p: 420ms; --rv-p-y: 10px;
+          --px-fundo: 6px; --px-pessoa: 0px; --fin-dur: 560ms; --fin-zoom: 1.02; --q: .68;
+          --px-plano-1: -46px; --px-plano-2: 28px; --px-letreiro: -22px; --px-corpo-1: -18px; --px-corpo-2: 16px;
+          --px-marca: 10px; --px-chamada: -18px; --px-cta: 18px;
+          --px-quadro: 16px; --px-servicos: 18px; --px-final: 12px;
+          --boia-quadro: 1.25px; --boia-ctrl: 1px; }
+}
+
+/* ============================ Profundidade (parallax ligado ao scroll) ============================
+   Mesmo cálculo nos dois caminhos: 0 → -A ao entrar por baixo, 0 no meio do percurso, +A ao sair por cima
+   (faixa "cover" do contêiner com data-px-track). CSS scroll-driven quando existir; senão programa-fx.js. */
+@property --px-a { syntax: '<length>'; inherits: false; initial-value: 0px; }
+[data-px="1"] { --px-a: var(--px-plano-1); }
+[data-px="2"] { --px-a: var(--px-plano-2); }
+.proximo__p[data-px="1"], .tudo__aprox { --px-a: var(--px-corpo-1); }
+.proximo__p[data-px="2"], .tudo__p { --px-a: var(--px-corpo-2); }
+.topo__marcas, .rodape__marcas { --px-a: var(--px-marca); }
+.topo__frase { --px-a: var(--px-chamada); }
+.cta--topo { --px-a: calc(var(--px-cta) * -1); }
+.cta--final { --px-a: var(--px-cta); }
+.mudou__fundo { --px-a: var(--px-fundo); }
+.mudou__pessoa { --px-a: var(--px-pessoa); }
+.mudou__titulo, .final__titulo { --px-a: var(--px-letreiro); } /* limite próprio sobre fotografias */
+.quadro { --px-a: var(--px-quadro); }
+.svc { --px-a: var(--px-servicos); } /* mesma trilha e amplitude: bordas de cada linha permanecem alinhadas */
+.final__janela { --px-a: var(--px-final); } /* move a janela inteira, sem recortar a nova foto */
+@keyframes px-drift {
+  from { transform: translate3d(0, calc(var(--px-a) * -1), 0); }
+  to { transform: translate3d(0, var(--px-a), 0); }
+}
+/* Quadro: conserva a curva de subida/descida. A profundidade vem da oclusão contínua pela foto seguinte,
+   com camadas fixas no CSS de layout; mudar z-index no meio fazia a borda superior saltar atrás do mosaico.
+   Nove pontos suavizam a inversão; o fallback usa a mesma curva por trechos. */
+@keyframes px-quadro {
+  0% { transform: translate3d(0, var(--px-a), 0); }
+  12.5% { transform: translate3d(0, calc(var(--px-a) * .707107), 0); }
+  25% { transform: translate3d(0, 0, 0); }
+  37.5% { transform: translate3d(0, calc(var(--px-a) * -.707107), 0); }
+  50% { transform: translate3d(0, calc(var(--px-a) * -1), 0); }
+  62.5% { transform: translate3d(0, calc(var(--px-a) * -.707107), 0); }
+  75% { transform: translate3d(0, 0, 0); }
+  87.5% { transform: translate3d(0, calc(var(--px-a) * .707107), 0); }
+  100% { transform: translate3d(0, var(--px-a), 0); }
+}
+@supports (animation-timeline: view()) and (view-timeline-name: --px-cena) and (animation-range: cover 0% cover 100%) {
+  /* Cada alvo usa a trilha ancestral mais próxima, inclusive o mosaico dentro da abertura. */
+  html.fx-sda [data-px-track] { view-timeline: --px-cena block; }
+  html.fx-sda [data-px] { animation: px-drift linear both; animation-timeline: --px-cena; animation-range: cover 0% cover 100%; }
+  html.fx-sda [data-px-depth="arc"] { animation-name: px-quadro; }
+}
+html.fx-js [data-px].px-near { will-change: transform; }   /* só perto da tela, no caminho alternativo */
+
+/* ============================ Abertura do mosaico (4.1, v3.1) ============================
+   Por FOTO, em todas as larguras: cada imagem entra quando ela mesma está pronta (nenhuma espera a vizinha).
+   Fade só da foto que chega + máscara curta só na base (nunca em cabeças) + zoom interno 1.035 → 1; o fundo do
+   quadrado reserva o espaço enquanto ela não vem. Escalonamento pela posição (--od, definido no <head>). */
+.mz-tile img { transform-origin: 50% 38%; transition: opacity var(--open-fade) var(--ease) var(--od, 0ms), scale var(--open-dur) var(--ease) var(--od, 0ms), clip-path var(--open-dur) var(--ease) var(--od, 0ms); }
+html.js .mz-tile:not(.is-done) img { clip-path: inset(0 0 0 0); }   /* final explícito: clip-path só interpola entre inset() */
+html.js:not(.open-done) .mz-tile:not(.is-in) img { opacity: 0; scale: var(--open-zoom); clip-path: inset(0 0 var(--open-corte) 0); }
+.mz-tile.is-quebrada img { visibility: hidden; }   /* foto com erro: fica o fundo reservado, sem ícone quebrado; as outras seguem */
+
+/* ============================ Flutuação ambiente (v3.1) ============================
+   Só quadro (±2,5 px, ciclo 8 s), grupo de serviços e pílulas (±2 px); ±1–1,25 px no
+   celular. Camada própria (.boia), nunca a mesma do parallax, do reveal ou do hover. Pausada por padrão; roda com
+   .is-perto (IntersectionObserver em programa-fx.js), para em aba oculta e enquanto o controle está em hover/foco/toque.
+   Pausar mantém a posição: ao voltar, continua de onde estava (sem reinício brusco). */
+@keyframes boia { from { translate: 0 calc(var(--boia-a) * -1); } to { translate: 0 var(--boia-a); } }
+html.fx-on .boia { animation: boia var(--boia-t, 3.5s) var(--ease-boia) calc(var(--boia-fase, 0s) * -1) infinite alternate both; animation-play-state: paused; }
+html.fx-on .boia.is-perto { animation-play-state: running; }
+html.fx-on.aba-oculta .boia.is-perto,
+html.fx-on :is(.svc, .cta):is(:hover, :focus, :focus-visible, :active) .boia.is-perto { animation-play-state: paused; }
+html.fx-on .servicos.boia:is(:hover, :focus-within) { animation-play-state: paused; }
+.quadro__placa { --boia-a: var(--boia-quadro); --boia-t: var(--boia-t-quadro); --boia-fase: 1.3s; }
+.cta__boia { --boia-a: var(--boia-ctrl); --boia-t: 3.4s; --boia-fase: .6s; }
+.cta--final .cta__boia { --boia-t: 3.7s; --boia-fase: 1.9s; }
+/* Uma única flutuação para a grade: hover, foco e entrada na tela pausam todos juntos. */
+.servicos.boia { --boia-a: var(--boia-ctrl); --boia-t: 3.6s; --boia-fase: 1.2s; }
+
+/* ============================ Reveals de texto (4.2) ============================ */
+/* títulos por grupos de linha: cada grupo sobe dentro da própria máscara (com folga para acentos e cedilha) */
+.titulo-linhas .ln__i {
+  transition: translate var(--rv-linha) var(--ease) calc(var(--rv-d, 0ms) + var(--i, 0) * var(--rv-escalona)),
+              opacity calc(var(--rv-linha) * .75) var(--ease) calc(var(--rv-d, 0ms) + var(--i, 0) * var(--rv-escalona));
+}
+html.fx-on .titulo-linhas.is-armed .ln { clip-path: inset(-.3em -.2em -.24em -.2em); }
+html.fx-on .titulo-linhas.is-armed:not(.is-in) .ln__i { translate: 0 var(--rv-y); opacity: 0; }
+/* sublinhado de "COMEÇA AQUI." desenhado uma vez, na chegada da frase */
+.sublinhado path { stroke-dasharray: 1; stroke-dashoffset: 0; transition: stroke-dashoffset var(--traco-dur) var(--ease-draw) calc(var(--rv-d, 0ms) + var(--traco-atraso)); }
+html.fx-on .titulo-linhas.is-armed:not(.is-in) .sublinhado path { stroke-dashoffset: 1; }
+/* os dois parágrafos entram separados e assentam */
+.proximo__p { transition: translate var(--rv-p) var(--ease) var(--rv-d, 0ms), opacity var(--rv-p) var(--ease) var(--rv-d, 0ms); }
+html.fx-on .proximo__p.is-armed:not(.is-in) { translate: 0 var(--rv-p-y); opacity: 0; }
+/* "Seu negócio mudou": o letreiro é "escrito" por uma máscara; a linha HTML chega logo depois */
+.mudou__letreiro { transition: clip-path 720ms var(--ease-io) var(--rv-d, 0ms); }
+.mudou__linha { transition: opacity 420ms var(--ease) calc(var(--rv-d, 0ms) + 380ms), translate 420ms var(--ease) calc(var(--rv-d, 0ms) + 380ms); }
+html.fx-on .mudou__titulo.is-armed .mudou__letreiro { clip-path: inset(0 0 0 0); }
+html.fx-on .mudou__titulo.is-armed:not(.is-in) .mudou__letreiro { clip-path: inset(0 100% 0 0); }
+html.fx-on .mudou__titulo.is-armed:not(.is-in) .mudou__linha { opacity: 0; translate: 0 10px; }
+.mudou__titulo::before { transition: opacity 600ms var(--ease) var(--rv-d, 0ms); }
+html.fx-on .mudou__titulo.is-armed:not(.is-in)::before { opacity: 0; }
+/* serviços: uma entrada curta para o grupo (atraso total ≤ 120 ms) */
+.servicos__item { transition: opacity 420ms var(--ease) calc(var(--rv-d, 0ms) + var(--i, 0) * 40ms), translate 420ms var(--ease) calc(var(--rv-d, 0ms) + var(--i, 0) * 40ms); }
+html.fx-on .servicos.is-armed:not(.is-in) .servicos__item { opacity: 0; translate: 0 12px; }
+
+/* ============================ Foto final: janela de baixo para cima + zoom, um gesto só (4.4) ============================ */
+.final__janela { transition: clip-path var(--fin-dur) var(--ease) var(--rv-d, 0ms); }
+.final__foto { transform-origin: 50% 100%; transition: scale var(--fin-dur) var(--ease) var(--rv-d, 0ms); }
+html.fx-on .final__janela.is-armed { clip-path: inset(0 0 0 0); }
+html.fx-on .final__janela.is-armed:not(.is-in) { clip-path: inset(100% 0 0 0); }
+html.fx-on .final__janela.is-armed:not(.is-in) .final__foto { scale: var(--fin-zoom); }
+
+/* ============================ Quadro: sequência única de entrada (4.5) ============================
+   símbolo se junta (0–420 ms) → tronco desenha → ramos e círculos das frentes. Rótulos nunca escondidos. Depois da
+   entrada o quadro inteiro segue o parallax (aside) e flutua (placa), com conectores, círculos e rótulos juntos. */
+.quadro__tri, .quadro__disc { transition: translate calc(440ms * var(--q)) var(--ease), opacity calc(320ms * var(--q)) var(--ease); }
+html.fx-on .quadro.is-armed:not(.is-in) .quadro__tri { translate: -9px 0; opacity: 0; }
+html.fx-on .quadro.is-armed:not(.is-in) .quadro__disc { translate: 9px 0; opacity: 0; }
+.quadro__lista::before { transform-origin: 50% 0; transition: scale calc(520ms * var(--q)) var(--ease-draw) calc(200ms * var(--q)); }
+html.fx-on .quadro.is-armed:not(.is-in) .quadro__lista::before { scale: 1 0; }
+.frente::before { transform-origin: 0 50%; transition: scale calc(260ms * var(--q)) var(--ease) calc((460ms + var(--i, 0) * 110ms) * var(--q)); }
+html.fx-on .quadro.is-armed:not(.is-in) .frente::before { scale: 0 1; }
+.frente__no { transition: scale calc(360ms * var(--q)) var(--ease-mola) calc((560ms + var(--i, 0) * 110ms) * var(--q)), opacity calc(240ms * var(--q)) var(--ease) calc((560ms + var(--i, 0) * 110ms) * var(--q)); }
+html.fx-on .quadro.is-armed:not(.is-in) .frente__no { scale: .55; opacity: 0; }
+
+/* ============================ Controles (4.6) ============================ */
+/* pílula: seta desliza 3 px; press escala a face (a caixa clicável não muda); magnetismo só no conteúdo interno */
+.cta__face { transition: scale var(--t-press) var(--ease), filter var(--t-ctrl) var(--ease); }
+.cta__mag { transition: translate 240ms var(--ease); }
+.cta__seta path { transition: translate var(--t-ctrl) var(--ease); }
+.cta:active .cta__face { scale: .98; }
+.cta:focus-visible .cta__seta path { translate: 3.5px 0; }
+/* serviços: papel levanta 3 px, traço se estende e seta acompanha; parallax fica no link externo. */
+.svc__face { transition: translate var(--t-ctrl) var(--ease), scale var(--t-press) var(--ease), box-shadow var(--t-ctrl) var(--ease); }
+.svc__seta path { transition: translate var(--t-ctrl) var(--ease); }
+.svc:active .svc__face { scale: .98; }
+.svc:focus-visible .svc__face { translate: 0 -3px; box-shadow: 0 16px 30px -16px rgb(0 0 0 / .8); }
+.svc:focus-visible .svc__seta path { translate: 0 -2px; }
+@media (hover: hover) and (pointer: fine) {
+  .cta:hover .cta__face { filter: brightness(1.06); }
+  .cta:hover .cta__seta path { translate: 3.5px 0; }
+  .svc:hover .svc__face { translate: 0 -3px; box-shadow: 0 16px 30px -16px rgb(0 0 0 / .8); }
+  .svc:hover .svc__seta path { translate: 0 -2px; }
+}
+
+/* ============================ Movimento reduzido: estado final, sem deslocamento ============================ */
+@media (prefers-reduced-motion: reduce) {
+  [data-px] { animation: none !important; transform: none !important; }
+  html.fx-on .boia { animation: none !important; translate: none !important; }
+  .mz-tile img, .titulo-linhas .ln__i, .sublinhado path, .proximo__p, .mudou__letreiro, .mudou__linha,
+  .servicos__item, .final__janela, .final__foto, .mudou__titulo::before, .quadro__tri, .quadro__disc, .quadro__lista::before, .frente::before, .frente__no,
+  .cta__face, .cta__mag, .cta__seta path, .svc__face, .svc__seta path { transition: none !important; }
+  html.js .mz-tile img { opacity: 1 !important; scale: none !important; clip-path: none !important; }
+  html.fx-on [data-rv].is-armed, html.fx-on [data-rv].is-armed .ln, html.fx-on [data-rv].is-armed .ln__i, html.fx-on [data-rv].is-armed .mudou__letreiro,
+  html.fx-on [data-rv].is-armed .mudou__linha, html.fx-on [data-rv].is-armed .servicos__item, html.fx-on [data-rv].is-armed .final__foto,
+  html.fx-on [data-rv].is-armed .quadro__tri, html.fx-on [data-rv].is-armed .quadro__disc, html.fx-on [data-rv].is-armed .frente__no,
+  html.fx-on [data-rv].is-armed .quadro__lista::before, html.fx-on [data-rv].is-armed .frente::before {
+    opacity: 1 !important; translate: none !important; scale: none !important; clip-path: none !important;
+  }
+  html.fx-on [data-rv].is-armed .sublinhado path { stroke-dashoffset: 0 !important; }
+  html.fx-on .mudou__titulo.is-armed::before { opacity: 1 !important; }
+  .cta__mag { translate: none !important; }
+  .cta:hover .cta__seta path, .cta:focus-visible .cta__seta path, .svc:hover .svc__seta path, .svc:focus-visible .svc__seta path { translate: none !important; }
+  .svc:hover .svc__face, .svc:focus-visible .svc__face { translate: none !important; }
+  .cta:active .cta__face, .svc:active .svc__face { scale: none; }
+}

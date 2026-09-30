@@ -39,3 +39,47 @@ NoteLoc: logo e site não localizados na web — o cartão mostra o nome até o 
 
 - As fotos de infraestrutura (data center, fibra) são reais, mas **não são da ONEX nem da BRNET**. Substituir por fotografias oficiais das duas empresas quando houver autorização de uso (ver `TODO` no `index.html`).
 - Fotos de encontros do movimento (Vale do Aço Digital Experience etc.): as publicadas na imprensa não têm licença de reuso; usar material próprio do movimento.
+
+
+## Programa Comércio Digital (`assets/img/comercio/`) — 25/09/2026
+
+Recortes da arte do Programa Comércio Digital (Sindcomércio MG Vale do Aço + Vale do Aço Digital) enviada pelo Walter como referência de design. Material do projeto; a origem das fotografias da arte não foi informada — confirmar licença/autoria com quem produziu a peça antes de publicar.
+
+| Arquivo | O que é | Processo |
+|---|---|---|
+| tile-01…10.webp | as dez pessoas do mosaico | recorte 1:1 (sem upscale), WebP q86 |
+| center-bg.webp | centro do mosaico | recorte + desfoque gaussiano σ=50, escurecido |
+| mudou-1920/960.webp | comerciante ao balcão | recorte; texto gravado removido por inpainting (`removelogo`, máscara por luminância/saturação) |
+| participe-1068/640.webp | atendimento com o celular | recorte até x = 1068 (antes do título gravado); trecho do "P" reconstruído por inpainting |
+| digital.png, mudou-script.png | palavras em letra manuscrita da arte | alfa por saturação (`geq`), cores originais |
+| sindcomercio.png | assinatura do Sindcomércio MG Vale do Aço (marca da entidade) | alfa por luminância, cor creme sólida; substituir pelo arquivo oficial |
+
+
+## Logos do PDF LOGOS_PARCEIROS (25/09/2026)
+
+Enviado pelo Walter como o conjunto oficial das marcas do movimento. Marcas das respectivas empresas; uso aqui é a identificação delas em "Quem está junto".
+
+| Arquivo (assets/img/parceiros/) | Empresa | Processo |
+|---|---|---|
+| logo-noteloc.png | Note Loc — Soluções em Informática | página do PDF renderizada em alta pelo LibreOffice, recorte e fundo removido por chroma |
+| logo-nexclub-quadrado.png | NexClub | raster embutido no PDF (512 × 512), extraído sem alteração |
+| logo-arweb-azul.png | AR-WEB Sistemas | raster embutido no PDF (879 × 189, cor indexada + máscara), extraído sem alteração |
+
+| comercio/mulher.webp | comerciante da arte, recortada pelo Walter | branco removido por preenchimento, erosão 2 px, WebP com alfa |
+| comercio/mudou-fundo-*.webp | cenário da mesma foto | desfoque gaussiano σ=16, escurecido |
+
+## Versão premium do Programa Comércio Digital (29/09/2026)
+
+Fonte: **Arimo** — Steve Matteson / projeto Arimo, distribuída pelo Google Fonts, SIL Open Font License 1.1. Arquivo `assets/fonts/arimo-latin-wght-400-700.woff2` (latino, pesos 400–700), licença em `assets/fonts/Arimo-OFL.txt`, origem e hashes em `assets/fonts/Arimo-SOURCE.md`. Não exige crédito visível na página.
+
+Imagens derivadas da arte e dos recortes do Walter (material do projeto; a autoria/licença das fotografias da campanha continua a confirmar, como registrado acima):
+
+| Arquivo (`assets/img/programa/`) | O que é | Processo |
+|---|---|---|
+| `marcas.webp` | marcas Vale do Aço Digital + Sindcomércio MG Vale do Aço | recorte do rodapé da arte (`m-foot.webp`) com o fundo marrom chapado retirado (`tools/uncomposite.js`); desenho das marcas inalterado |
+| `abertura-fundo.webp` | ambiente desfocado da abertura | mosaico limpo (`IMG-FOTOS.png`) reduzido, desfocado e escurecido até o tom medido na arte, com degradê para o marrom |
+| `k-mudou-letreiro.webp` | "SEU NEGÓCIO mudou" | junção das faixas `k-mudou-l1/l2` (IMG_6191); acentos da linha de baixo removidos (a linha virou HTML) |
+| `mudou-frente(-m).webp`, `mudou-fundo(-m).webp` | foto "Seu negócio mudou" em dois planos | plano próximo = comerciante + balcão + objetos da foto sem texto (`IMG-MOCA-FUNDO.png`) com máscara suavizada; plano distante = `k-fundo.webp` recortado à foto (`tools/build-mudou-planos.js`) |
+| `final-foto(-m).webp` | foto do convite final | `IMG-MOCA-FUNDO2.png` + antebraço do cliente refeito a partir da arte (o recorte original era transparente ali) (`tools/build-final-foto.js`) |
+
+Atualização v3.2, a pedido do usuário: a foto final ativa passou a ser `final-foto-fornecida.webp`, originada do arquivo **`IMG-MOCA-FUNDO2 (1).png`** fornecido pelo usuário. Conversão WebP sem perda, 1920 × 1029, sem recorte, remontagem ou geração de pessoas. Canal alfa e todos os pixels visíveis conferidos contra o PNG: nenhuma diferença. O arquivo anterior foi preservado para histórico. Mantém-se a mesma proveniência de material da campanha; não foi acrescentada uma licença externa.

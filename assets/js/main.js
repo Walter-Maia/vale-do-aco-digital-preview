@@ -359,6 +359,7 @@
      Rede de empresas: caminhos calculados a partir dos blocos reais.
      Lado a lado com o núcleo → linhas horizontais; núcleo abaixo → eixo vertical.
      ------------------------------------------------------------------ */
+  if (document.getElementById('rede')) { // a rede saiu do layout do Programa Comércio Digital; o bloco fica para versões que a tenham
   var rede = document.getElementById('rede');
   var redeSvg = rede.querySelector('.rede__svg');
   var links = [
@@ -421,6 +422,7 @@
     el.addEventListener('mouseenter', on); el.addEventListener('mouseleave', off);
     el.addEventListener('focusin', on); el.addEventListener('focusout', off);
   });
+  } // fim do bloco da rede
 
   /* ------------------------------------------------------------------
      Loops (mapa e rede): começam quando visíveis, pausam fora da tela e em

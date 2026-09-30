@@ -1,0 +1,324 @@
+/* Programa Comércio Digital — v3 (29/09/2026): a base visual da arte (1920 × 5818) recomposta em seções HTML.
+   Uma única árvore para desktop, tablet e celular. Desktop (≥ 1024 px) segue as proporções da arte por --u
+   (1 px da arte); tablet e celular recompõem texto e controles (corpo ≥ 16 px, controles ≥ 44 px).
+   A arte monolítica (desk-a/desk-b) não é mais carregada: não há escrita antiga sob as coberturas.
+   Movimento, reveals e estados de interação ficam em programa-fx.css (tokens no topo daquele arquivo). */
+
+/* Arimo (OFL 1.1, métricas de Arial; 20 KB, 400–700, latino) para o mesmo desenho em Windows, macOS, iOS e Android
+   (no Android "Arial" vira Roboto). optional, sem preload (o preload disputava banda com o CSS e o título no 3G):
+   se não chegar a tempo da 1ª renderização, a página
+   segue com Arial/Helvetica, sem troca tardia nem salto de layout. Medido em 29/09: local("Arial") custava ~50 ms a
+   mais no 1º quadro (60 instanciações de fonte); por isso não é usado. Licença/origem: assets/fonts/Arimo-*.{txt,md}. */
+@font-face { font-family: "Arimo VAD"; src: url("../fonts/arimo-latin-wght-400-700.woff2") format("woff2"); font-weight: 400 700; font-style: normal; font-display: optional; }
+
+:root {
+  --bg: #260f06;                 /* marrom amostrado da arte (todas as faixas chapadas) */
+  --creme: #fff5d3;              /* títulos */
+  --papel: #fffaf0;              /* corpo de texto (na arte, quase branco) */
+  --vermelho: #ea2117;           /* cor sólida de reserva do destaque */
+  --grad: linear-gradient(90deg, #d92011 0%, #ec1b11 14%, #f22418 36%, #f2311a 55%, #f44b14 75%, #f5701a 96%); /* perfil medido em "COMEÇA AQUI." e na pílula */
+  --u: calc(100vw / 1920);       /* 1 px da arte no desktop */
+  --gutter: clamp(16px, 4.2vw, 40px);
+  --fonte: "Arimo VAD", Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --raio: clamp(16px, calc(42 * var(--u)), 42px);
+  --cta-h: clamp(50px, calc(61 * var(--u)), 61px);
+  --corpo: clamp(1.0625rem, 0.9rem + 0.45vw, 1.375rem);   /* 17 → 22 px */
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--bg); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  margin: 0; min-height: 100svh; color: var(--papel); font-family: var(--fonte); font-size: 1rem; line-height: 1.5;
+  /* ambiente desfocado da abertura (2,5 KB, gerado do mosaico limpo) que já termina no marrom */
+  background: var(--bg) url("../img/programa/abertura-fundo.webp") top center / 100% auto no-repeat;
+  -webkit-font-smoothing: antialiased;
+}
+img, svg { display: block; max-width: 100%; }
+img { height: auto; }
+/* texto alternativo legível se uma imagem for bloqueada */
+img { font: 700 clamp(15px, 1.2vw, 20px) / 1.25 var(--fonte); color: var(--creme); }
+a { color: inherit; }
+p, h1, h2, h3 { margin: 0; }
+.skip { position: absolute; left: -9999px; top: 8px; z-index: 50; padding: 10px 14px; border-radius: 8px; background: var(--creme); color: #1a0a03; font-weight: 700; }
+.skip:focus { left: 8px; }
+.sr-only { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ============================ Topo: marcas + frase de entrada ============================ */
+.topo {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap;
+  padding: calc(57 * var(--u)) calc(148 * var(--u)) 0 calc(178 * var(--u));
+}
+.topo__marcas { width: clamp(220px, calc(424 * var(--u)), 424px); }
+.topo__frase {
+  margin-top: calc(4 * var(--u)); max-width: 8.8em;
+  font-weight: 700; font-size: clamp(16px, calc(28 * var(--u)), 28px); line-height: 1.04; letter-spacing: -.005em;
+  text-transform: uppercase; color: var(--creme);
+}
+
+/* ============================ Botão principal (pílula em degradê) ============================ */
+.cta { display: flex; width: fit-content; border-radius: 999px; text-decoration: none; color: var(--papel); -webkit-tap-highlight-color: transparent; }
+.cta__boia { display: flex; border-radius: inherit; }     /* camada de flutuação (programa-fx.css) */
+.cta__face {
+  display: flex; align-items: center; height: var(--cta-h);
+  padding: 0 calc(var(--cta-h) * .13) 0 calc(var(--cta-h) * .95);
+  border-radius: inherit; background: var(--vermelho); background-image: var(--grad);
+  box-shadow: 0 14px 30px -16px rgb(0 0 0 / .65), inset 0 1px 0 rgb(255 255 255 / .12);
+}
+.cta__mag { display: flex; align-items: center; gap: calc(var(--cta-h) * .5); }
+.cta__rotulo { font-weight: 700; font-size: clamp(19px, calc(22 * var(--u)), 22px); line-height: 1; letter-spacing: .01em; text-transform: uppercase; white-space: nowrap; }
+.cta__seta { width: calc(var(--cta-h) * .76); height: calc(var(--cta-h) * .76); flex: none; }
+.cta__seta svg { width: 100%; height: 100%; overflow: visible; }
+.cta__seta circle { fill: var(--creme); }
+.cta__seta path { fill: none; stroke: #f25a17; stroke-width: 4.2; stroke-linecap: round; stroke-linejoin: round; }
+.cta:focus-visible { outline: 2px solid var(--creme); outline-offset: 4px; }
+
+/* ============================ 1 · Abertura: pílula sobre a borda do mosaico ============================ */
+.abertura { position: relative; }
+.cta--topo { position: relative; z-index: 4; margin: calc(28 * var(--u)) auto calc(var(--cta-h) * -.5); }
+.mz { position: relative; z-index: 1; margin: 0 calc(52 * var(--u)) 0 calc(55 * var(--u)); }
+.mz__grade { display: flex; }
+.mz-col { flex: 459 1 0; min-width: 0; }
+.mz-col:nth-child(2) { flex-grow: 465; }
+.mz-col:nth-child(3) { flex-grow: 464; }
+.mz-col:nth-child(4) { flex-grow: 425; }
+.mz-col__mask { overflow: hidden; overflow: clip; background: #1d0b04; }
+.mz-col:first-child .mz-col__mask { border-radius: var(--raio) 0 0 var(--raio); }
+.mz-col:last-child .mz-col__mask { border-radius: 0 var(--raio) var(--raio) 0; }
+.mz-tile { overflow: hidden; overflow: clip; background: #1d0b04; }   /* fundo reservado enquanto a foto não chega */
+.mz-tile img { width: 100%; }
+/* assinatura do programa (IMG_6192 a 108 % na arte: 690 × 559 em (663, 473)) */
+.abertura__titulo { position: absolute; z-index: 2; left: 33.54%; top: 26.4%; width: 38.06%; pointer-events: none; }
+.abertura__titulo img { width: 100%; }
+
+/* ============================ 2 · "O próximo passo…" + quadro ============================ */
+.proximo {
+  position: relative; display: grid; grid-template-columns: minmax(0, 670fr) minmax(0, 650fr); column-gap: calc(70 * var(--u));
+  padding: calc(110 * var(--u)) calc(300 * var(--u)) calc(96 * var(--u)) calc(230 * var(--u));
+  /* cobertura: marrom opaco da página + brilho quente estático (sem imagem; a placa antiga tinha manchas) */
+  background: radial-gradient(ellipse 58% 62% at 24% 30%, rgb(184 123 73 / .09), rgb(184 123 73 / 0) 72%);
+}
+.titulo-linhas { font-weight: 700; line-height: .98; letter-spacing: -.012em; text-transform: uppercase; color: var(--creme); }
+.titulo-linhas .ln { display: block; }
+.titulo-linhas .ln__i { display: block; }
+.proximo__titulo { font-size: clamp(2.125rem, calc(88 * var(--u)), 5.5rem); }
+.acento { position: relative; display: inline-block; color: var(--vermelho); }
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .acento { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+}
+/* linha reta com a largura do texto (do C ao ponto); width explícito: num SVG, right com width auto é ignorado */
+.sublinhado { position: absolute; left: .02em; bottom: -.16em; width: calc(100% - .04em); height: .24em; overflow: visible; pointer-events: none; }
+.sublinhado path { fill: none; stroke: #ee3a17; stroke-width: 5; stroke-linecap: round; }
+.proximo__p {
+  max-width: 27em; margin-top: 64px; margin-left: calc(20 * var(--u));
+  font-size: var(--corpo); line-height: 1.5; text-transform: uppercase; letter-spacing: .005em; text-wrap: pretty;
+}
+.proximo__titulo + .proximo__p { margin-top: max(104px, calc(120 * var(--u))); } /* reserva para os planos em sentidos opostos */
+.proximo__p strong { display: block; font-weight: 700; color: #fff; }
+
+/* quadro: à frente do mosaico e atrás da cena seguinte. A borda da fotografia encobre a placa
+   progressivamente, sem trocar z-index durante o scroll. A trajetória e a flutuação ficam em programa-fx.css. */
+/* camadas: aside.quadro = lugar na grade + parallax (transform); .quadro__placa = superfície + flutuação ambiente */
+.quadro {
+  position: relative; z-index: 2; align-self: stretch; display: flex;
+  margin: calc(-156 * var(--u)) 0 calc(-144 * var(--u)); /* preserva a altura da borda sobre o mosaico */
+  color: var(--creme);
+  --no: clamp(40px, calc(66 * var(--u)), 66px);         /* círculo de cada frente */
+  --ramo: clamp(18px, calc(34 * var(--u)), 34px);       /* ramo entre o tronco e o círculo */
+  --q-gap: clamp(24px, calc(62 * var(--u)), 62px);
+}
+.quadro__placa {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: clamp(26px, calc(56 * var(--u)), 56px);
+  padding: clamp(32px, calc(80 * var(--u)), 80px) clamp(24px, calc(64 * var(--u)), 64px) clamp(56px, calc(132 * var(--u)), 132px);
+  border-radius: clamp(24px, calc(60 * var(--u)), 60px);
+  background:
+    radial-gradient(ellipse 85% 42% at 50% 0%, rgb(245 112 26 / .11), rgb(245 112 26 / 0) 70%),
+    linear-gradient(180deg, #1b0a04 0%, #120602 100%);
+  /* sombra só para cima (sobre o mosaico): para baixo ela escurecia o fundo da foto "mudou" e não a comerciante,
+     que fica acima do quadro, desenhando uma aura em volta da cabeça */
+  box-shadow: inset 0 0 0 1px rgb(255 245 211 / .075), 0 -26px 50px -30px rgb(0 0 0 / .6);
+}
+.quadro__corpo { display: flex; flex-direction: column; gap: var(--q-gap); margin-block: auto; }   /* símbolo + frentes, centrados acima da assinatura */
+.quadro__topo { display: flex; flex-direction: column; align-items: flex-start; gap: clamp(14px, calc(26 * var(--u)), 26px); }
+.quadro__simbolo { width: clamp(64px, calc(148 * var(--u)), 148px); height: auto; overflow: visible; }
+.quadro__titulo { font-size: clamp(14px, calc(19 * var(--u)), 17px); font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: rgb(255 245 211 / .72); }
+.quadro__lista { position: relative; display: grid; gap: clamp(16px, calc(46 * var(--u)), 46px); margin: 0; padding: 0 0 0 var(--ramo); list-style: none; }
+/* tronco: sai de baixo do símbolo e alimenta as quatro frentes (organização visual, não uma sequência) */
+.quadro__lista::before {
+  content: ""; position: absolute; left: 0; width: 1.5px; border-radius: 1px;
+  top: calc(var(--q-gap) * -1 + 6px); bottom: calc(var(--no) / 2);
+  background: linear-gradient(180deg, rgb(242 49 26 / .75), rgb(245 112 26 / .55) 55%, rgb(255 245 211 / .22));
+}
+.frente { position: relative; display: grid; grid-template-columns: var(--no) minmax(0, 1fr); align-items: center; column-gap: clamp(14px, calc(22 * var(--u)), 22px); }
+.frente::before { content: ""; position: absolute; left: calc(var(--ramo) * -1); top: calc(var(--no) / 2 - .75px); width: var(--ramo); height: 1.5px; background: rgb(245 112 26 / .6); }
+.frente__no {
+  position: relative; display: grid; place-items: center; width: var(--no); height: var(--no); border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, #3a1a0c, #1f0c05 70%); box-shadow: inset 0 0 0 1.5px rgb(245 90 26 / .55);
+}
+.frente__no svg { width: 50%; height: 50%; fill: none; stroke: var(--creme); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.quadro__rodape { padding-top: clamp(16px, calc(26 * var(--u)), 26px); border-top: 1px solid rgb(255 245 211 / .09); font-size: clamp(13px, calc(16 * var(--u)), 15px); font-weight: 700; letter-spacing: .12em; line-height: 1.5; text-transform: uppercase; color: rgb(255 245 211 / .5); }
+.frente__rotulo { font-size: clamp(1.0625rem, 0.9rem + 0.42vw, 1.4375rem); font-weight: 700; line-height: 1.25; text-transform: uppercase; letter-spacing: .01em; text-wrap: balance; }
+
+/* ============================ 3 · "Seu negócio mudou": dois planos numa janela ============================ */
+.mudou { position: relative; }
+.mudou__cena { position: relative; aspect-ratio: 1920 / 1051; pointer-events: none; }   /* janela = linhas 24..1075 da foto */
+.mudou__janela { position: absolute; inset: 0; z-index: 3; overflow: hidden; overflow: clip; }
+.mudou__frente { position: absolute; inset: 0; z-index: 4; clip-path: inset(-14% 0 0 0); }     /* o cabelo pode ultrapassar o topo */
+.mudou__fundo, .mudou__pessoa { position: absolute; left: 0; top: calc(-24 / 1051 * 100%); width: 100%; max-width: none; }
+/* sem degradê no topo da foto: qualquer escurecimento só do plano distante desenha uma aura em volta da cabeça
+   (o plano próximo fica acima); a borda superior segue nítida como na arte. A base escurece para o parágrafo: */
+.mudou__cena::after { content: ""; position: absolute; z-index: 4; inset: auto 0 0; height: 17%; background: linear-gradient(180deg, rgb(38 15 6 / 0), rgb(38 15 6 / .62) 55%, var(--bg)); }
+/* título (IMG_6191 a 78 %: 781 px em (316, 291) da foto); a linha de apoio é HTML */
+.mudou__titulo { position: absolute; z-index: 5; left: 16.46%; top: 25.4%; width: 40.68%; }
+.mudou__letreiro { width: 100%; }
+/* halo escuro local atrás do título: a linha de apoio chegava a 3,9:1 sobre o ponto mais claro da foto; com ele, > 7:1 */
+.mudou__titulo::before { content: ""; position: absolute; z-index: -1; inset: -14% -12% -22% -12%; pointer-events: none; background: radial-gradient(closest-side, rgb(38 15 6 / .52), rgb(38 15 6 / .3) 55%, rgb(38 15 6 / 0)); }
+.mudou__linha {
+  display: block; margin-top: .35em; text-align: center; color: var(--creme);
+  font-size: clamp(16px, calc(27 * var(--u)), 27px); line-height: 1.2; letter-spacing: .02em; text-transform: uppercase;
+  text-shadow: 0 1px 12px rgb(38 15 6 / .55);
+}
+
+/* ============================ 4 · "Tudo feito para ajudar e digitalizar!" ============================ */
+.tudo { position: relative; z-index: 5; padding: 0 calc(264 * var(--u)) calc(110 * var(--u)) calc(284 * var(--u)); }
+.tudo__topo { display: grid; grid-template-columns: minmax(0, 690fr) minmax(0, 640fr); column-gap: calc(58 * var(--u)); align-items: start; }
+.tudo__titulo { margin: calc(98 * var(--u)) 0 0 calc(13 * var(--u)); font-size: clamp(2.125rem, calc(86 * var(--u)), 5.375rem); letter-spacing: -.018em; }
+.tudo__p {
+  position: relative; max-width: 27em; margin-top: calc(-72 * var(--u));
+  font-size: var(--corpo); line-height: 1.55; text-transform: uppercase; letter-spacing: .005em; text-wrap: pretty;
+  text-shadow: 0 1px 14px rgb(38 15 6 / .6);
+}
+.tudo__p strong { font-weight: 700; color: #fff; }
+.tudo__grade {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: calc(48 * var(--u)); row-gap: clamp(78px, calc(90 * var(--u)), 90px);
+  margin-top: clamp(40px, calc(128 * var(--u)), 128px);
+}
+.servicos { grid-column: 1 / -1; grid-row: 1 / span 2; display: grid; grid-template-columns: subgrid; grid-template-rows: subgrid; margin: 0; padding: 0; list-style: none; }
+.servicos__item:nth-child(4) { grid-column: 1; grid-row: 2; }
+.tudo__aprox { grid-column: 2 / -1; grid-row: 2; align-self: center; max-width: 30em; padding-left: calc(2 * var(--u)); font-size: clamp(1.125rem, 0.95rem + 0.55vw, 1.5rem); line-height: 1.45; text-wrap: pretty; }
+@supports not (grid-template-rows: subgrid) {   /* navegadores sem subgrid: mesma grade, parágrafo abaixo dos cartões */
+  .servicos { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: calc(48 * var(--u)); row-gap: 78px; }
+  .tudo__aprox { grid-row: 3; grid-column: 1 / -1; }
+  @media (max-width: 1023.98px) { .servicos { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; } }
+  @media (max-width: 479.98px) { .servicos { grid-template-columns: minmax(0, 1fr); } }
+}
+/* Serviços: o modelo da arte — placa em degradê vermelho → laranja, rótulo branco centralizado e um círculo creme
+   com a seta para cima encaixado no meio da borda de baixo (metade para fora). */
+.servicos__item { display: flex; }
+.svc { display: flex; flex: 1; min-width: 0; min-height: 44px; border-radius: clamp(16px, calc(26 * var(--u)), 26px); text-decoration: none; color: #fff; -webkit-tap-highlight-color: transparent; }
+.svc__boia { display: flex; flex: 1; min-width: 0; border-radius: inherit; }   /* wrapper da face; o grupo .servicos flutua junto */
+.svc__face {
+  --svc-seta: clamp(40px, calc(58 * var(--u)), 58px);
+  position: relative; display: flex; flex: 1; min-width: 0; align-items: center; justify-content: center;
+  min-height: clamp(140px, calc(258 * var(--u)), 258px);
+  padding: clamp(22px, calc(34 * var(--u)), 34px) clamp(18px, calc(36 * var(--u)), 36px) calc(clamp(22px, calc(34 * var(--u)), 34px) + var(--svc-seta) * .35);
+  border-radius: inherit;
+  background: #ec2a1b linear-gradient(32deg, #e41f1a 0%, #ee2d1b 38%, #f45519 66%, #f8931d 100%);
+  box-shadow: 0 10px 26px -18px rgb(0 0 0 / .7);
+  text-align: center;
+}
+.svc__rotulo { max-width: 13em; font-size: clamp(1.125rem, calc(36 * var(--u)), 2.25rem); font-weight: 700; text-transform: uppercase; line-height: 1.02; letter-spacing: -.035em; text-wrap: balance; text-shadow: none; }
+.svc__seta {
+  position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 50%);
+  width: var(--svc-seta); height: var(--svc-seta); display: grid; place-items: center;
+  border-radius: 50%; background: var(--creme); color: #e3241a; box-shadow: 0 6px 14px -8px rgb(0 0 0 / .55);
+}
+.svc__seta svg { width: 46%; height: 46%; overflow: visible; }
+.svc__seta path { fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.svc:focus-visible { outline: 2px solid var(--creme); outline-offset: 4px; }
+
+/* ============================ 5 · Convite final ============================ */
+.final { position: relative; }
+.final__cena { position: relative; aspect-ratio: 1920 / 1029; } /* arquivo indicado pelo usuário, inteiro */
+.final__janela { position: absolute; inset: 0; overflow: hidden; overflow: clip; }
+.final__plano { display: block; width: 100%; height: 100%; }
+.final__foto { width: 100%; height: 100%; max-width: none; }
+.final__titulo { position: absolute; z-index: 2; left: 50.78%; top: 38.8%; width: 35.28%; pointer-events: none; }  /* IMG_6192 a 106 % */
+.final__titulo img { width: 100%; }
+.cta--final { position: absolute; z-index: 3; left: 50%; bottom: 0; translate: -50% 50%; }
+
+/* ============================ Rodapé: marcas ============================ */
+.rodape { display: flex; flex-direction: column; align-items: center; gap: clamp(40px, calc(72 * var(--u)), 72px); padding: clamp(92px, calc(158 * var(--u)), 158px) var(--gutter) clamp(56px, calc(120 * var(--u)), 120px); }
+.rodape__marcas { width: clamp(260px, calc(672 * var(--u)), 672px); }
+/* crédito de autoria: marca oficial da Siteflux na variante para fundo escuro (assets/img/logo-siteflux-fundo-escuro.svg) */
+.rodape__credito { margin: 0; font-size: clamp(.75rem, calc(15 * var(--u)), .9375rem); font-weight: 700; letter-spacing: .14em; line-height: 1; text-shadow: none; }
+.rodape__credito a { display: inline-flex; align-items: center; gap: .9em; min-height: 44px; color: rgb(255 245 211 / .72); text-decoration: none; transition: color .2s ease; }
+.rodape__credito img { height: clamp(30px, calc(40 * var(--u)), 40px); width: auto; }
+.rodape__credito a:hover { color: var(--creme); }
+.rodape__credito a:focus-visible { outline: 2px solid var(--creme); outline-offset: 4px; border-radius: 4px; }
+
+/* ============================ Tablet (768–1023 px): recompõe texto e controles ============================ */
+@media (max-width: 1023.98px) {
+  .topo { padding: 28px var(--gutter) 0; align-items: center; }
+  .topo__marcas { width: clamp(220px, 34vw, 320px); }
+  .cta--topo { margin-top: 26px; }
+  .mz { margin: 0 var(--gutter); }
+  .abertura__titulo { left: 50%; top: 50%; width: 50%; translate: -50% -50%; }
+
+  .proximo { grid-template-columns: minmax(0, 1fr); row-gap: 48px; padding: 72px var(--gutter) 72px; background: radial-gradient(ellipse 80% 45% at 30% 12%, rgb(184 123 73 / .09), rgb(184 123 73 / 0) 72%); }
+  .proximo__texto { max-width: 720px; }
+  .proximo__titulo { font-size: clamp(2.5rem, 7vw, 4rem); }
+  .proximo__p { margin-left: 0; max-width: 32em; margin-top: 52px; }
+  .proximo__titulo + .proximo__p { margin-top: 84px; }
+  .quadro { margin: 0 0 -96px; max-width: 720px; width: 100%; } /* 24 px sobre a foto, somente a borda inferior decorativa */
+  .quadro__placa { padding-bottom: max(64px, calc(132 * var(--u))); }
+
+  .mudou__titulo { left: 5%; top: 18%; width: 52%; }
+  .tudo { padding: 64px var(--gutter) 88px; }
+  .tudo__topo { grid-template-columns: minmax(0, 1fr); row-gap: 84px; }
+  .tudo__titulo { margin: 0; font-size: clamp(2.5rem, 7vw, 4rem); }
+  .tudo__p { margin-top: 0; max-width: 34em; text-shadow: none; }
+  .tudo__grade { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 16px; row-gap: 56px; margin-top: 56px; }
+  .servicos { grid-row: auto; grid-template-rows: none; row-gap: inherit; }
+  .servicos__item:nth-child(4) { grid-column: auto; grid-row: auto; }
+  .tudo__aprox { grid-column: 1 / -1; grid-row: auto; max-width: 34em; margin-top: 18px; padding-left: 0; }
+  .final__titulo { left: 49%; top: 34%; width: 44%; }
+}
+
+/* ============================ Celular (< 768 px) ============================ */
+@media (max-width: 767.98px) {
+  body { background-size: 100% auto; }
+  .topo { padding: 18px 16px 0; gap: 12px; }
+  .topo__marcas { width: clamp(150px, 47vw, 300px); }
+  .topo__frase { font-size: 16px; margin-top: 2px; }
+  .cta__face { padding-left: calc(var(--cta-h) * .62); }
+  .cta__mag { gap: calc(var(--cta-h) * .32); }
+  .cta--topo { margin-top: 20px; }
+  .mz { margin: 0 16px; }
+  .mz__grade { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; border-radius: 22px; overflow: hidden; overflow: clip; }
+  .mz-col, .mz-col__mask { display: contents; }
+  .mz-tile { order: var(--o); aspect-ratio: 459 / 340; background: #1d0b04; }
+  .mz-tile img { height: 100%; object-fit: cover; object-position: 50% 0; }
+  .abertura__titulo { width: min(80%, 420px); }
+
+  .proximo { padding: 56px 16px 56px; row-gap: 40px; }
+  .proximo__titulo { font-size: clamp(2.125rem, 9.6vw, 2.75rem); }
+  .proximo__titulo + .proximo__p { margin-top: 64px; }
+  .proximo__p { margin-top: 44px; }
+  .quadro { margin-bottom: -70px; } /* 14 px sobre a foto; a assinatura fica acima da interseção */
+  .quadro__placa { gap: 26px; padding: 30px 22px 34px; border-radius: 26px; }
+
+  .mudou__cena { aspect-ratio: 1320 / 1051; }         /* recorte x 280..1600 da foto (imagens -m): pessoa em 57–92 % */
+  .mudou__cena::after { height: 30%; }
+  .mudou__titulo { left: 4%; top: 7%; width: 50%; height: 87%; display: flex; flex-direction: column; justify-content: space-between; }
+  .mudou__linha { margin: 0; width: 184%; max-width: calc(100vw - 32px); text-align: left; font-size: 16px; font-weight: 700; letter-spacing: .01em; }
+  .tudo { padding: 48px 16px 72px; }
+  .tudo__titulo { font-size: clamp(2.125rem, 9.6vw, 2.75rem); }
+  .tudo__topo { row-gap: 64px; }
+  .tudo__grade { grid-template-columns: minmax(0, 1fr); row-gap: 40px; margin-top: 44px; }
+  .servicos { row-gap: 40px; }
+  .svc__face { min-height: 120px; }
+  .svc__rotulo { font-size: 1.375rem; }
+
+  .final__cena { aspect-ratio: auto; display: flex; flex-direction: column; align-items: center; }
+  .final__janela { position: relative; inset: auto; width: 100%; aspect-ratio: 1920 / 1029; } /* composição completa, também no celular */
+  .final__titulo { position: relative; left: auto; top: auto; width: min(84%, 440px); margin-top: 10px; }
+  .cta--final { position: relative; left: auto; bottom: auto; translate: none; margin-top: 18px; }
+  .rodape { padding: 64px 16px 48px; }
+  .rodape__marcas { width: min(80%, 380px); }
+}
+@media (min-width: 480px) and (max-width: 767.98px) {
+  .tudo__grade { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12px; }
+  .servicos { grid-template-columns: subgrid; }
+  .svc__face { min-height: 150px; }
+  .svc__rotulo { font-size: 1.25rem; }
+}
