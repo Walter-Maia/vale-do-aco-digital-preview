@@ -13,7 +13,6 @@
   --escuro: #2d1604;
   --creme: #ffeed2;
   --tinta: #2d1604;
-  --quadro: #331508;
   --grad: linear-gradient(90deg, #d31b12 0%, #f2130f 20%, #f33117 52%, #f55d12 78%, #fba40b 100%);
   --grad-texto: linear-gradient(90deg, #ff9d14 0%, #ff6a14 48%, #ff3d1a 100%);
 
@@ -36,6 +35,10 @@
   /* halo vermelho-escuro para texto claro que cruza o degradê: some sobre o marrom e segura a leitura sobre o laranja */
   --halo: 0 1px 1px rgba(84, 14, 0, 0.3), 0 0 max(8px, calc(16 * var(--u))) rgba(84, 14, 0, 0.5);
   --sai: cubic-bezier(0.16, 1, 0.3, 1);
+  --vai: cubic-bezier(0.65, 0, 0.35, 1); /* ida e volta, troca de posição */
+  --mola: cubic-bezier(0.34, 1.56, 0.64, 1); /* assenta com leve ultrapassagem */
+  /* peso "medium" dos títulos: quatro sombras sem desfoque, 0,011em para cada lado (ver .t2) */
+  --peso: 0.011em 0 currentColor, -0.011em 0 currentColor, 0 0.011em currentColor, 0 -0.011em currentColor;
   --u: calc(min(100vw, 2560px) / 1920);
 }
 
@@ -44,7 +47,8 @@ html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 body {
   margin: 0; background: var(--escuro); color: var(--creme);
   font-family: var(--fonte); font-size: 1rem; line-height: 1.5;
-  -webkit-font-smoothing: antialiased; overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden; overflow-x: clip; /* hidden para navegador sem clip (iOS < 16): vai para o viewport e não quebra o sticky do hero */
 }
 img, svg { display: block; max-width: 100%; }
 img { height: auto; }
@@ -65,11 +69,14 @@ button { font: inherit; color: inherit; }
 }
 
 /* ---------- tipografia ---------- */
-/* Helvetica regular com um fio de contorno: o "medium" da arte, igual em Helvetica (Mac/iOS) e Arial (Windows/Android) */
+/* Helvetica regular engrossada um fio: o "medium" da arte, igual em Helvetica (Mac/iOS) e Arial (Windows/Android).
+   O fio é text-shadow sem desfoque (--peso), não -webkit-text-stroke: com o contorno, o Chromium no Windows deixava um fio
+   claro entre ele e o preenchimento nas curvas (O, C, S) — visto em 1× e 2×, com e sem GPU; pouco visível em branco sobre
+   escuro, evidente em tinta sobre o creme. paint-order e text-rendering não resolveram; as sombras, sim. */
 .t2 {
   --lh: 1.065;
   font-size: max(26px, calc(62 * var(--u))); font-weight: 400; letter-spacing: -0.012em; text-transform: uppercase;
-  color: #fff; -webkit-text-stroke: 0.022em currentColor;
+  color: #fff; text-shadow: var(--peso);
 }
 .t2--tinta { --lh: 0.97; color: var(--tinta); }
 /* texto corrido: Montserrat média e quase branca, como na arte (medido: #fffcf5, hastes de 3–4 px em 28 px) */
@@ -108,8 +115,10 @@ button { font: inherit; color: inherit; }
   transition: color 0.35s ease;
 }
 [data-tema-atual="claro"] .menu-btn { color: var(--tinta); }
-.menu-aberto .menu-btn { color: var(--creme); }
+/* a barra de rolagem some com a página travada: o botão compensa a largura dela (--sbw, medida por site.js) e não pula */
+.menu-aberto .menu-btn { color: var(--tinta); margin-right: var(--sbw, 0px); }
 .intro-on .menu-btn { opacity: 0; }
+.no-js .menu-btn { display: none; }
 .menu-btn__barras { display: grid; gap: max(5px, calc(8.5 * var(--u))); width: max(30px, calc(72 * var(--u))); }
 .menu-btn__barras i { display: block; height: max(3px, calc(8 * var(--u))); border-radius: 99px; background: currentColor; transform-origin: center; transition: transform 0.5s var(--sai), opacity 0.25s ease, width 0.4s var(--sai); }
 .menu-btn:hover .menu-btn__barras i:nth-child(2) { transform: scaleX(0.72); }
@@ -117,41 +126,110 @@ button { font: inherit; color: inherit; }
 .menu-aberto .menu-btn__barras i:nth-child(2) { opacity: 0; transform: scaleX(0.2); }
 .menu-aberto .menu-btn__barras i:nth-child(3) { transform: translateY(calc(-1 * (max(5px, 8.5 * var(--u)) + max(3px, 8 * var(--u))))) rotate(-45deg); }
 
+/* Cortina em tela cheia, no modelo do menu do Siteflux: desce do topo já com o conteúdo, os links entram da esquerda em
+   sequência e, no hover, uma faixa escura atravessa a linha enquanto as letras rolam. As cores são as do Vale: cortina creme
+   e tinta (os tons claro/escuro que lá são lima e verde), faixa em tinta e letras no degradê laranja das "três frentes". */
 .menu {
-  position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; justify-content: space-between;
-  padding: max(88px, calc(190 * var(--u))) max(24px, calc(268 * var(--u))) max(28px, calc(70 * var(--u)));
-  background: var(--escuro); color: var(--creme);
-  clip-path: inset(0 0 100% 0); visibility: hidden;
-  transition: clip-path 0.8s var(--sai), visibility 0s 0.8s;
+  --m-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --m-lado: max(22px, calc(268 * var(--u)));
+  position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column;
+  overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+  padding: max(78px, calc(150 * var(--u))) 0 max(22px, calc(54 * var(--u)));
+  background: var(--creme); color: var(--tinta);
+  transform: translateY(-101%); visibility: hidden;
+  transition: transform 0.55s var(--m-ease), visibility 0s 0.55s;
 }
-.menu-aberto .menu { clip-path: inset(0); visibility: visible; transition: clip-path 0.8s var(--sai), visibility 0s; }
-.menu-aberto, .menu-aberto body { overflow: hidden; }
-.menu__nav a { display: block; overflow: hidden; text-decoration: none; font-size: clamp(30px, calc(92 * var(--u)), 110px); line-height: 1.18; letter-spacing: -0.02em; text-transform: uppercase; -webkit-text-stroke: 0.018em currentColor; }
-.menu__nav a span { display: block; transform: translateY(105%); transition: transform 0.5s ease, color 0.3s ease; }
-.menu-aberto .menu__nav a span { transform: none; transition: transform 1s var(--sai) calc(0.18s + var(--i, 0) * 0.06s), color 0.3s ease; }
-.menu__nav a:hover span, .menu__nav a:focus-visible span { color: var(--orange); }
-.menu__pe { display: flex; flex-wrap: wrap; gap: 10px 36px; font-size: max(14px, calc(22 * var(--u))); text-transform: uppercase; letter-spacing: 0.04em; }
-.menu__pe a { text-decoration: none; opacity: 0.75; transition: opacity 0.25s; }
-.menu__pe a:hover { opacity: 1; }
+.menu-aberto .menu { transform: none; visibility: visible; transition: transform 0.55s var(--m-ease), visibility 0s; }
+/* trava só o <html>: com overflow no <body> ele virava o contêiner de rolagem do hero e o palco pinado saltava ao abrir o menu */
+.menu-aberto { overflow: hidden; }
+.menu-aberto body { padding-right: var(--sbw, 0px); }
+section:focus { outline: none; } /* a seção recebe o foco ao chegar por um link do menu (tabindex="-1" via site.js) */
+
+.menu__nav { margin-block: auto; }
+.menu__nav li { opacity: 0; transform: translateX(-30px); transition: opacity 0.55s var(--m-ease), transform 0.55s var(--m-ease); border-bottom: 1px solid rgba(45, 22, 4, 0.13); }
+.menu__nav li:first-child { border-top: 1px solid rgba(45, 22, 4, 0.13); }
+.menu-aberto .menu__nav li { opacity: 1; transform: none; transition-delay: calc(0.08s + var(--i, 0) * 0.06s); }
+/* o link ocupa a linha inteira: a faixa é dele (::before), então hover, toque e foco por teclado acendem a mesma coisa */
+.menu__nav a {
+  position: relative; z-index: 0; display: block; white-space: nowrap;
+  padding: max(5px, 0.7vh) 4vw max(5px, 0.7vh) var(--m-lado);
+  font-size: clamp(30px, min(calc(92 * var(--u)), 8vh), 110px); line-height: 1.25; letter-spacing: -0.02em; text-transform: uppercase;
+  text-decoration: none; text-shadow: 0.009em 0 currentColor, -0.009em 0 currentColor, 0 0.009em currentColor, 0 -0.009em currentColor; color: var(--tinta); transition: color 0.3s ease;
+}
+.menu__nav a::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; background: var(--tinta);
+  transform: scaleX(0); transform-origin: left; transition: transform 0.45s var(--m-ease); pointer-events: none;
+}
+.menu__nav a:focus-visible { outline-offset: -5px; }
+.menu__nav a:focus-visible, .menu__nav a:active { color: var(--amber); }
+.menu__nav a:focus-visible::before, .menu__nav a:active::before { transform: scaleX(1); }
+/* letras em rolagem (site.js monta .roll só com ponteiro fino e movimento permitido): cada letra é uma janela de uma linha
+   com duas cópias empilhadas; no hover o trilho sobe meia altura, letra após letra (--d). A segunda cópia leva a cor do
+   degradê na posição da letra (--t, de 0 a 1). --m repõe o kerning que os blocos separados perdem. */
+.roll { display: inline-block; transition: transform 0.3s var(--m-ease); }
+.roll-w { display: inline-block; white-space: nowrap; }
+.roll-c { display: inline-block; height: 1.25em; overflow: hidden; vertical-align: top; padding-inline: 0.05em; margin-inline: calc(var(--m, 0em) - 0.05em) -0.05em; }
+.roll-t { display: block; transition: transform 0.3s var(--m-ease) var(--d, 0ms); }
+.roll-t > span { display: block; height: 1.25em; }
+.roll-t > span + span { color: var(--orange); color: color-mix(in srgb, #ff4a1c calc(var(--t, 0) * 100%), #ffa114); }
+.menu__nav a:focus-visible .roll-t { transform: translateY(-50%); }
+@media (hover: hover) and (pointer: fine) {
+  .menu__nav a:hover { color: var(--amber); }
+  .menu__nav a:hover::before { transform: scaleX(1); }
+  .menu__nav a:hover .roll { transform: translateX(10px); }
+  .menu__nav a:hover .roll-t { transform: translateY(-50%); }
+}
+
+/* rodapé da cortina: a chamada (pílula escura, como o botão do menu do Siteflux) e as redes; sobe depois dos links */
+.menu__pe {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 14px 34px; padding: max(20px, 3.4vh) 4vw 0 var(--m-lado);
+  opacity: 0; transform: translateY(14px); transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.menu-aberto .menu__pe { opacity: 1; transform: none; transition: opacity 0.6s ease 0.46s, transform 0.7s var(--m-ease) 0.46s; }
+.menu__redes { display: flex; flex-wrap: wrap; gap: 6px 28px; font-size: max(13px, calc(20 * var(--u))); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.menu__redes a { display: inline-block; padding-block: 10px; text-decoration: none; background: linear-gradient(currentColor, currentColor) 0 calc(100% - 7px) / 0 2px no-repeat; transition: background-size 0.35s var(--m-ease); }
+.menu__redes a:hover, .menu__redes a:focus-visible { background-size: 100% 2px; }
 
 /* ---------- hero: ajustes sobre abertura.css para a composição da arte ---------- */
 .hero { --hero-bg: var(--escuro); }
 .hero__logo { top: max(18px, calc(62 * var(--u))); width: clamp(150px, calc(300 * var(--u)), 360px); }
 .hero__powered { position: absolute; z-index: 3; left: max(18px, calc(76 * var(--u))); top: max(30px, calc(104 * var(--u))); width: clamp(150px, calc(446 * var(--u)), 520px); filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.45)); }
-.hero__end { bottom: 4vh; width: min(100% - var(--gutter) * 2, 1000px); }
+/* --barra (abertura.css): o que o palco pinado passa da tela enquanto a barra de endereço do celular está aberta; 0 no desktop */
+.hero__end { bottom: calc(4vh + var(--barra, 0px)); width: min(100% - var(--gutter) * 2, 1000px); }
 .hero__phrase { width: min(100%, clamp(320px, calc(880 * var(--u)), 1000px)); }
-.hero__start { bottom: 20vh; max-width: none; display: none; }
-.js .hero__start { display: flex; justify-content: center; }
+.hero__start { bottom: calc(20vh + var(--barra, 0px)); max-width: none; display: none; }
+.js .hero.is-scrub .hero__start, .js .hero.is-play .hero__start { display: flex; justify-content: center; }
 .hero__rolar { display: grid; justify-items: center; gap: 6px; color: #fff; }
 .hero__mouse { display: block; width: 30px; height: 48px; border: 2.5px solid currentColor; border-radius: 16px; position: relative; }
 .hero__mouse i { position: absolute; left: 50%; top: 8px; width: 3px; height: 9px; margin-left: -1.5px; border-radius: 3px; background: currentColor; animation: rolar 1.8s var(--sai) infinite; }
+/* celular (toque e tela estreita): mesmo traço do mouse, cantos de aparelho, o alto-falante no topo e um dedo que desce a tela */
+.hero__fone { display: none; width: 30px; height: 54px; border: 2.5px solid currentColor; border-radius: 9px; position: relative; }
+.hero__fone::before { content: ""; position: absolute; left: 50%; top: 5px; width: 8px; height: 2.5px; margin-left: -4px; border-radius: 2px; background: currentColor; }
+.hero__fone i { position: absolute; left: 50%; top: 15px; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; background: currentColor; animation: rolar-fone 1.8s var(--sai) infinite; }
 .hero__rolar svg { width: 14px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; animation: rolar-seta 1.8s ease-in-out infinite; }
 @keyframes rolar { 0% { transform: translateY(0); opacity: 1; } 70%, 100% { transform: translateY(12px); opacity: 0; } }
+@keyframes rolar-fone { 0% { transform: translateY(0) scale(0.6); opacity: 0; } 14% { transform: translateY(0) scale(1); opacity: 1; } 72%, 100% { transform: translateY(19px) scale(1); opacity: 0; } }
 @keyframes rolar-seta { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+/* a indicação some logo no começo da rolagem (abertura.js liga .is-off): parada, não fica animando fora da vista pelo resto da página */
+.hero__start.is-off .hero__rolar * { animation: none; }
+@media (max-width: 899px), (hover: none) and (pointer: coarse) {
+  .hero__mouse { display: none; }
+  /* sobre o cabelo da personagem o traço branco ganha um halo escuro. É box-shadow no contorno, não filter no conjunto: um
+     filtro em volta de filhos animados obrigava a recompor a cada quadro (medido com a CPU a 1/4: ~4 ms a mais por quadro
+     enquanto o mapa animava, mesmo com a indicação já fora da tela) */
+  .hero__fone { display: block; box-shadow: 0 0 7px rgba(20, 9, 2, 0.5), inset 0 0 7px rgba(20, 9, 2, 0.35); }
+}
 
 /* ---------- 1 · o movimento ---------- */
 .presente { position: relative; padding: calc(138 * var(--u)) 0 calc(292 * var(--u)); background: var(--escuro); }
 .presente__faixa { position: absolute; inset: calc(683 * var(--u)) 0 calc(-90 * var(--u)); background: var(--grad); }
+/* costura com o hero: a base dele termina sob a sombra da frase — rgba(20, 9, 2, 0.72) sobre --escuro (.hero__shade, abertura.css) — e
+   esta seção começava em --escuro puro: via-se a linha entre as duas. A mesma sombra continua aqui, com a mesma opacidade na emenda,
+   e se desfaz devagar. As paradas seguem uma curva suave (sai sem inclinação e chega sem inclinação): não há degrau nem faixa. */
+.presente::before {
+  content: ""; position: absolute; inset: 0 0 auto; height: max(380px, calc(540 * var(--u))); pointer-events: none;
+  background: linear-gradient(to bottom, rgba(20, 9, 2, 0.72) 0%, rgba(20, 9, 2, 0.7) 10%, rgba(20, 9, 2, 0.645) 20%, rgba(20, 9, 2, 0.564) 30%, rgba(20, 9, 2, 0.467) 40%, rgba(20, 9, 2, 0.36) 50%, rgba(20, 9, 2, 0.253) 60%, rgba(20, 9, 2, 0.156) 70%, rgba(20, 9, 2, 0.075) 80%, rgba(20, 9, 2, 0.02) 90%, rgba(20, 9, 2, 0) 100%);
+}
 .presente__grade {
   position: relative; display: grid; grid-template-columns: calc(706 * var(--u)) calc(690 * var(--u)); column-gap: calc(86 * var(--u));
   align-items: start; padding-left: calc(268 * var(--u));
@@ -181,8 +259,10 @@ button { font: inherit; color: inherit; }
 .pilula--a { --pb: #ff452c; --pc: #fff; }
 .pilula--b { --pb: #ff7417; --pc: #fff; }
 .pilula--c { --pb: var(--creme); --pc: var(--tinta); }
+.pilula--d { --pb: var(--tinta); --pc: var(--creme); } /* sobre o creme do menu */
 .pilula:hover .pilula__rot, .pilula:focus-visible .pilula__rot, .pilula:hover .pilula__seta, .pilula:focus-visible .pilula__seta { background: var(--tinta); color: var(--creme); }
 .pilula--c:hover .pilula__rot, .pilula--c:focus-visible .pilula__rot, .pilula--c:hover .pilula__seta, .pilula--c:focus-visible .pilula__seta { background: #fff; color: var(--tinta); }
+.pilula--d:hover .pilula__rot, .pilula--d:focus-visible .pilula__rot, .pilula--d:hover .pilula__seta, .pilula--d:focus-visible .pilula__seta { background: var(--orange); color: var(--tinta); }
 .pilula:hover .pilula__seta, .pilula:focus-visible .pilula__seta { transform: translateX(max(4px, calc(7 * var(--u)))); }
 .pilula:hover .pilula__seta svg, .pilula:focus-visible .pilula__seta svg { transform: rotate(45deg); }
 
@@ -192,7 +272,7 @@ button { font: inherit; color: inherit; }
 .letreiro { position: relative; height: calc(262 * var(--u)); top: calc(-220 * var(--u)); margin-bottom: calc(-220 * var(--u)); overflow-x: clip; }
 .letreiro__palavra { position: absolute; left: calc(-26 * var(--u)); top: 0; white-space: nowrap; font-size: calc(364 * var(--u)); font-weight: 700; letter-spacing: -0.035em; line-height: 0.74; }
 .letreiro__palavra span { display: block; padding: 0.02em 0.04em 0.03em 0; background: linear-gradient(90deg, #ff8c0a 0%, #ff6412 38%, #ff3a18 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.letreiro__frase { --lh: 1.04; position: absolute; left: calc(1065 * var(--u)); top: calc(76 * var(--u)); font-size: max(20px, calc(50 * var(--u))); letter-spacing: -0.012em; text-transform: uppercase; color: #fff; -webkit-text-stroke: 0.022em currentColor; text-shadow: var(--halo); }
+.letreiro__frase { --lh: 1.04; position: absolute; left: calc(1065 * var(--u)); top: calc(76 * var(--u)); font-size: max(20px, calc(50 * var(--u))); letter-spacing: -0.012em; text-transform: uppercase; color: #fff; text-shadow: var(--peso), var(--halo); }
 
 .como__grade { display: grid; grid-template-columns: calc(787 * var(--u)) calc(700 * var(--u)); padding: calc(122 * var(--u)) 0 0 calc(268 * var(--u)); align-items: start; }
 .como__grade .corpo { padding-top: calc(4 * var(--u)); }
@@ -201,18 +281,161 @@ button { font: inherit; color: inherit; }
 .chamada .ln { white-space: nowrap; }
 .chamada .ln > span { width: max-content; padding-right: 0.06em; background: var(--grad-texto); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
-/* ---------- 3 · a região ---------- */
-.regiao { position: relative; padding: calc(187 * var(--u)) 0 calc(148 * var(--u)); background: var(--escuro); }
-.quadro {
-  position: relative; width: calc(760 * var(--u)); height: calc(680 * var(--u)); margin-inline: auto; overflow: hidden;
-  display: grid; place-items: center; border-radius: calc(16 * var(--u)); background: var(--quadro);
-  box-shadow: 0 0 0 1px rgba(255, 170, 90, 0.07), calc(-14 * var(--u)) calc(-12 * var(--u)) 0 0 rgba(26, 11, 3, 0.55);
+/* ---------- 3 · para quem é ---------- */
+/* Três cartões no modelo da arte: marrom com fio creme sobre o degradê. Com JS e movimento permitido eles esperam empilhados na casa
+   do meio, como um baralho, e abrem quando a pilha está à vista (site.js liga .is-in). --k é a casa de cada um (-1 esquerda, 0 centro,
+   1 direita) e também a altura na pilha: o da direita fica por cima, um pouco para cima e para a direita. Só transform e opacity.
+   Acabamento: a borda é um degradê (creme → âmbar → creme) pintado em border-box; no alto de cada cartão vai uma peça da assinatura
+   do movimento, em traço (triângulo, meio-disco, ponto), e sob o título um fio curto. Com ponteiro fino o cartão responde ao cursor:
+   sobe um pouco, a sombra aprofunda, uma luz acompanha o ponteiro (--mx/--my, escritos por site.js), a peça se enche da cor da
+   marca e o fio se estende. As duas camadas do hover (::before, a luz; ::after, a sombra funda) já estão prontas e só mudam de
+   opacidade — nada de animar box-shadow. */
+.publicos { position: relative; padding: calc(126 * var(--u)) calc(150 * var(--u)) calc(140 * var(--u)); background: var(--grad); }
+.publicos__defs { position: absolute; }
+.publicos__lista { --vao: calc(64 * var(--u)); --leque: calc(15 * var(--u)); position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--vao); }
+.publico {
+  --mx: 50%; --my: 0px;
+  position: relative; z-index: calc(2 + var(--k)); display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: calc(384 * var(--u)); padding: calc(46 * var(--u)) calc(50 * var(--u)) calc(50 * var(--u)); text-align: center;
+  border: 1px solid transparent; border-radius: calc(38 * var(--u));
+  background: linear-gradient(180deg, #2a1003 0%, #2e1203 46%, #4b1d04 100%) padding-box, linear-gradient(160deg, rgba(255, 238, 210, 0.95), rgba(255, 174, 24, 0.42) 48%, rgba(255, 238, 210, 0.78)) border-box;
+  box-shadow: 0 calc(26 * var(--u)) calc(64 * var(--u)) rgba(92, 14, 0, 0.36);
+  transition: translate 0.6s var(--sai);
 }
-.quadro__grade { position: absolute; inset: calc(-60 * var(--u)); background: linear-gradient(rgba(255, 160, 80, 0.07) 1px, transparent 1px) 0 0 / calc(56 * var(--u)) calc(56 * var(--u)), linear-gradient(90deg, rgba(255, 160, 80, 0.07) 1px, transparent 1px) 0 0 / calc(56 * var(--u)) calc(56 * var(--u)); }
-/* o SVG ocupa o quadro inteiro (o viewBox 700×620 é um pouco mais baixo que 760×680): sem isso sobrava um filete em cima e embaixo onde o mapa era cortado no zoom */
-.quadro svg.net--map { position: relative; width: 100%; height: 100%; border-radius: 0; }
+.publico::before, .publico::after { content: ""; position: absolute; inset: 0; border-radius: inherit; opacity: 0; pointer-events: none; transition: opacity 0.45s ease; }
+.publico::before { background: radial-gradient(circle max(180px, calc(300 * var(--u))) at var(--mx) var(--my), rgba(255, 190, 90, 0.2), rgba(255, 122, 26, 0.07) 46%, rgba(255, 122, 26, 0) 72%); }
+.publico::after { z-index: -1; box-shadow: 0 calc(46 * var(--u)) calc(84 * var(--u)) rgba(64, 8, 0, 0.5); }
+.publico > * { position: relative; }
+.publico__sinal { width: max(30px, calc(46 * var(--u))); height: auto; aspect-ratio: 1; margin-bottom: calc(22 * var(--u)); overflow: visible; transition: scale 0.6s var(--mola); }
+.ps-fio { fill: none; stroke: #ffd08a; stroke-width: 2; stroke-linejoin: round; transition: stroke 0.4s ease; }
+.ps-cor { opacity: 0; transition: opacity 0.45s ease; }
+.publico__nome { font-size: max(21px, calc(36 * var(--u))); font-weight: 700; letter-spacing: -0.015em; line-height: 1.1; color: #fff; }
+.publico__nome::after { content: ""; display: block; width: max(34px, calc(62 * var(--u))); height: 2px; margin: calc(16 * var(--u)) auto calc(18 * var(--u)); border-radius: 2px; background: linear-gradient(90deg, #ffae18, #ff5a1c); transform: scaleX(0.4); transition: transform 0.6s var(--sai); }
+.publico__texto { max-width: 17em; font-family: var(--fonte-texto); font-size: max(15px, calc(25 * var(--u))); line-height: 1.36; color: var(--creme); text-wrap: balance; }
+/* hover só com ponteiro fino e com o baralho já aberto (sem JS a lista nunca esteve empilhada) */
+@media (hover: hover) and (pointer: fine) {
+  :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover { translate: 0 calc(-10 * var(--u)); }
+  :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover::before, :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover::after { opacity: 1; }
+  :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover .publico__sinal { scale: 1.12; }
+  :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover .ps-cor { opacity: 1; }
+  :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover .ps-fio { stroke: #fff1d6; }
+  :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover .publico__nome::after { transform: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* a troca de casa vai em ease-in-out, um cartão logo após o outro; o conteúdo só entra com o cartão quase assentado.
+     As transições do hover (translate do cartão, scale da peça) entram nas mesmas listas para não se perderem. */
+  .js .publico { transition: transform 1.05s var(--vai) calc(0.22s + (var(--k) + 1) * 0.07s), translate 0.6s var(--sai); }
+  .js .publico > * { transition: opacity 0.5s ease calc(0.86s + (var(--k) + 1) * 0.08s), transform 0.7s var(--sai) calc(0.86s + (var(--k) + 1) * 0.08s), scale 0.6s var(--mola); }
+  .js .publicos__lista:not(.is-in) .publico { transform: translate(calc(var(--k) * (var(--leque) - 100% - var(--vao))), calc(var(--k) * var(--leque) * -0.9)); }
+  .js .publicos__lista:not(.is-in) .publico > * { opacity: 0; transform: translateY(calc(16 * var(--u))); }
+}
 
-/* ---------- 4 · três frentes ---------- */
+/* ---------- 4 · a região ---------- */
+/* só o mapa, solto sobre o fundo: os municípios do Vale do Aço e a teia de conexões (o quadro com grade saiu em 07/10/2026).
+   O brilho quente atrás dele é o que o prende à página: é fundo da seção, não um elemento — assim nunca passa da largura da janela
+   (como elemento, no celular ele empurrava a página 66 px para o lado). O SVG e a animação estão em abertura.css. */
+.regiao {
+  position: relative; padding: calc(150 * var(--u)) 0 calc(130 * var(--u));
+  background: radial-gradient(ellipse 31% 43% at 50% 51%, rgba(255, 122, 26, 0.17), rgba(255, 122, 26, 0.05) 62%, rgba(255, 122, 26, 0)) var(--escuro);
+}
+.mapa { position: relative; width: calc(800 * var(--u)); margin-inline: auto; }
+.mapa svg.net--map { width: 100%; height: auto; }
+
+/* ---------- 5 · marco zero ---------- */
+.marco { position: relative; padding: calc(40 * var(--u)) 0 calc(170 * var(--u)); background: var(--escuro); }
+.marco__grade { display: grid; grid-template-columns: calc(787 * var(--u)) calc(700 * var(--u)); align-items: start; padding-left: calc(268 * var(--u)); }
+.marco__grade .corpo { padding-top: calc(4 * var(--u)); }
+/* Palco no desenho do Walter (07/10/2026): a marca em contorno — triângulo + vela, um quarto de elipse cujo arco termina no canto do
+   triângulo — com a tela 16:9 de cantos arredondados encaixada dentro dela. Tudo sai de um palco de 200 × 146,8: a tela ocupa
+   x 12,6–173 e y 51,8–142 (6,3% / 35,29% / 80,2% / 61,46% do palco) e o raio de 9 vira 5,61% / 9,98% da própria tela.
+   --marca e --tela são o mesmo polígono de 59 pontos em duas posições (a silhueta da marca e a tela): por isso o clip-path da
+   camada de cor interpola de uma para a outra, e a cabeça da marca se recolhe para dentro da tela. */
+.marco__palco {
+  --marca: polygon(0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 100%, 0% 100%, 0% 100%, 0% 100%, 0% 100%, 0% 100%, 0% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 99.93% 95.02%, 99.73% 90.06%, 99.4% 85.13%, 98.93% 80.23%, 98.33% 75.38%, 97.61% 70.59%, 96.75% 65.88%, 95.77% 61.26%, 94.67% 56.74%, 93.44% 52.33%, 92.1% 48.04%, 90.64% 43.88%, 89.08% 39.87%, 87.41% 36.02%, 85.63% 32.32%, 83.76% 28.8%, 81.8% 25.47%, 79.75% 22.32%, 77.62% 19.38%, 75.41% 16.64%, 73.13% 14.11%, 70.79% 11.81%, 68.39% 9.73%, 65.93% 7.89%, 63.43% 6.28%, 60.88% 4.91%, 58.31% 3.78%, 55.7% 2.9%, 53.08% 2.28%, 50.44% 1.9%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 47.8%);
+  --tela: polygon(10.8% 35.29%, 9.64% 35.5%, 8.55% 36.11%, 7.62% 37.08%, 6.9% 38.35%, 6.45% 39.83%, 6.3% 41.42%, 6.3% 90.62%, 6.45% 92.2%, 6.9% 93.68%, 7.62% 94.95%, 8.55% 95.93%, 9.64% 96.54%, 10.8% 96.75%, 82% 96.75%, 83.16% 96.54%, 84.25% 95.93%, 85.18% 94.95%, 85.9% 93.68%, 86.35% 92.2%, 86.5% 90.62%, 86.5% 89.03%, 86.5% 87.44%, 86.5% 85.86%, 86.5% 84.27%, 86.5% 82.68%, 86.5% 81.09%, 86.5% 79.51%, 86.5% 77.92%, 86.5% 76.33%, 86.5% 74.75%, 86.5% 73.16%, 86.5% 71.57%, 86.5% 69.98%, 86.5% 68.4%, 86.5% 66.81%, 86.5% 65.22%, 86.5% 63.64%, 86.5% 62.05%, 86.5% 60.46%, 86.5% 58.87%, 86.5% 57.29%, 86.5% 55.7%, 86.5% 54.11%, 86.5% 52.53%, 86.5% 50.94%, 86.5% 49.35%, 86.5% 47.77%, 86.5% 46.18%, 86.5% 44.59%, 86.5% 43%, 86.5% 41.42%, 86.35% 39.83%, 85.9% 38.35%, 85.18% 37.08%, 84.25% 36.11%, 83.16% 35.5%, 82% 35.29%, 47.8% 35.29%);
+  /* a largura também respeita a altura da janela (1,3624 = 200 / 146,8): numa janela baixa o palco inteiro continua cabendo,
+     e com ele o vídeo aberto. svh onde existe; vh para navegador mais antigo. */
+  --alto: calc((100vh - 56px) * 1.3624);
+  position: relative; width: min(calc(1160 * var(--u)), var(--alto)); aspect-ratio: 200 / 146.8; margin: calc(96 * var(--u)) auto 0;
+}
+@supports (height: 100svh) { .marco__palco { --alto: calc((100svh - 56px) * 1.3624); } }
+.marco__fundo, .marco__cor, .marco__tracos { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+/* as cores da marca, bem leves atrás da tela: mantêm a marca acesa depois que a cor cheia vira vídeo; no hover elas sobem */
+.marco__fundo { opacity: 0.16; transition: opacity 0.5s ease; }
+/* a cor cheia da fase "logo": em repouso já virou tela e está apagada */
+.marco__cor { opacity: 0; clip-path: var(--tela); }
+.marco__tela { position: absolute; left: 6.3%; top: 35.29%; width: 80.2%; height: 61.46%; overflow: hidden; border-radius: 5.61% / 9.98%; background: #1d0d02; transition: transform 0.6s var(--vai); }
+.marco__capa, .marco__video { position: absolute; inset: 0; width: 100%; height: 100%; }
+.marco__capa { object-fit: cover; transition: scale 1.4s var(--sai); }
+.marco__video { border: 0; opacity: 0; transition: opacity 0.5s ease; }
+.marco__tracos { overflow: visible; transition: opacity 0.35s ease; }
+/* espessuras em unidades do viewBox (200 de largura): ≈1,9 px no palco de 1160 px da arte; os degraus abaixo seguram ≥ 1 px nas
+   janelas menores (traço abaixo de 1 px de tela já travou a pintura do Chromium na intro). O intervalo do tracejado é 2, não 1:
+   com 1, o fim do caminho coincidia com o começo de um traço e a ponta redonda deixava um ponto no fio ainda por desenhar. */
+.mz-fio, .mz-ecos path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.mz-fio { stroke: #ffe3b8; stroke-width: 0.32px; stroke-dasharray: 1 2; }
+.mz-b, .mz-e, .mz-ecos { opacity: 0; } /* a diagonal e a haste atrás da tela, e os ecos: só existem na fase "logo" */
+.mz-ecos path { stroke: #ffd08a; stroke-width: 0.22px; opacity: calc(0.64 - var(--e) * 0.13); }
+@media (max-width: 1500px) { .mz-fio { stroke-width: 0.44px; } .mz-ecos path { stroke-width: 0.32px; } }
+@media (max-width: 600px) { .mz-fio { stroke-width: 0.8px; } .mz-ecos path { stroke-width: 0.6px; } }
+/* o link ocupa o palco inteiro (clicar na marca também toca); o botão fica no centro da tela, com um anel escuro que o separa da capa */
+.marco__play { position: absolute; inset: 0; border-radius: calc(20 * var(--u)); color: #fff; -webkit-tap-highlight-color: transparent; transition: opacity 0.3s ease, visibility 0s; }
+.marco__botao {
+  position: absolute; left: 46.4%; top: 66.02%; translate: -50% -50%; display: grid; place-items: center; width: max(50px, calc(112 * var(--u))); aspect-ratio: 1; border-radius: 50%;
+  background: var(--creme); color: #e8401a; box-shadow: 0 calc(12 * var(--u)) calc(34 * var(--u)) rgba(10, 4, 0, 0.5), 0 0 0 max(7px, calc(15 * var(--u))) rgba(20, 9, 2, 0.3);
+  transition: scale 0.5s var(--mola), background-color 0.3s ease;
+}
+.marco__botao svg { width: 46%; height: 46%; fill: currentColor; }
+.marco__play:active .marco__botao { scale: 0.94; }
+@media (hover: hover) and (pointer: fine) {
+  .marco__palco:hover .marco__fundo { opacity: 0.44; }
+  .marco__palco:hover .marco__capa { scale: 1.05; }
+  .marco__palco:hover .marco__botao { scale: 1.1; background: #fff; }
+}
+.marco__play:focus-visible .marco__botao { scale: 1.1; background: #fff; }
+/* aberta (site.js, no clique): a tela cresce até a largura do palco — por transform, enquanto dentro dela só existe a capa — e o
+   traço e as cores saem. .is-pronto troca o transform pela medida real (o mesmo retângulo, sem escala) e só então entra o iframe;
+   o player aparece quando termina de carregar (.is-tocando). */
+.marco__palco.is-aberto .marco__tela { transform: translate(4.49%, -26.06%) scale(1.24688); }
+.marco__palco.is-pronto .marco__tela { left: 0; top: 11.68%; width: 100%; height: 76.63%; transform: none; transition: none; }
+.marco__palco.is-aberto :is(.marco__tracos, .marco__fundo, .marco__cor) { opacity: 0; }
+.marco__palco.is-aberto .marco__capa { scale: 1; }
+.marco__palco.is-aberto .marco__play { opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
+.marco__palco.is-tocando .marco__video { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  /* espera → entrada (site.js liga .is-in com 30% do palco na tela), em segundos:
+     0–1,2    o traço desenha a marca (diagonal, lado e base, haste, arco)
+     0,5–1,1  a marca se enche de cor, com os ecos por dentro: é o logo
+     1,9–2,8  a cor se recolhe para dentro da tela e se apaga sobre a capa do vídeo; a diagonal e a haste somem atrás dela,
+              o contorno da tela se desenha e as cores leves da marca acendem ao fundo
+     2,6      o botão assenta
+     As animações só preenchem para trás: ao terminarem, cada propriedade volta ao valor da regra e fica livre para hover e clique. */
+  .js .marco__palco:not(.is-in) :is(.marco__fundo, .marco__tela, .marco__tracos, .marco__botao) { opacity: 0; }
+  .js .marco__palco.is-in .mz-a { animation: mz-desenha 0.3s linear backwards; }
+  .js .marco__palco.is-in .mz-b { animation: mz-b 2.5s linear backwards; }
+  .js .marco__palco.is-in .mz-c { animation: mz-desenha 0.95s cubic-bezier(0.45, 0, 0.2, 1) 0.1s backwards; }
+  .js .marco__palco.is-in .mz-e { animation: mz-e 2.5s linear backwards; }
+  .js .marco__palco.is-in .mz-d { animation: mz-desenha 0.28s linear 0.42s backwards; }
+  .js .marco__palco.is-in .mz-f { animation: mz-desenha 0.5s cubic-bezier(0.45, 0, 0.2, 1) 0.7s backwards; }
+  .js .marco__palco.is-in .mz-g { animation: mz-desenha 0.9s cubic-bezier(0.45, 0, 0.2, 1) 1.9s backwards; }
+  .js .marco__palco.is-in .mz-ecos { animation: mz-ecos 2.3s linear backwards; }
+  .js .marco__palco.is-in .marco__cor { animation: mz-cor 3s linear backwards, mz-forma 0.9s var(--vai) 1.9s backwards; }
+  /* a tela só aparece quando a cor começa a se recolher: antes, o canto dela sobrava no vão entre a diagonal e a haste */
+  .js .marco__palco.is-in .marco__tela { animation: mz-surge 0.4s ease 1.95s backwards; }
+  .js .marco__palco.is-in .marco__fundo { animation: mz-surge 0.9s ease 2s backwards; }
+  .js .marco__palco.is-in .marco__botao { animation: mz-botao 0.6s var(--mola) 2.6s backwards; }
+  .js .marco__palco.is-aberto :is(.mz-fio, .mz-ecos, .marco__cor, .marco__tela, .marco__fundo, .marco__botao) { animation: none; }
+}
+@keyframes mz-desenha { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes mz-b { 0%, 12% { opacity: 1; stroke-dashoffset: 1; } 34%, 78% { opacity: 1; stroke-dashoffset: 0; } 94%, 100% { opacity: 0; stroke-dashoffset: 0; } }
+@keyframes mz-e { 0%, 12% { opacity: 1; stroke-dashoffset: 1; } 17%, 78% { opacity: 1; stroke-dashoffset: 0; } 94%, 100% { opacity: 0; stroke-dashoffset: 0; } }
+@keyframes mz-ecos { 0%, 35% { opacity: 0; } 52%, 78% { opacity: 1; } 91%, 100% { opacity: 0; } }
+@keyframes mz-cor { 0%, 16.7% { opacity: 0; } 36.7%, 70% { opacity: 1; } 95%, 100% { opacity: 0; } }
+@keyframes mz-forma { from { clip-path: var(--marca); } to { clip-path: var(--tela); } }
+@keyframes mz-surge { from { opacity: 0; } }
+@keyframes mz-botao { from { opacity: 0; scale: 0.8; } }
+
+/* ---------- 6 · três frentes ---------- */
 .frentes { position: relative; padding: calc(128 * var(--u)) 0 calc(150 * var(--u)); background: var(--grad); }
 .frentes__lista { position: relative; z-index: 1; }
 .frente { position: relative; display: grid; grid-template-columns: calc(1113 * var(--u)) calc(700 * var(--u)); align-items: center; padding: 0 0 0 calc(55 * var(--u)); }
@@ -246,7 +469,7 @@ button { font: inherit; color: inherit; }
 .js [data-rv="frente"].is-in .frente__palavra, .js [data-rv="frente"].is-in .lt, .js [data-rv="frente"].is-in .frente__texto { opacity: 1; transform: none; }
 .js [data-rv="frente"].is-in::after { transform: none; }
 
-/* ---------- 5 · programa comércio digital ---------- */
+/* ---------- 7 · programa comércio digital ---------- */
 .programa { position: relative; z-index: 1; background: var(--escuro); }
 /* a foto começa 26 px da arte acima da seção: o cabelo da comerciante encosta na faixa das frentes */
 .programa__cena { position: relative; top: calc(-26 * var(--u)); margin-bottom: calc(-26 * var(--u)); }
@@ -268,61 +491,132 @@ button { font: inherit; color: inherit; }
 .cta:hover .cta__seta, .cta:focus-visible .cta__seta { background: #fff; transform: scale(1.08); }
 .cta:hover .cta__seta svg, .cta:focus-visible .cta__seta svg { transform: translateX(14%); }
 
-/* ---------- 6 · parceiros ---------- */
-.parceiros { padding: calc(140 * var(--u)) calc(100 * var(--u)) calc(210 * var(--u)); background: var(--escuro); }
-.parceiros__lista { display: flex; align-items: center; justify-content: space-between; }
-.parceiros__lista img { height: calc(118 * var(--u)); width: auto; transition: opacity 0.4s ease, scale 0.6s var(--sai); }
-@media (hover: hover) {
-  .parceiros__lista:hover img { opacity: 0.4; }
-  .parceiros__lista li:hover img { opacity: 1; scale: 1.06; }
+/* ---------- 8 · parceiros ---------- */
+/* Sem JS ou com movimento reduzido: a lista parada, como na arte. Com JS ela vira esteira (.is-esteira, site.js): três cópias lado a
+   lado andam uma largura de lista por volta, então a emenda nunca aparece (cobre janelas de até duas listas de largura).
+   A esteira para sob o ponteiro, fora da tela e em aba oculta. A folga vertical da faixa é o espaço do salto e do pulso do hover. */
+.parceiros { padding: calc(140 * var(--u)) 0 calc(210 * var(--u)); background: var(--escuro); }
+.parceiros__lista { display: flex; align-items: center; justify-content: space-between; padding-inline: calc(100 * var(--u)); }
+.parceiros__lista li { position: relative; flex: none; }
+.parceiros__lista img { height: calc(118 * var(--u)); width: auto; transition: opacity 0.4s ease, scale 0.6s var(--sai), translate 0.6s var(--sai); }
+.is-esteira {
+  overflow: hidden; margin-block: calc(-40 * var(--u)); padding-block: calc(40 * var(--u));
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent); mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
 }
+.is-esteira .parceiros__trilho { --vao: calc(112 * var(--u)); display: flex; width: max-content; animation: esteira 48s linear infinite; }
+.is-esteira .parceiros__lista { flex: none; justify-content: flex-start; gap: var(--vao); padding-inline: 0 var(--vao); }
+.is-esteira.is-fora .parceiros__trilho, .js.is-hidden .parceiros__trilho { animation-play-state: paused; }
+@keyframes esteira { to { transform: translateX(calc(-100% / 3)); } }
+/* hover (só ponteiro fino): a esteira para, as outras marcas recuam e a apontada se anima — sobe com mola e um pulso de luz passa por
+   baixo dela, no vocabulário dos fios das frentes e do mapa. Fora do hover essas animações não existem. */
+.parceiros__lista li::after {
+  content: ""; position: absolute; left: 6%; right: 6%; bottom: calc(-14 * var(--u)); height: 2px; border-radius: 2px; opacity: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(255, 174, 24, 0), #ffae18 42%, #fff1d6 58%, rgba(255, 174, 24, 0));
+}
+@media (hover: hover) and (pointer: fine) {
+  .is-esteira:hover .parceiros__trilho { animation-play-state: paused; }
+  .parceiros__faixa:hover img { opacity: 0.36; }
+  .parceiros__lista li:hover img { opacity: 1; scale: 1.08; translate: 0 -6%; transition: opacity 0.25s ease, scale 0.6s var(--mola), translate 0.6s var(--mola); }
+  .parceiros__lista li:hover::after { animation: marca-pulso 0.95s var(--vai) 0.06s both; }
+}
+@keyframes marca-pulso { 0% { opacity: 0; transform: translateX(-46%) scaleX(0.55); } 22%, 72% { opacity: 1; } 100% { opacity: 0; transform: translateX(46%) scaleX(0.55); } }
 
 /* ---------- rodapé ---------- */
 .rodape { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px; padding: max(22px, calc(40 * var(--u))) max(20px, calc(100 * var(--u))); border-top: 1px solid rgba(255, 238, 210, 0.12); font-size: max(13px, calc(18 * var(--u))); text-transform: uppercase; letter-spacing: 0.04em; color: rgba(255, 238, 210, 0.7); }
 .rodape ul { display: flex; flex-wrap: wrap; gap: 8px 32px; }
 .rodape a { text-decoration: none; transition: color 0.25s; }
 .rodape a:hover { color: #fff; }
+/* crédito de autoria: marca oficial da Siteflux na variante para fundo escuro, numa linha própria sob o rodapé */
+.rodape__credito { flex-basis: 100%; display: flex; justify-content: center; margin-top: max(6px, calc(14 * var(--u))); padding-top: max(14px, calc(26 * var(--u))); border-top: 1px solid rgba(255, 238, 210, 0.08); font-size: max(11px, calc(15 * var(--u))); font-weight: 700; letter-spacing: 0.14em; line-height: 1; }
+.rodape__credito a { display: inline-flex; align-items: center; gap: 0.9em; min-height: 44px; color: rgba(255, 238, 210, 0.62); }
+.rodape__credito img { height: clamp(26px, calc(38 * var(--u)), 40px); width: auto; transition: scale 0.5s var(--sai); }
+.rodape__credito a:hover img, .rodape__credito a:focus-visible img { scale: 1.05; }
 
 /* ---------- abaixo de 900 px: layout próprio, sem depender das medidas da arte ---------- */
 @media (max-width: 899px) {
+  :root { --lado: 22px; } /* margem lateral do conteúdo; cresce no tablet (bloco seguinte) */
   .hero__powered { display: none; }
   .hero__logo { width: clamp(132px, 38vw, 190px); top: 18px; }
-  .hero__end { bottom: 7vh; }
-  .hero__start { bottom: 24vh; }
+  .hero__end { bottom: calc(7vh + var(--barra, 0px)); }
+  /* a indicação de rolagem fica baixa, onde depois entra a frase: as duas nunca estão na tela ao mesmo tempo */
+  .hero__start { bottom: calc(7vh + var(--barra, 0px)); }
+
+  /* no celular o texto ocupa a largura toda e as três barras passavam por cima das linhas: fora do hero o botão ganha uma
+     base translúcida (escura ou creme, conforme a seção) e some com o menu aberto */
+  .menu-btn::before {
+    content: ""; position: absolute; inset: 3px; z-index: -1; border-radius: 13px; background: rgba(45, 22, 4, 0.62);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); opacity: 0; transition: opacity 0.35s ease, background-color 0.35s ease;
+  }
+  .fora-hero .menu-btn::before { opacity: 1; }
+  [data-tema-atual="claro"] .menu-btn::before { background: rgba(255, 238, 210, 0.8); }
+  .menu-aberto .menu-btn::before { opacity: 0; }
+
+  /* menu: uma linha por link (o mais longo, "Como construímos", define o corpo), linhas altas para o dedo */
+  .menu { --m-lado: var(--lado); }
+  .menu__nav a { padding: max(9px, 1.5vh) 14px max(9px, 1.5vh) var(--m-lado); font-size: clamp(21px, min(7.4vw, 6.2vh), 56px); }
+  .menu__pe { padding-right: 14px; }
+  /* celular deitado: a tela é baixa demais para as linhas altas — tudo se compacta para caber sem rolagem */
+  @media (max-height: 480px) {
+    .menu { padding: 56px 0 12px; }
+    .menu__nav a { padding-block: 4px; font-size: clamp(19px, 5.6vh, 26px); }
+    .menu__pe { padding-top: 10px; }
+    .menu__pe .pilula { --h: 44px; }
+  }
 
   .presente { padding: 56px 0 0; }
   .presente__faixa { display: none; }
-  .presente__grade { display: flex; flex-direction: column; padding: 0 22px; gap: 34px; }
+  .presente__grade { display: flex; flex-direction: column; padding: 0 var(--lado); gap: 34px; }
   .foto { order: 2; width: 100%; height: auto; aspect-ratio: 706 / 800; border-radius: 28px; }
   .js [data-rv="clip"] .foto__janela { clip-path: inset(100% 0 0 0 round 28px); }
   .js [data-rv="clip"].is-in .foto__janela { clip-path: inset(0 0 0 0 round 28px); }
   .presente__texto { display: contents; }
   .presente__texto .t2 { order: 1; font-size: clamp(30px, 9vw, 46px); }
+  /* texto corrido do celular: 17 px com entrelinha de leitura, e quebras que evitam palavra sozinha na última linha */
+  .corpo, .frente__texto { text-wrap: pretty; }
   .presente__texto .corpo { order: 3; margin-top: 0; font-size: 17px; line-height: 1.38; }
-  .presente__acoes { margin-top: 44px; padding: 44px 22px 34vw; background: var(--grad); }
+  .presente__acoes { margin-top: 44px; padding: 44px var(--lado) 24vw; background: var(--grad); }
   .presente__powered { width: min(100%, 320px); margin: 0; }
   .pilulas { flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 28px; padding: 0; }
   .pilula { --h: 52px; }
   /* encolhe abaixo de ~380 px: em 320 a terceira pílula passava 6 px da tela (15 px com o rótulo em negrito) */
   .pilula__rot { font-size: clamp(10.5px, 3.4vw, 13px); padding: 0 clamp(12px, 4.4vw, 20px); }
 
-  .letreiro { height: auto; top: -15vw; margin-bottom: -15vw; }
-  .letreiro__palavra { position: relative; font-size: 26vw; left: -2vw; }
-  .letreiro__frase { position: static; padding: 22px 22px 0; font-size: clamp(22px, 7vw, 34px); color: var(--tinta); text-shadow: none; }
-  .como__grade { display: block; padding: 56px 22px 0; }
+  /* a palavra inteira cabe na tela (a 26vw só se lia "DIGITALI") e cruza a troca de fundo como na arte; o deslize lateral
+     no celular é curto (data-px-x-m no HTML) para as pontas não saírem da tela */
+  .letreiro { height: auto; top: -8.8vw; margin-bottom: -8.8vw; }
+  .letreiro__palavra { position: relative; left: 0; padding-left: 5.4vw; font-size: 14.9vw; }
+  /* entrelinha mais aberta que a da arte: a 1,04 a cedilha de "AÇO" pousava sobre o E de "COMPLETO" e lia-se um acento */
+  .letreiro__frase { --lh: 1.14; position: static; padding: 22px var(--lado) 0; font-size: clamp(22px, 7vw, 34px); color: var(--tinta); text-shadow: var(--peso); }
+  .como__grade { display: block; padding: 56px var(--lado) 0; }
   .como__grade .t2 { font-size: clamp(24px, 7.4vw, 44px); }
   .como__grade .corpo { padding-top: 26px; font-size: 17px; line-height: 1.38; }
-  .chamada { margin-top: 60px; padding: 0 0 6px 22px; font-size: 8.9vw; }
+  .chamada { margin-top: 60px; padding: 0 0 6px var(--lado); font-size: 8.9vw; }
 
-  .regiao { padding: 64px 18px; }
-  .quadro { width: 100%; height: auto; aspect-ratio: 760 / 680; border-radius: 12px; }
-  .quadro__grade { inset: -40px; background-size: 34px 34px, 34px 34px; }
+  /* cartões em coluna; a pilha se forma na casa do meio (o de cima desce, o de baixo sobe) e abre na vertical */
+  .publicos { padding: 52px var(--lado) 60px; }
+  .publicos__lista { --vao: 14px; --leque: 9px; grid-template-columns: 1fr; grid-auto-rows: 1fr; }
+  .publico { min-height: 0; padding: 26px 22px 28px; border-radius: 24px; }
+  .publico__sinal { margin-bottom: 12px; }
+  .publico__nome { font-size: 23px; }
+  .publico__nome::after { margin: 10px auto 12px; }
+  .publico__texto { max-width: 20em; font-size: 16px; line-height: 1.4; }
+
+  .regiao { padding: 60px 14px 44px; background: radial-gradient(ellipse 64% 44% at 50% 52%, rgba(255, 122, 26, 0.17), rgba(255, 122, 26, 0.05) 62%, rgba(255, 122, 26, 0)) var(--escuro); }
+  .mapa { width: min(100%, 520px); }
+
+  .marco { padding: 30px 0 68px; }
+  .marco__grade { display: block; padding: 0 var(--lado); }
+  .marco__grade .t2 { font-size: clamp(24px, 7.4vw, 44px); }
+  .marco__grade .corpo { padding-top: 24px; font-size: 17px; line-height: 1.38; }
+  /* o palco passa da margem do texto: no celular cada pixel de largura do vídeo conta */
+  .marco__palco { width: min(100% - 28px, var(--alto)); margin: 38px auto 0; }
+  .marco__botao { width: clamp(50px, 8.6vw, 78px); }
 
   .frentes { padding: 44px 0 56px; }
-  .frente { display: block; padding: 26px 22px 24px; }
+  .frente { display: block; padding: 26px var(--lado) 24px; }
   .frente + .frente { padding-top: 26px; }
-  .frente::after { left: 22px; right: 22px; }
-  .frente__pulso { left: 22px; }
+  .frente::after { left: var(--lado); right: var(--lado); }
+  .frente__pulso { left: var(--lado); }
   .frente__nome { font-size: 10.4vw; }
   .frente__texto { margin-top: 6px; font-size: 17px; line-height: 1.38; max-width: none; }
 
@@ -333,21 +627,65 @@ button { font: inherit; color: inherit; }
   .programa__marcas { position: static; width: min(84vw, 420px); margin-top: 26px; }
   .cta { position: static; margin: 34px 0 0; width: auto; gap: 22px; padding: 0 9px 0 30px; }
 
-  .parceiros { padding: 56px 22px 72px; }
-  .parceiros__lista { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px 12px; justify-items: center; }
+  .parceiros { padding: 56px 0 72px; }
+  .parceiros__lista { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px 12px; justify-items: center; padding-inline: var(--lado); }
+  .is-esteira { margin-block: -20px; padding-block: 20px; }
+  .is-esteira .parceiros__trilho { --vao: 38px; animation-duration: 30s; }
+  .is-esteira .parceiros__lista { display: flex; }
   .parceiros__lista img { height: clamp(58px, 17vw, 84px); }
   .rodape { justify-content: center; text-align: center; }
+  /* links do rodapé com altura de toque (eram 15 px): a folga vertical entra no próprio link e sai do espaço entre as linhas */
+  .rodape ul { gap: 0 28px; justify-content: center; }
+  .rodape ul a { display: inline-block; padding-block: 14px; }
+}
+@media (max-width: 899px) and (prefers-reduced-motion: no-preference) {
+  .js .publicos__lista:not(.is-in) .publico { transform: translate(calc(var(--k) * var(--leque)), calc(var(--k) * (-100% - var(--vao) - var(--leque)))); }
+}
+
+/* ---------- 600 a 899 px (tablet em pé, celular grande deitado): o mesmo layout em coluna, com as medidas de uma tela maior.
+   Sem isto o desenho do celular só esticava: texto de 17 px em linhas de mais de 90 letras e a foto ocupando a tela inteira. */
+@media (min-width: 600px) and (max-width: 899px) {
+  :root { --lado: clamp(30px, 6vw, 52px); }
+  .foto { aspect-ratio: 1 / 1; }
+  .presente__texto .corpo, .como__grade .corpo, .frente__texto { font-size: clamp(18px, 2.5vw, 21px); line-height: 1.42; max-width: 34em; }
+  .presente__powered { width: min(100%, 400px); }
+  .pilulas { flex-direction: row; flex-wrap: wrap; gap: 12px 14px; }
+  .pilula__rot { font-size: 13px; padding: 0 20px; }
+  .presente__acoes { padding-bottom: 20vw; }
+  .letreiro__frase { font-size: clamp(30px, 5.2vw, 44px); }
+  .como__grade .t2 { font-size: clamp(36px, 6.2vw, 52px); }
+  .presente__texto .t2 { font-size: clamp(40px, 6.6vw, 56px); }
+  .publicos { padding-block: 64px 72px; }
+  .publicos__lista { --vao: 18px; max-width: 600px; margin-inline: auto; }
+  .publico { padding: 32px 30px 34px; }
+  .publico__sinal { width: 36px; margin-bottom: 16px; }
+  .publico__nome::after { margin: 14px auto 16px; }
+  .publico__nome { font-size: 27px; }
+  .publico__texto { font-size: 18px; }
+  .regiao { padding: 76px var(--lado) 56px; }
+  .mapa { width: min(100%, 600px); }
+  .marco__grade .t2 { font-size: clamp(36px, 6.2vw, 52px); }
+  .marco__grade .corpo { font-size: clamp(18px, 2.5vw, 21px); line-height: 1.42; max-width: 34em; }
+  .marco__palco { width: min(100% - 2 * var(--lado), var(--alto)); }
+  .frente { padding-block: 30px 28px; }
+  .frente__texto { margin-top: 8px; }
+  .programa__foto img { width: 150%; margin-left: -22%; }
+  .programa__titulo { width: min(56vw, 440px); margin-top: -9vw; }
+  .parceiros__lista { grid-template-columns: repeat(4, 1fr); gap: 26px 16px; }
+  .parceiros__lista img { height: clamp(52px, 9vw, 78px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   /* entradas: tudo no lugar, sem transição. A lista é explícita de propósito: o antigo ".js [data-rv] *" também zerava transform e
-     opacity dos grupos internos do mapa (o quadro é um [data-rv]) e, com movimento reduzido, ele parava no Brasil com tudo aceso. */
+     opacity dos grupos internos do mapa (a figura dele é um [data-rv]) e, com movimento reduzido, o mapa perdia o enquadramento. */
   .js [data-rv], .js [data-rv] .ln > span, .js [data-rv] .foto__janela, .js [data-rv] .foto__janela img, .js [data-rv="varre"] > img,
   .js [data-rv] .frente__palavra, .js [data-rv] .lt, .js [data-rv] .frente__texto, .js [data-rv]::after {
     transition: none !important; transform: none !important; opacity: 1 !important; clip-path: none !important; scale: 1 !important;
   }
-  .hero__mouse i, .hero__rolar svg { animation: none; }
-  .menu, .menu__nav a span, .pilula, .cta { transition: none; }
+  .hero__mouse i, .hero__fone i, .hero__rolar svg { animation: none; }
+  .menu, .menu-aberto .menu, .menu__nav li, .menu__nav a::before, .menu__pe, .menu-aberto .menu__pe, .roll, .roll-t, .pilula, .cta { transition: none; }
   .frente__pulso { display: none; }
+  .publico, .publico::before, .publico::after, .publico__sinal, .ps-fio, .ps-cor, .publico__nome::after { transition: none; }
+  .marco__tela, .marco__capa, .marco__fundo, .marco__tracos, .marco__play, .marco__botao, .marco__video, .parceiros__lista img, .rodape__credito img { transition: none; }
 }

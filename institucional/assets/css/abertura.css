@@ -101,14 +101,25 @@
 @keyframes im-dot { 0% { transform: scale(0); fill: #f08a1d; } 100% { transform: scale(1); fill: #e63823; } }
 
 /* ---------- hero (composição do hero-preview) ---------- */
-/* Scrub (html.hero-scrub, ponteiro fino): 280vh desktop / 240vh janela estreita, sticky. Toque (is-play), sem JS, reduced motion,
-   economia de dados ou vídeo com falha: 100svh em fluxo normal. O preview usava 560/320vh; o percurso foi encurtado. */
+/* Scrub (html.hero-scrub, mouse e toque): 280vh desktop / 240vh tela estreita, sticky. Play (toque que não acompanha o seek), sem JS,
+   reduced motion, economia de dados ou vídeo com falha: 100svh em fluxo normal. O preview usava 560/320vh; o percurso foi encurtado. */
 .hero { --hero-bg: #251404; position: relative; height: 100vh; height: 100svh; background: var(--hero-bg); color: #fff; }
 .hero-scrub .hero { height: 280vh; }
 .hero__sticky { position: relative; height: 100vh; height: 100svh; overflow: hidden; background: var(--hero-bg); }
 .hero-scrub .hero__sticky { position: sticky; top: 0; }
+/* palco pinado na altura do viewport GRANDE: no celular a barra de endereço recolhe ao rolar e um palco de 100svh deixava uma
+   faixa do fundo aparecendo embaixo do vídeo. O que fica ancorado na base (frase e indicação de rolagem) sobe a diferença
+   (--barra) e nasce visível com a barra aberta. No desktop lvh = svh e nada muda. */
+@supports (height: 100lvh) {
+  .hero-scrub .hero__sticky { height: 100lvh; --barra: calc(100lvh - 100svh); }
+}
 .hero__video {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--hero-bg);
+}
+/* quadro final por cima do vídeo: só aparece (abertura.js) enquanto o vídeo não tem quadro para mostrar */
+.hero__alt {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0; visibility: hidden;
+  background: var(--hero-bg) url("../img/hero-poster-fim.jpg") center / cover no-repeat;
 }
 /* dissolução para o fundo do hero: mesmo resultado da antiga máscara (40% → 100%), mas como camada própria animada só por
    opacity — o <video> fica sem mask e o navegador o compõe pelo caminho barato. Sem JS/estático: opacidade 1 (quadro final). */
@@ -135,7 +146,7 @@
   width: 100%; max-width: calc(var(--wrap) + var(--gutter) * 2); margin-inline: auto; padding-inline: var(--gutter);
   display: none;
 }
-.js .hero__start { display: block; }
+.js .hero.is-scrub .hero__start, .js .hero.is-play .hero__start { display: block; } /* só com o modo decidido: antes disso o hero mostra o quadro final */
 /* sem frase de abertura: o bloco inicial guarda só a indicação de rolagem, e o escurecimento que dava leitura ao texto saiu junto */
 .hero__lead { margin-top: 16px; max-width: 26em; font-size: clamp(1.02rem, 0.95rem + 0.4vw, 1.25rem); line-height: 1.5; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5); }
 .hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; margin-top: 24px; }
@@ -197,32 +208,21 @@
 svg.net { width: 100%; height: auto; overflow: visible; }
 
 /* ---------- mapa ---------- */
-/* Brasil inteiro → ponto do Vale do Aço acende → zoom até Minas Gerais → pausa → (com malha municipal) zoom regional
-   e só então conexões locais. Uma projeção, um grupo-câmera; enquadramentos em assets/css/map-camera.css (gerado).
-   O brilho quente foi aprovado só para este mapa. */
-svg.net--map { overflow: hidden; border-radius: var(--radius); }
+/* Só o mapa regional: os municípios do Vale do Aço e a teia de conexões, sem quadro. Em 07/10/2026 saíram a aproximação
+   Brasil → Minas → Vale e, do HTML, os contornos do país, dos estados e de Minas. As camadas continuam na projeção do mapa do Brasil
+   (gerada por tools/build-map.js): por isso o grupo-câmera leva o enquadramento final (--cam-end) e tudo que tem tamanho de tela —
+   espessuras, nós e núcleo — é multiplicado pelo inverso dessa escala (--inv-end). O brilho quente foi aprovado só para este mapa. */
+.net--map { --cam-end: translate(-14213.77px, -11577.4px) scale(30.3663); --inv-end: 0.03293; }
 .map__cam { transform-origin: 0 0; transform: var(--cam-end); }
-/* sem vector-effect: non-scaling-stroke — em paths grandes (a malha de UFs tem ~45 KB) ele travou a pintura do Chromium.
-   A espessura é compensada animando stroke-width com o inverso da escala da câmera. */
-.map__br, .map__uf, .map__mg, .map__mun { stroke-linejoin: round; }
-.map__br { fill: rgba(255, 122, 26, 0.05); stroke: rgba(255, 196, 140, 0.6); stroke-width: 1.1px; }
-.map__uf { fill: none; stroke: rgba(255, 174, 24, 0.24); stroke-width: 1px; }
-.map__mg { fill: rgba(255, 122, 26, 0.14); stroke: var(--orange); stroke-opacity: 0.85; stroke-width: calc(1.3px * var(--inv-end)); }
-.map__mun { fill: rgba(255, 122, 26, 0.07); stroke: rgba(255, 196, 140, 0.42); stroke-width: calc(1px * var(--inv-end)); }
+/* sem vector-effect: non-scaling-stroke — em paths grandes ele travou a pintura do Chromium; --inv-end compensa a espessura */
+.map__mun { stroke-linejoin: round; fill: rgba(255, 122, 26, 0.07); stroke: rgba(255, 196, 140, 0.42); stroke-width: calc(1px * var(--inv-end)); }
 .map__mun--rm { fill: rgba(255, 122, 26, 0.2); stroke: var(--orange); stroke-width: calc(1.4px * var(--inv-end)); }
-/* estado final (também sem JS, com reduced motion e ao pausar): último enquadramento, vizinhos apagados */
-.map__br, .map__uf { opacity: 0; }
-.net--map.has-regional .map__mg { opacity: 0.35; }
 
-/* marcador da origem: escala inversa da câmera em torno da coordenada real → tamanho de tela constante */
+/* núcleo da teia: escala inversa da câmera em torno da coordenada real → tamanho de tela constante */
 .origin { transform-origin: var(--x) var(--y); transform: scale(var(--inv-end)); }
 .origin__halo, .origin__echo { transform-box: fill-box; transform-origin: center; }
 .origin__dot { fill: #fff1d6; stroke: var(--red); stroke-width: 2.5; }
 .origin__echo { fill: none; stroke: var(--amber); stroke-width: 1.5; opacity: 0; }
-.origin__label { fill: #fff; font-family: var(--font-title); font-size: 15px; font-weight: 700; paint-order: stroke; stroke: rgba(26, 10, 6, 0.75); stroke-width: 4px; stroke-linejoin: round; }
-.map__steps { font-family: var(--font-title); font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; fill: rgba(255, 255, 255, 0.45); }
-.map__step:last-of-type { fill: #fff; }
-.map__sep { fill: rgba(255, 255, 255, 0.3); }
 
 /* teia regional: fios do núcleo (Ipatinga) aos municípios + malha secundária entre vizinhos.
    Espessuras multiplicadas pelo inverso da escala final (~26×) para terem 1–6 px de tela, nunca manchas. */
@@ -234,65 +234,30 @@ svg.net--map { overflow: hidden; border-radius: var(--radius); }
 .mnode { transform-origin: var(--x) var(--y); transform: scale(var(--inv-end)); }
 .mnode__halo { transform-box: fill-box; transform-origin: center; }
 .mnode__core { fill: #fff1d6; }
-.mnode__label { fill: #fff; font-family: var(--font-title); font-size: 12px; font-weight: 600; paint-order: stroke; stroke: rgba(26, 10, 6, 0.8); stroke-width: 3.5px; stroke-linejoin: round; }
-/* rótulo do ponto: "Vale do Aço" nas escalas de país/estado; "Ipatinga" no mapa regional */
-.origin__label--far { opacity: 0; }
-.net--map:not(.has-regional) .origin__label--far { opacity: 1; }
-.net--map:not(.has-regional) .origin__label--near { display: none; }
-.origin__label--near { font-size: 12px; font-weight: 600; }
-
-/* antes de entrar na tela (com JS e movimento permitido) o mapa espera no quadro do Brasil, para não saltar.
-   Só com movimento permitido: com prefers-reduced-motion o mapa nunca recebe .is-live e ficaria nesta espera para sempre
-   (Brasil sem marcador), em vez da composição final. */
+/* antes de chegar à tela (com JS e movimento permitido) o mapa espera apagado; sem JS ou com movimento reduzido ele já está
+   completo, com a teia inteira desenhada */
 @media (prefers-reduced-motion: no-preference) {
-  .js .net--map:not(.is-live) .map__cam { transform: var(--cam-br); }
-  .js .net--map:not(.is-live) .map__br, .js .net--map:not(.is-live) .map__uf, .js .net--map.has-regional:not(.is-live) .map__mg { opacity: 1; }
-  .js .net--map:not(.is-live) .origin { opacity: 0; transform: scale(1); }
-  .js .net--map:not(.is-live) .map__regional { opacity: 0; }
-  .js .net--map:not(.is-live) .origin__label--far { opacity: 1; }
-  .js .net--map:not(.is-live) .origin__label--near { opacity: 0; }
-  .js .net--map:not(.is-live) .map__mg { stroke-width: 1.3px; }
-  .js .net--map:not(.is-live) .map__step { fill: rgba(255, 255, 255, 0.45); }
-  .js .net--map:not(.is-live) .map__step--1 { fill: #fff; }
+  .js .net--map:not(.is-live) .map__regional, .js .net--map:not(.is-live) .origin { opacity: 0; }
 }
 
-/* aproximação: toca uma vez ao entrar na seção; tempos em segundos desde a entrada.
-   Brasil 0–0,4 · ponto 0,4–1 · zoom MG 1–2,6 · pausa 2,6–3 · zoom regional 3–4,8 · conexões em loop depois.
-   Revisão de 06/10/2026: eram 7,5 s até as conexões (1,5 s parado no Brasil); quem passa pela seção via só o contorno do país
-   e nunca o mapa regional da arte. Mudaram só atrasos e durações: as curvas (mc-*, mo-*, mw-*) continuam as geradas. */
-.js .net--map.is-live .map__cam { animation: mc-mg 1.6s linear 1s both; }
-.js .net--map.is-live .origin { animation: mo-in 0.6s ease-out 0.4s both, mo-mg 1.6s linear 1s forwards; }
-.js .net--map.is-live .origin__label--far { animation: im-show 0.4s ease-out 0.7s both; }
-.js .net--map.is-live .origin__echo { animation: mo-echo 3s ease-out 0.5s infinite; }
-.js .net--map.is-live .origin__halo { animation: mo-halo 3s ease-in-out 0.5s infinite; }
-.js .net--map.is-live .map__br, .js .net--map.is-live .map__uf { animation: m-fade-out 1.1s ease-in-out 1.15s both, mw-mg 1.6s linear 1s both; }
-.js .net--map.is-live .map__mg { animation: mw-mg 1.6s linear 1s both; }
-.js .net--map.is-live .map__step--1 { animation: ms-off 0.5s linear 1.9s both; }
-.js .net--map.is-live .map__step--2 { animation: ms-on 0.5s linear 1.9s both; }
+/* entrada: toca uma vez quando o mapa chega à tela (abertura.js liga .is-live com 35% dele à vista); tempos em segundos.
+   municípios 0–0,9 · núcleo metropolitano 0,25 · ponto de origem 0,6 · nós 0,7–1,5 · teia a partir de 0,8, em loop de 6 s */
+.js .net--map.is-live .map__mun { animation: im-show 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.js .net--map.is-live .map__mun--rm { animation-delay: 0.25s; }
+.js .net--map.is-live .origin { animation: mo-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s both; }
+.js .net--map.is-live .origin__echo { animation: mo-echo 3s ease-out 1.1s infinite; }
+.js .net--map.is-live .origin__halo { animation: mo-halo 3s ease-in-out 1.1s infinite; }
+.js .net--map.is-live .map__links { animation: im-show 0.8s ease-out 0.8s both; }
+.js .net--map.is-live .mesh { animation: ml-mesh 6s ease-in-out 1.1s infinite both; }
+.js .net--map.is-live .mnode { animation: mn-in 0.5s ease-out calc(0.7s + var(--i) * 0.1s) both; }
+.js .net--map.is-live .mnode__halo { animation: mn-halo 6s ease-in-out calc(1.1s + var(--i) * 0.4s) infinite both; }
+.js .net--map.is-live .link__line { animation: ml-line 6s linear calc(1.1s + var(--i) * 0.4s) infinite both; }
+.js .net--map.is-live .link__glow { animation: ml-glow 6s linear calc(1.1s + var(--i) * 0.4s) infinite both; }
+.js .net--map.is-live .link__pulse { animation: ml-pulse 6s linear calc(1.1s + var(--i) * 0.4s) infinite both; }
 
-.js .net--map.has-regional.is-live .map__cam { animation: mc-mg 1.6s linear 1s both, mc-end 1.8s linear 3s forwards; }
-.js .net--map.has-regional.is-live .origin { animation: mo-in 0.6s ease-out 0.4s both, mo-mg 1.6s linear 1s forwards, mo-end 1.8s linear 3s forwards; }
-.js .net--map.has-regional.is-live .map__mg { animation: mw-mg 1.6s linear 1s both, mw-end 1.8s linear 3s forwards, m-dim 1.2s ease-in-out 3.4s both; }
-.js .net--map.has-regional.is-live .map__regional { animation: im-show 1s ease-out 3.65s both; }
-.js .net--map.has-regional.is-live .origin__label--far { animation: im-show 0.4s ease-out 0.7s both, im-hide 0.4s linear 3.2s forwards; }
-.js .net--map.has-regional.is-live .origin__label--near { animation: im-show 0.5s ease-out 4.4s both; }
-.js .net--map.has-regional.is-live .mesh { animation: ml-mesh 6s ease-in-out 4.8s infinite both; }
-.js .net--map.has-regional.is-live .map__step--2 { animation: ms-on 0.5s linear 1.9s both, ms-off 0.5s linear 4s forwards; }
-.js .net--map.has-regional.is-live .map__step--3 { animation: ms-on 0.5s linear 4s both; }
-.js .net--map.has-regional.is-live .mnode { animation: mn-in 0.5s ease-out calc(4.6s + var(--i) * 0.1s) both; }
-.js .net--map.has-regional.is-live .mnode__halo { animation: mn-halo 6s ease-in-out calc(4.8s + var(--i) * 0.4s) infinite both; transform-box: fill-box; transform-origin: center; }
-.js .net--map.has-regional.is-live .link__line { animation: ml-line 6s linear calc(4.8s + var(--i) * 0.4s) infinite both; }
-.js .net--map.has-regional.is-live .link__glow { animation: ml-glow 6s linear calc(4.8s + var(--i) * 0.4s) infinite both; }
-.js .net--map.has-regional.is-live .link__pulse { animation: ml-pulse 6s linear calc(4.8s + var(--i) * 0.4s) infinite both; }
-
-/* mc-*, mo-mg/end e mw-* são gerados em map-camera.css (escala em log + easeInOutCubic) */
-@keyframes mo-in { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+@keyframes mo-in { from { opacity: 0; transform: scale(calc(var(--inv-end) * 0.4)); } to { opacity: 1; transform: scale(var(--inv-end)); } }
 @keyframes mo-echo { 0% { transform: scale(1); opacity: 0.9; } 60%, 100% { transform: scale(3.2); opacity: 0; } }
 @keyframes mo-halo { 0%, 100% { transform: scale(0.85); opacity: 0.75; } 50% { transform: scale(1.12); opacity: 1; } }
-@keyframes m-fade-out { from { opacity: 1; } to { opacity: 0; } }
-@keyframes m-dim { from { opacity: 1; } to { opacity: 0.35; } }
-@keyframes ms-on { from { fill: rgba(255, 255, 255, 0.45); } to { fill: #fff; } }
-@keyframes ms-off { from { fill: #fff; } to { fill: rgba(255, 255, 255, 0.45); } }
 @keyframes mn-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes mn-halo { 0%, 44% { transform: scale(0.6); opacity: 0.5; } 56% { transform: scale(1.35); opacity: 1; } 72%, 100% { transform: scale(0.6); opacity: 0.5; } }
 @keyframes ml-mesh { 0%, 30% { stroke-opacity: 0.12; } 55%, 80% { stroke-opacity: 0.5; } 100% { stroke-opacity: 0.12; } }
@@ -306,120 +271,13 @@ svg.net--map { overflow: hidden; border-radius: var(--radius); }
 /* (* não alcança pseudo-elementos: o eco do núcleo da rede, .rede__hub::after, seguia animando fora da tela) */
 .js .net.is-paused, .js .net.is-paused *, .js .net.is-paused *::before, .js .net.is-paused *::after,
 .js.is-hidden .net, .js.is-hidden .net *, .js.is-hidden .net *::before, .js.is-hidden .net *::after { animation-play-state: paused !important; }
+/* enquanto a página rola (site.js liga .rolando e desliga quando o parallax assenta) os loops das conexões esperam: cada
+   quadro deles repinta o mapa inteiro, e junto com a rolagem isso passava do tempo de um quadro. A entrada (uma vez só)
+   segue tocando; o relógio dos loops congela e continua do mesmo ponto. */
+.js.rolando .net--map :is(.mesh, .mnode__halo, .link__line, .link__glow, .link__pulse, .origin__echo, .origin__halo) { animation-play-state: paused !important; }
 /* pausa pedida pela pessoa: volta à composição estática completa */
 .js.motion-off .net, .js.motion-off .net *, .js.motion-off .net *::before, .js.motion-off .net *::after { animation: none !important; }
 
-
-/* GERADO por tools/build-map.js — não editar à mão. Câmera do mapa (viewBox 700×620). */
-.net--map {
-  --cam-br: translate(0px, 0px) scale(1);
-  --cam-mg: translate(-946.01px, -813.65px) scale(2.9749);
-  --cam-end: translate(-14213.77px, -11577.4px) scale(30.3663);
-  --inv-mg: 0.33614;
-  --inv-end: 0.03293;
-}
-@keyframes mc-mg {
-  0% { transform: translate(0px, 0px) scale(1); }
-  8.33% { transform: translate(-1.3px, -1.11px) scale(1.0025); }
-  16.67% { transform: translate(-10.47px, -8.96px) scale(1.0204); }
-  25% { transform: translate(-36.07px, -30.87px) scale(1.0705); }
-  33.33% { transform: translate(-89.05px, -76.24px) scale(1.1753); }
-  41.67% { transform: translate(-186.36px, -159.68px) scale(1.3709); }
-  50% { transform: translate(-358.58px, -307.62px) scale(1.7248); }
-  58.33% { transform: translate(-570.6px, -490.06px) scale(2.1701); }
-  66.67% { transform: translate(-740.03px, -636.04px) scale(2.5312); }
-  75% { transform: translate(-855.29px, -735.41px) scale(2.779); }
-  83.33% { transform: translate(-918.53px, -789.94px) scale(2.9155); }
-  91.67% { transform: translate(-942.55px, -810.67px) scale(2.9674); }
-  100% { transform: translate(-946.01px, -813.65px) scale(2.9749); }
-}
-@keyframes mc-end {
-  0% { transform: translate(-946.01px, -813.65px) scale(2.9749); }
-  6.25% { transform: translate(-949.38px, -816.34px) scale(2.9817); }
-  12.5% { transform: translate(-973.17px, -835.3px) scale(3.0294); }
-  18.75% { transform: translate(-1039.59px, -888.3px) scale(3.1629); }
-  25% { transform: translate(-1177.14px, -998.2px) scale(3.4398); }
-  31.25% { transform: translate(-1429.79px, -1200.49px) scale(3.9504); }
-  37.5% { transform: translate(-1875.85px, -1558.74px) scale(4.8562); }
-  43.75% { transform: translate(-2669.78px, -2198.6px) scale(6.4778); }
-  50% { transform: translate(-4143.06px, -3390.28px) scale(9.5046); }
-  56.25% { transform: translate(-6294.67px, -5135.63px) scale(13.9459); }
-  62.5% { transform: translate(-8544.29px, -6963.67px) scale(18.6026); }
-  68.75% { transform: translate(-10601.73px, -8637.17px) scale(22.8683); }
-  75% { transform: translate(-12237.36px, -9968.31px) scale(26.2625); }
-  81.25% { transform: translate(-13345.01px, -10870.02px) scale(28.5621); }
-  87.5% { transform: translate(-13950.81px, -11363.28px) scale(29.8202); }
-  93.75% { transform: translate(-14180.64px, -11550.42px) scale(30.2975); }
-  100% { transform: translate(-14213.77px, -11577.4px) scale(30.3663); }
-}
-@keyframes mo-mg {
-  0% { transform: scale(1); }
-  8.33% { transform: scale(0.99748); }
-  16.67% { transform: scale(0.98001); }
-  25% { transform: scale(0.93413); }
-  33.33% { transform: scale(0.85085); }
-  41.67% { transform: scale(0.72945); }
-  50% { transform: scale(0.57978); }
-  58.33% { transform: scale(0.46081); }
-  66.67% { transform: scale(0.39506); }
-  75% { transform: scale(0.35984); }
-  83.33% { transform: scale(0.343); }
-  91.67% { transform: scale(0.33699); }
-  100% { transform: scale(0.33614); }
-}
-@keyframes mo-end {
-  0% { transform: scale(0.33614); }
-  6.25% { transform: scale(0.33538); }
-  12.5% { transform: scale(0.3301); }
-  18.75% { transform: scale(0.31617); }
-  25% { transform: scale(0.29071); }
-  31.25% { transform: scale(0.25314); }
-  37.5% { transform: scale(0.20592); }
-  43.75% { transform: scale(0.15437); }
-  50% { transform: scale(0.10521); }
-  56.25% { transform: scale(0.07171); }
-  62.5% { transform: scale(0.05376); }
-  68.75% { transform: scale(0.04373); }
-  75% { transform: scale(0.03808); }
-  81.25% { transform: scale(0.03501); }
-  87.5% { transform: scale(0.03353); }
-  93.75% { transform: scale(0.03301); }
-  100% { transform: scale(0.03293); }
-}
-@keyframes mw-mg {
-  0% { stroke-width: 1.3px; }
-  8.33% { stroke-width: 1.2967px; }
-  16.67% { stroke-width: 1.274px; }
-  25% { stroke-width: 1.2144px; }
-  33.33% { stroke-width: 1.1061px; }
-  41.67% { stroke-width: 0.9483px; }
-  50% { stroke-width: 0.7537px; }
-  58.33% { stroke-width: 0.5991px; }
-  66.67% { stroke-width: 0.5136px; }
-  75% { stroke-width: 0.4678px; }
-  83.33% { stroke-width: 0.4459px; }
-  91.67% { stroke-width: 0.4381px; }
-  100% { stroke-width: 0.437px; }
-}
-@keyframes mw-end {
-  0% { stroke-width: 0.437px; }
-  6.25% { stroke-width: 0.436px; }
-  12.5% { stroke-width: 0.4291px; }
-  18.75% { stroke-width: 0.411px; }
-  25% { stroke-width: 0.3779px; }
-  31.25% { stroke-width: 0.3291px; }
-  37.5% { stroke-width: 0.2677px; }
-  43.75% { stroke-width: 0.2007px; }
-  50% { stroke-width: 0.1368px; }
-  56.25% { stroke-width: 0.0932px; }
-  62.5% { stroke-width: 0.0699px; }
-  68.75% { stroke-width: 0.0568px; }
-  75% { stroke-width: 0.0495px; }
-  81.25% { stroke-width: 0.0455px; }
-  87.5% { stroke-width: 0.0436px; }
-  93.75% { stroke-width: 0.0429px; }
-  100% { stroke-width: 0.0428px; }
-}
 
 @media (max-width: 768px) {
   .hero-scrub .hero { height: 240vh; }

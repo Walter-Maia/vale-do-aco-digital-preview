@@ -21,6 +21,7 @@ Alterações feitas: recorte por CSS (object-fit), redimensionamento e conversã
 - `movimento/registro-oficial.webp`: registro oficial publicado em valedoacodigital.com.br.
 - Logos (`logo-*.png/svg`, `vad-*.png`): marcas das respectivas empresas e do movimento, usadas no site oficial.
 - Vídeo e posters do hero: material do projeto.
+- `institucional/assets/img/marco-zero-capa.webp`: capa do vídeo "O Marco Zero do Vale do Aço Digital", do canal oficial do movimento no YouTube (https://www.youtube.com/watch?v=ofgeqVFlSOc), salva localmente em 07/10/2026 e usada sem alteração como fachada do player no site institucional.
 
 ## Logos das empresas parceiras
 

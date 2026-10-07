@@ -54,15 +54,19 @@
 
   /* ------------------------------------------------------------------
      Hero — três modos, decididos por capacidade e preferência, nunca por userAgent:
-       scrub  (ponteiro fino): o scroll conduz o vídeo. Um seek por vez, alvo quantizado em quadros do vídeo,
+       scrub  (mouse e toque): o scroll conduz o vídeo. Um seek por vez, alvo quantizado em quadros do vídeo,
               suavização por tempo decorrido (igual em 60, 144 ou 240 Hz), laço dorme quando não há o que aproximar.
-       play   (toque): hero em fluxo normal (100svh); o vídeo toca uma vez, mudo e inline, sem controles de apresentação.
+              No toque o arquivo vem inteiro para a memória (blob) antes do primeiro seek, e três seeks de prova medem o aparelho.
+       play   (toque em aparelho que não acompanha o seek): hero em fluxo normal (100svh); o vídeo toca uma vez, mudo e inline.
        static (reduced motion, economia de dados, sem MP4, vídeo com erro ou lento demais): quadro final + frase + CTAs.
-     Texto e CTAs nunca esperam o vídeo. A dissolução para o conteúdo é uma camada com opacity (.hero__fade):
-     reescrever mask-image no <video> a cada quadro tirava o vídeo do caminho barato de composição.
+     Texto e CTAs nunca esperam o vídeo: enquanto ele não chega, a rolagem dissolve do quadro inicial para o final (.hero__alt).
+     A dissolução para o conteúdo é uma camada com opacity (.hero__fade): reescrever mask-image no <video> a cada quadro
+     tirava o vídeo do caminho barato de composição.
      ------------------------------------------------------------------ */
   var hero = document.getElementById('hero');
+  var heroSticky = hero.querySelector('.hero__sticky');
   var video = hero.querySelector('.hero__video');
+  var heroAlt = hero.querySelector('.hero__alt');
   var heroFade = hero.querySelector('.hero__fade');
   var heroLogo = hero.querySelector('.hero__logo');
   var heroStart = hero.querySelector('.hero__start');
@@ -76,19 +80,26 @@
                                 // vídeo alcança o scroll em seguida (5 s de vídeo em até 2 s). Scroll normal (~1×) nunca encosta no teto.
   var MIN_SEEK_MS = 30;         // teto de ~33 seeks/s: vídeo de 24 fps não precisa de 120–240 pedidos por segundo
   var SEEK_WATCHDOG_MS = 600;   // seek sem resposta não prende o controlador
-  var LOAD_TIMEOUT_MS = 8000;   // sem primeiro quadro até aqui: quadro final estático
+  var LOAD_TIMEOUT_MS = 8000;   // sem primeiro quadro até aqui: quadro final estático (só no mouse; no toque a rolagem segue com os dois quadros)
+  var PROBE_SEEKS = 3;          // toque: seeks de prova logo após o primeiro, em quadros vizinhos (não se nota na tela)
+  var SLOW_SEEK_MS = 200;       // mediana acima disto = menos de 5 quadros por segundo no scrub: o aparelho toca o vídeo sozinho (play)
+  var ALT_FROM = 0.42, ALT_TO = 0.58; // sem vídeo ainda: o quadro final entra por cima do inicial neste trecho da rolagem
   var VIDEO_END = 0.96;         // o vídeo termina um pouco antes do fim do percurso: frase e CTAs assentam antes de soltar
   var FADE_START = 0.6, FADE_END = 0.74; // a base escurece enquanto ela termina de se virar: a frase nunca cai sobre a blusa clara
   var PHRASE_ON = 0.66, PHRASE_OFF = 0.58; // a frase final entra por tempo (CSS) quando ela se vira; a folga entre os dois pontos evita liga/desliga na fronteira
   var START_FADE_FROM = 0.03, START_FADE_TO = 0.12; // bloco inicial (apoio + CTA) some logo no começo do scrub
-  var PLAY_START_FADE_FROM = 0.74, PLAY_START_FADE_TO = 0.84; // em reprodução o apoio fica legível quase até a frase
+  var PLAY_START_FADE_FROM = 0.5, PLAY_START_FADE_TO = 0.62; // em reprodução a indicação fica até pouco antes da frase (no celular as duas ocupam a mesma faixa da tela)
 
   var coarse = window.matchMedia('(hover: none) and (pointer: coarse)');
   var narrow = window.matchMedia('(max-width: 768px)');
+  var portrait = window.matchMedia('(max-aspect-ratio: 4/5)');
   var canPlayMp4 = !!(video.canPlayType && video.canPlayType('video/mp4; codecs="avc1.42E01E"'));
-  function saveData() { var c = navigator.connection; return !!(c && c.saveData); }
+  function saveData() { var c = navigator.connection; return !!(c && (c.saveData || /2g$/.test(c.effectiveType || ''))); } // 2G conta como economia
 
   var mode = '';                // '', 'scrub', 'play', 'static'
+  var touchPlay = false;        // toque cujo seek não acompanha o dedo (medido pelos seeks de prova): fica em play
+  var probe = null;             // { warm, times } enquanto os seeks de prova estão em curso
+  var fetchCtl = null, blobUrl = ''; // toque: download do arquivo inteiro e o endereço do blob em uso
   var videoFailed = false, videoReady = false, videoAsked = false, srcKind = '', srcMode = '', playGate = false, gateTimer = 0, loadPending = false;
   var duration = 0, lastFrame = 0;
   var heroInView = true, heroNear = !hasIO, rafId = 0, lastTick = 0, loadTimer = 0, watchdog = 0;
@@ -98,7 +109,7 @@
   var playState = 'idle', autoPaused = false; // play: idle | playing | paused | ended | blocked
 
   /* só escreve no DOM quando o valor muda */
-  var applied = { fade: -1, end: -1, start: -1 };
+  var applied = { fade: -1, end: -1, start: -1, alt: -1 }, startOff = false;
   function setLayer(el, key, value) {
     var v = Math.round(value * 200) / 200;
     if (applied[key] === v) { return; }
@@ -107,41 +118,79 @@
     el.style.visibility = v > 0.02 ? 'visible' : 'hidden';
   }
   function applyHero(p) {
+    // sem quadro de vídeo ainda (rede lenta, aparelho que adia o download): a rolagem dissolve do pôster inicial para o quadro final
+    var a = mode === 'scrub' && !videoReady ? clamp((p - ALT_FROM) / (ALT_TO - ALT_FROM), 0, 1) : 0;
+    setLayer(heroAlt, 'alt', a * a * (3 - 2 * a));
     setLayer(heroFade, 'fade', clamp((p - FADE_START) / (FADE_END - FADE_START), 0, 1));
     // frase final: não acompanha o scroll quadro a quadro (ficava meio transparente no caminho); liga uma vez e o CSS conduz a entrada
     if (p >= PHRASE_ON) { heroEnd.classList.add('is-on'); } else if (p < PHRASE_OFF) { heroEnd.classList.remove('is-on'); }
     var from = mode === 'play' ? PLAY_START_FADE_FROM : START_FADE_FROM, to = mode === 'play' ? PLAY_START_FADE_TO : START_FADE_TO;
     setLayer(heroStart, 'start', 1 - clamp((p - from) / (to - from), 0, 1));
+    var off = applied.start <= 0.02; // indicação invisível: as animações dela param (site.css) em vez de rodar pelo resto da página
+    if (off !== startOff) { startOff = off; heroStart.classList.toggle('is-off', off); }
   }
+  /* só troca o pôster quando ele muda: reatribuir o mesmo endereço fazia o navegador pedir a imagem de novo */
+  var POSTER_INICIO = 'assets/img/hero-poster-inicio.jpg', POSTER_FIM = 'assets/img/hero-poster-fim.jpg';
+  function setPoster(url) { if (video.getAttribute('poster') !== url) { video.poster = url; } }
   function clearLayers() {
-    applied.fade = applied.end = applied.start = -1;
-    heroFade.style.cssText = ''; heroEnd.classList.remove('is-on'); heroStart.style.cssText = '';
+    applied.fade = applied.end = applied.start = applied.alt = -1; startOff = false;
+    heroFade.style.cssText = ''; heroAlt.style.cssText = ''; heroEnd.classList.remove('is-on'); heroStart.style.cssText = ''; heroStart.classList.remove('is-off');
   }
 
   /* medidas lidas uma vez por resize, não a cada evento de scroll */
   function measureHero() {
     heroTop = hero.getBoundingClientRect().top + window.pageYOffset;
-    scrollLen = Math.max(1, hero.offsetHeight - window.innerHeight); // percurso com o hero pinado
+    // percurso com o hero pinado: altura do hero menos a do palco. Não usa innerHeight: no celular ele muda quando a barra de
+    // endereço recolhe, e o palco (100lvh) não
+    scrollLen = Math.max(1, hero.offsetHeight - heroSticky.offsetHeight);
   }
   function updateTarget() { targetProgress = clamp((window.pageYOffset - heroTop) / scrollLen, 0, 1); }
 
-  /* ---- vídeo: carregado só quando o hero está por perto; nunca as duas resoluções ao mesmo tempo ---- */
-  function wantedKind() { return narrow.matches ? '720' : '1080'; }
+  /* ---- vídeo: carregado só quando o hero está por perto; nunca dois arquivos ao mesmo tempo ----
+     m    retrato (celular e tablet em pé, janela estreita em pé): recorte central 3:4 da mesma cena, 810×1080. Em pé o vídeo
+          deitado mostrava só um terço da largura e esticava 720 linhas na altura da tela; aqui são 1080 linhas, com ~35% menos
+          peso que o arquivo de scrub de 720p (2,0 MB contra 3,1 MB).
+     720  deitado em tela estreita ou celular deitado · 1080 demais telas */
+  function wantedKind() {
+    if (portrait.matches && (narrow.matches || coarse.matches)) { return 'm'; }
+    return narrow.matches || (coarse.matches && Math.min(window.innerWidth, window.innerHeight) < 600) ? '720' : '1080';
+  }
   function loadVideo(kind) {
-    videoAsked = true; videoReady = false; srcKind = kind; srcMode = mode; playGate = false;
+    videoAsked = true; videoReady = false; srcKind = kind; srcMode = mode; playGate = false; probe = null;
     seekInFlight = false; shownFrame = requestedFrame = -1;
     video.muted = true; video.loop = false;
     video.preload = 'auto';
-    // scrub: arquivos com keyframe a cada 4 quadros e sem B-frames (seek barato). play: mesma imagem com GOP normal, ~40% do peso
-    video.src = 'assets/video/hero-' + kind + (mode === 'play' ? '-play' : '') + '.mp4';
+    // scrub: keyframe a cada 4 quadros (6 no retrato) e sem B-frames (seek barato). play: mesma imagem com GOP normal, ~40% do peso
+    // (o retrato não tem versão play: só toca sozinho o aparelho que já baixou o arquivo de scrub e não acompanhou o seek)
+    var url = 'assets/video/hero-' + kind + (mode === 'play' && kind !== 'm' ? '-play' : '') + '.mp4';
+    if (mode === 'scrub' && coarse.matches && window.fetch && window.URL && URL.createObjectURL) { fetchVideo(url); } else { video.src = url; }
     armLoadTimer();
   }
+  /* toque: o arquivo inteiro vai para a memória antes do primeiro seek. No celular o navegador não garante adiantar o download de
+     um <video> parado (preload é só uma sugestão) e cada seek poderia virar uma ida à rede; com o blob todo seek é local.
+     Se o fetch for barrado (file://, extensão), segue pelo streaming comum. */
+  function fetchVideo(url) {
+    if (fetchCtl && fetchCtl.abort) { fetchCtl.abort.abort(); } // download anterior ainda em curso (a tela virou no meio)
+    var ctl = fetchCtl = { abort: window.AbortController ? new AbortController() : null };
+    fetch(url, ctl.abort ? { signal: ctl.abort.signal } : undefined)
+      .then(function (r) { if (!r.ok) { throw new Error('HTTP ' + r.status); } return r.blob(); })
+      .then(function (blob) {
+        if (fetchCtl !== ctl) { return; } // pedido antigo (trocou de arquivo ou de modo)
+        releaseBlob();
+        blobUrl = URL.createObjectURL(blob.type === 'video/mp4' ? blob : blob.slice(0, blob.size, 'video/mp4'));
+        video.src = blobUrl;
+      })
+      .catch(function () { if (fetchCtl === ctl) { fetchCtl = null; video.src = url; } });
+  }
+  function releaseBlob() { if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = ''; } }
   /* o prazo de carregamento só conta com a aba visível: em segundo plano o navegador adia o download do vídeo, e a página aberta
-     numa aba de fundo caía no quadro estático para sempre (medido no Chrome: hero is-static, src removido, sem reduced motion) */
+     numa aba de fundo caía no quadro estático para sempre (medido no Chrome: hero is-static, src removido, sem reduced motion).
+     No toque não há prazo: sem vídeo a rolagem continua contando a cena com os dois quadros (.hero__alt), e encurtar o hero
+     debaixo do dedo seria pior que esperar. */
   function armLoadTimer() {
     clearTimeout(loadTimer);
     loadPending = document.hidden;
-    if (loadPending) { return; }
+    if (loadPending || coarse.matches) { return; }
     loadTimer = setTimeout(function () { if (!videoReady || video.readyState < 2) { failVideo(); } }, LOAD_TIMEOUT_MS);
   }
   function ensureVideo() {
@@ -149,8 +198,10 @@
     loadVideo(wantedKind());
   }
   function unloadVideo() {
-    clearTimeout(loadTimer); clearTimeout(watchdog); clearTimeout(gateTimer); loadPending = false;
+    clearTimeout(loadTimer); clearTimeout(watchdog); clearTimeout(gateTimer); loadPending = false; probe = null;
+    if (fetchCtl) { if (fetchCtl.abort) { fetchCtl.abort.abort(); } fetchCtl = null; }
     if (videoAsked) { video.pause(); video.removeAttribute('src'); video.load(); }
+    releaseBlob();
     videoAsked = false; videoReady = false; seekInFlight = false;
   }
   function failVideo() { videoFailed = true; syncHeroMode(); } // sem vídeo: poster final + frase + CTAs, hero curto
@@ -164,10 +215,13 @@
   video.addEventListener('loadedmetadata', function () {
     duration = video.duration || 0;
     lastFrame = Math.max(0, Math.round(duration * FPS) - 1);
+    // toque: não espera 'loadeddata' (há celular que só decodifica o primeiro quadro depois de um seek ou de um play).
+    // O primeiro seek já parte daqui, põe o quadro na tela e abre os seeks de prova
+    if (mode === 'scrub' && coarse.matches && !videoReady && duration) { probe = { warm: false, times: [] }; seek(frameToRequest(), performance.now()); }
   });
   video.addEventListener('loadeddata', function () {
     videoReady = true; clearTimeout(loadTimer);
-    if (mode === 'scrub') { wake(); }
+    if (mode === 'scrub') { applyHero(currentProgress); wake(); }
     // play: só começa quando o navegador estima que toca sem engasgar; rede lenta ganha no máximo 3 s de espera com poster + texto
     else if (mode === 'play') { clearTimeout(gateTimer); gateTimer = setTimeout(function () { playGate = true; tryAutoplay(); }, 3000); }
   });
@@ -176,26 +230,57 @@
   video.addEventListener('progress', function () { if (mode === 'scrub') { wake(); } }); // chegou mais vídeo: alcança o alvo
   video.addEventListener('seeked', function () {
     clearTimeout(watchdog);
-    if (!seekInFlight) { return; }
+    // seek que o watchdog já deu por perdido não conta — menos o primeiro do toque: a resposta dele, mesmo atrasada (o aparelho
+    // ainda abria o decodificador), é o sinal de que há quadro na tela
+    if (!seekInFlight && videoReady) { return; }
+    var now = performance.now();
     seekInFlight = false; shownFrame = requestedFrame;
-    if (mode === 'scrub' && heroInView && !document.hidden) { requestFrame(performance.now()); wake(); } // o próximo alvo não espera o rAF seguinte
+    if (!videoReady) { videoReady = true; clearTimeout(loadTimer); applyHero(currentProgress); }
+    if (probe) {
+      if (probe.warm) { probe.times.push(now - seekStartedAt); } else { probe.warm = true; } // o primeiro aquece o decodificador e não conta
+      if (probe.times.length >= PROBE_SEEKS) { endProbe(); }
+    }
+    if (mode === 'scrub' && heroInView && !document.hidden) { requestFrame(now); wake(); } // o próximo alvo não espera o rAF seguinte
   });
 
   /* ---- scrub ---- */
   function wantedFrame() { return Math.min(lastFrame, Math.round(clamp(videoProgress / VIDEO_END, 0, 1) * lastFrame)); }
   function frameToRequest() { // o quadro desejado, contido no que já foi baixado
-    var frame = wantedFrame(), limit = Math.floor((bufferedEnd() - 0.04) * FPS);
+    var frame = wantedFrame();
+    if (blobUrl || coarse.matches) { return frame; } // toque: o arquivo já está na memória (ou, sem blob, o seek é quem puxa os dados)
+    var limit = Math.floor((bufferedEnd() - 0.04) * FPS);
     return limit < lastFrame && frame > limit ? Math.max(0, limit) : frame;
+  }
+  function seek(frame, now) {
+    seekInFlight = true; seekStartedAt = now; requestedFrame = frame;
+    video.currentTime = (frame + 0.5) / FPS; // meio do quadro: arredondamento não cai no vizinho
+    clearTimeout(watchdog);
+    watchdog = setTimeout(function () {
+      seekInFlight = false;
+      if (probe && probe.warm) { probe.times.push(SEEK_WATCHDOG_MS); if (probe.times.length >= PROBE_SEEKS) { endProbe(); } } // seek de prova sem resposta conta como lento
+      wake();
+    }, SEEK_WATCHDOG_MS);
   }
   function requestFrame(now) {
     // no máximo um seek em andamento; o alvo é sempre o mais recente — não existe fila de alvos antigos
     if (!videoReady || !duration || seekInFlight || now - seekStartedAt < MIN_SEEK_MS) { return; }
-    var frame = frameToRequest();
+    var frame = probe ? probeFrame(frameToRequest()) : frameToRequest();
     if (frame === shownFrame) { return; }
-    seekInFlight = true; seekStartedAt = now; requestedFrame = frame;
-    video.currentTime = (frame + 0.5) / FPS; // meio do quadro: arredondamento não cai no vizinho
-    clearTimeout(watchdog);
-    watchdog = setTimeout(function () { seekInFlight = false; wake(); }, SEEK_WATCHDOG_MS);
+    seek(frame, now);
+  }
+  /* seeks de prova (toque): quadros vizinhos do alvo, a 3, 2 e 1 de distância — na tela a diferença não se nota, para o
+     decodificador é um seek de verdade. Medem se o aparelho acompanha o dedo antes de a pessoa começar a rolar. */
+  function probeFrame(base) {
+    var d = PROBE_SEEKS - probe.times.length, f = base + d <= lastFrame ? base + d : base - d;
+    return f === shownFrame ? (f < lastFrame ? f + 1 : f - 1) : f;
+  }
+  function endProbe() {
+    var t = probe.times.slice().sort(function (a, b) { return a - b; }), median = t[Math.floor(t.length / 2)];
+    probe = null;
+    if (median <= SLOW_SEEK_MS) { return; }
+    // aparelho lento para seek: em vez de um scrub aos trancos, o vídeo toca uma vez sozinho — com o arquivo que já está na memória
+    touchPlay = true; srcMode = 'play'; playGate = true;
+    syncHeroMode();
   }
   function tick(now) {
     rafId = 0;
@@ -210,7 +295,7 @@
     applyHero(currentProgress);
     requestFrame(now);
     // dorme quando chegou ao alvo; com seek em andamento quem acorda é o 'seeked' (ou o watchdog)
-    var pendingFrame = videoReady && duration && !seekInFlight && frameToRequest() !== shownFrame;
+    var pendingFrame = videoReady && duration && !seekInFlight && (probe || frameToRequest() !== shownFrame);
     if (currentProgress !== targetProgress || videoProgress !== currentProgress || pendingFrame) { rafId = requestAnimationFrame(tick); } else { lastTick = 0; }
   }
   function wake() { if (mode === 'scrub' && !rafId && heroInView && !document.hidden) { rafId = requestAnimationFrame(tick); } }
@@ -241,7 +326,7 @@
       attempt.catch(function () {
         if (mode !== 'play') { return; }
         // autoplay recusado: quadro final, frase e CTAs à vista, e um botão claro para quem quiser ver
-        setPlayState('blocked'); video.poster = 'assets/img/hero-poster-fim.jpg';
+        setPlayState('blocked'); setPoster(POSTER_FIM);
         if (duration) { video.currentTime = Math.max(0, duration - 0.03); }
         applyHero(1);
       });
@@ -282,11 +367,11 @@
 
     if (mode === 'static') {
       unloadVideo();
-      video.poster = 'assets/img/hero-poster-fim.jpg';
+      setPoster(POSTER_FIM);
     } else {
       measureHero(); updateTarget();
       currentProgress = videoProgress = mode === 'scrub' ? targetProgress : 0; // recarregar no meio da página não "rebobina" o vídeo
-      video.poster = currentProgress > 0.5 ? 'assets/img/hero-poster-fim.jpg' : 'assets/img/hero-poster-inicio.jpg';
+      setPoster(currentProgress > 0.5 ? POSTER_FIM : POSTER_INICIO);
       applyHero(currentProgress);
       if (mode === 'scrub') {
         video.pause();
@@ -310,21 +395,22 @@
   }
   function syncHeroMode() {
     if (reduced.matches || !canPlayMp4 || saveData() || videoFailed) { setMode('static'); }
-    else { setMode(coarse.matches ? 'play' : 'scrub'); }
+    else { setMode(coarse.matches && touchPlay ? 'play' : 'scrub'); }
   }
   syncHeroMode();
   if (coarse.addEventListener) { coarse.addEventListener('change', syncHeroMode); }
-  /* janela estreita que alargou: sobe uma vez para 1080p mantendo o quadro; o caminho inverso fica com o arquivo já baixado */
+  /* a tela mudou de formato (janela que alargou, celular que virou): troca de arquivo mantendo o quadro. Só não desce de 1080
+     para 720 — quem já baixou o maior fica com ele. */
   var upgradeTimer = 0;
-  if (narrow.addEventListener) {
-    narrow.addEventListener('change', function () {
-      clearTimeout(upgradeTimer);
-      upgradeTimer = setTimeout(function () {
-        if (mode !== 'scrub' || !videoAsked || narrow.matches || srcKind === '1080') { return; }
-        loadVideo('1080');
-      }, 500);
-    });
+  function onShapeChange() {
+    clearTimeout(upgradeTimer);
+    upgradeTimer = setTimeout(function () {
+      var kind = wantedKind();
+      if (mode !== 'scrub' || !videoAsked || kind === srcKind || (srcKind === '1080' && kind === '720')) { return; }
+      loadVideo(kind);
+    }, 500);
   }
+  if (narrow.addEventListener) { narrow.addEventListener('change', onShapeChange); portrait.addEventListener('change', onShapeChange); }
 
   // a assinatura do hero só entra depois que a da intro terminou de sumir: nunca dois logos ao mesmo tempo
   var hadIntro = !introDone;
@@ -435,8 +521,8 @@
   /* ------------------------------------------------------------------
      Loops (mapa e rede): começam quando visíveis, pausam fora da tela e em
      aba oculta por animation-play-state — o relógio de 8s não reinicia.
-     O mapa parte com 35% do quadro na tela (eram 20%): a aproximação agora começa a se mover
-     aos 0,4 s e precisa estar à vista de quem chega rolando.
+     O mapa parte com 35% dele na tela: a entrada (municípios, nós e teia, abertura.css) dura
+     pouco mais de 1 s e precisa estar à vista de quem chega rolando.
      ------------------------------------------------------------------ */
   var nets = Array.prototype.slice.call(document.querySelectorAll('.net'));
   if (hasIO) {
