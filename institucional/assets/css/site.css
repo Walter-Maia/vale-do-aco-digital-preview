@@ -306,9 +306,17 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
 .publico::before { background: radial-gradient(circle max(180px, calc(300 * var(--u))) at var(--mx) var(--my), rgba(255, 190, 90, 0.2), rgba(255, 122, 26, 0.07) 46%, rgba(255, 122, 26, 0) 72%); }
 .publico::after { z-index: -1; box-shadow: 0 calc(46 * var(--u)) calc(84 * var(--u)) rgba(64, 8, 0, 0.5); }
 .publico > * { position: relative; }
-.publico__sinal { width: max(30px, calc(46 * var(--u))); height: auto; aspect-ratio: 1; margin-bottom: calc(22 * var(--u)); overflow: visible; transition: scale 0.6s var(--mola); }
-.ps-fio { fill: none; stroke: #ffd08a; stroke-width: 2; stroke-linejoin: round; transition: stroke 0.4s ease; }
-.ps-cor { opacity: 0; transition: opacity 0.45s ease; }
+/* selo do cartão: círculo na cor da marca, com brilho no alto e sombra quente, um anel fino em volta e o ícone do público em traço
+   branco. No hover o selo gira um pouco e cresce, e o anel se abre. */
+.publico__sinal {
+  --t: max(56px, calc(88 * var(--u)));
+  display: grid; place-items: center; width: var(--t); height: var(--t); margin-bottom: calc(28 * var(--u)); border-radius: 50%;
+  background: radial-gradient(circle at 30% 22%, rgba(255, 242, 218, 0.62), rgba(255, 242, 218, 0) 50%), linear-gradient(150deg, #ffa51c 0%, #ff6c16 44%, #e3291a 100%);
+  box-shadow: 0 calc(12 * var(--u)) calc(30 * var(--u)) rgba(214, 52, 10, 0.42), inset 0 1px 0 rgba(255, 248, 232, 0.6), inset 0 -3px 8px rgba(120, 22, 0, 0.32);
+  transition: scale 0.6s var(--mola), rotate 0.6s var(--mola);
+}
+.publico__sinal::before { content: ""; position: absolute; inset: calc(var(--t) * -0.13); border-radius: 50%; border: 1px solid rgba(255, 208, 138, 0.34); transition: scale 0.6s var(--sai), border-color 0.45s ease; }
+.publico__sinal svg { width: 50%; height: 50%; fill: none; stroke: #fff; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 1px rgba(110, 22, 0, 0.45)); }
 .publico__nome { font-size: max(21px, calc(36 * var(--u))); font-weight: 700; letter-spacing: -0.015em; line-height: 1.1; color: #fff; }
 .publico__nome::after { content: ""; display: block; width: max(34px, calc(62 * var(--u))); height: 2px; margin: calc(16 * var(--u)) auto calc(18 * var(--u)); border-radius: 2px; background: linear-gradient(90deg, #ffae18, #ff5a1c); transform: scaleX(0.4); transition: transform 0.6s var(--sai); }
 .publico__texto { max-width: 17em; font-family: var(--fonte-texto); font-size: max(15px, calc(25 * var(--u))); line-height: 1.36; color: var(--creme); text-wrap: balance; }
@@ -316,16 +324,18 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
 @media (hover: hover) and (pointer: fine) {
   :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover { translate: 0 calc(-10 * var(--u)); }
   :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover::before, :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover::after { opacity: 1; }
-  :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover .publico__sinal { scale: 1.12; }
-  :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover .ps-cor { opacity: 1; }
-  :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover .ps-fio { stroke: #fff1d6; }
+  :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover .publico__sinal { scale: 1.08; rotate: -8deg; }
+  :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover .publico__sinal::before { scale: 1.16; border-color: rgba(255, 208, 138, 0.6); }
   :is(html:not(.js) .publico, .publicos__lista.is-in .publico):hover .publico__nome::after { transform: none; }
 }
 @media (prefers-reduced-motion: no-preference) {
   /* a troca de casa vai em ease-in-out, um cartão logo após o outro; o conteúdo só entra com o cartão quase assentado.
      As transições do hover (translate do cartão, scale da peça) entram nas mesmas listas para não se perderem. */
   .js .publico { transition: transform 1.05s var(--vai) calc(0.22s + (var(--k) + 1) * 0.07s), translate 0.6s var(--sai); }
-  .js .publico > * { transition: opacity 0.5s ease calc(0.86s + (var(--k) + 1) * 0.08s), transform 0.7s var(--sai) calc(0.86s + (var(--k) + 1) * 0.08s), scale 0.6s var(--mola); }
+  .js .publico > * { transition: opacity 0.5s ease calc(0.86s + (var(--k) + 1) * 0.08s), transform 0.7s var(--sai) calc(0.86s + (var(--k) + 1) * 0.08s), scale 0.6s var(--mola), rotate 0.6s var(--mola); }
+  /* o anel do selo se abre quando o cartão assenta (também no toque, onde não há hover). Só preenche para trás: depois o hover manda */
+  .js .publicos__lista.is-in .publico__sinal::before { animation: ps-anel 1.1s var(--sai) calc(1.05s + (var(--k) + 1) * 0.1s) backwards; }
+  @keyframes ps-anel { from { scale: 0.62; opacity: 0; } }
   .js .publicos__lista:not(.is-in) .publico { transform: translate(calc(var(--k) * (var(--leque) - 100% - var(--vao))), calc(var(--k) * var(--leque) * -0.9)); }
   .js .publicos__lista:not(.is-in) .publico > * { opacity: 0; transform: translateY(calc(16 * var(--u))); }
 }
@@ -581,22 +591,28 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   /* encolhe abaixo de ~380 px: em 320 a terceira pílula passava 6 px da tela (15 px com o rótulo em negrito) */
   .pilula__rot { font-size: clamp(10.5px, 3.4vw, 13px); padding: 0 clamp(12px, 4.4vw, 20px); }
 
-  /* a palavra inteira cabe na tela (a 26vw só se lia "DIGITALI") e cruza a troca de fundo como na arte; o deslize lateral
-     no celular é curto (data-px-x-m no HTML) para as pontas não saírem da tela */
-  .letreiro { height: auto; top: -8.8vw; margin-bottom: -8.8vw; }
-  .letreiro__palavra { position: relative; left: 0; padding-left: 5.4vw; font-size: 14.9vw; }
-  /* entrelinha mais aberta que a da arte: a 1,04 a cedilha de "AÇO" pousava sobre o E de "COMPLETO" e lia-se um acento */
-  .letreiro__frase { --lh: 1.14; position: static; padding: 22px var(--lado) 0; font-size: clamp(22px, 7vw, 34px); color: var(--tinta); text-shadow: var(--peso); }
+  /* como no desktop, a palavra é maior que a tela (a 22vw lê-se "DIGITALIZA") e o deslize com a rolagem mostra o resto: no celular
+     ele é do tamanho do que sobra da palavra (data-px-x-m no HTML). Cruza a troca de fundo no último quarto da altura.
+     A frase fica sobre o alto da palavra, em branco, como na arte, e acima da troca de fundo mesmo com o deslize vertical
+     (-34 → até 2,8vw): termina em 7,5vw, a troca está em 10,5vw. Entrelinha mais aberta que a da arte: a 1,04 a cedilha de
+     "AÇO" pousava sobre o E de "COMPLETO" e lia-se um acento. */
+  .letreiro { height: auto; top: -10.5vw; margin-bottom: -10.5vw; }
+  .letreiro__palavra { position: relative; left: 0; padding-left: 7vw; font-size: 22vw; }
+  .letreiro__frase { --lh: 1.12; left: auto; right: var(--lado); top: -5vw; font-size: 5.6vw; }
   .como__grade { display: block; padding: 56px var(--lado) 0; }
   .como__grade .t2 { font-size: clamp(24px, 7.4vw, 44px); }
   .como__grade .corpo { padding-top: 26px; font-size: 17px; line-height: 1.38; }
-  .chamada { margin-top: 60px; padding: 0 0 6px var(--lado); font-size: 8.9vw; }
+  /* a chamada com corpo de manchete, como no desktop: cada metade quebra em duas linhas (ESSE / MOVIMENTO, É PARA / VOCÊ QUE…).
+     A linha interna leva a entrelinha (--lh) e um respiro acima e abaixo que a máscara de .ln guarda para os acentos (É, Ê) */
+  .chamada { --lh: 0.92; margin-top: 64px; padding: 0 var(--lado) 6px; font-size: 13.6vw; }
+  .chamada .ln { white-space: normal; }
+  .chamada .ln > span { width: auto; padding: 0.22em 0.06em 0.16em 0; line-height: var(--lh); text-wrap: balance; }
 
   /* cartões em coluna; a pilha se forma na casa do meio (o de cima desce, o de baixo sobe) e abre na vertical */
   .publicos { padding: 52px var(--lado) 60px; }
   .publicos__lista { --vao: 14px; --leque: 9px; grid-template-columns: 1fr; grid-auto-rows: 1fr; }
   .publico { min-height: 0; padding: 26px 22px 28px; border-radius: 24px; }
-  .publico__sinal { margin-bottom: 12px; }
+  .publico__sinal { --t: 58px; margin-bottom: 16px; }
   .publico__nome { font-size: 23px; }
   .publico__nome::after { margin: 10px auto 12px; }
   .publico__texto { max-width: 20em; font-size: 16px; line-height: 1.4; }
@@ -621,10 +637,14 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .frente__texto { margin-top: 6px; font-size: 17px; line-height: 1.38; max-width: none; }
 
   .programa__cena { top: -5vw; margin-bottom: -5vw; display: flex; flex-direction: column; align-items: center; padding-bottom: 20px; }
-  .programa__foto { width: 100%; overflow: hidden; }
+  /* o título sobe para cima da foto (antes ficava abaixo da comerciante): a metade de baixo da foto escurece num degradê até o
+     fundo e o título entra sobre ela, maior, com uma sombra que o descola da cena */
+  .programa__foto { position: relative; width: 100%; overflow: hidden; }
+  .programa__foto::after { content: ""; position: absolute; inset: 40% 0 0; background: linear-gradient(180deg, rgba(45, 22, 4, 0) 0%, rgba(45, 22, 4, 0.6) 48%, var(--escuro) 97%); pointer-events: none; }
   .programa__foto img { width: 190%; max-width: none; margin-left: -34%; }
-  .programa__titulo { position: static; width: min(78vw, 400px); margin-top: -12vw; }
-  .programa__marcas { position: static; width: min(84vw, 420px); margin-top: 26px; }
+  /* relative (para ficar sobre a foto): left/top da arte zerados, senão viram deslocamento */
+  .programa__titulo { position: relative; left: auto; top: auto; z-index: 1; width: min(86vw, 420px); margin-top: -40vw; filter: drop-shadow(0 8px 22px rgba(20, 6, 0, 0.6)); }
+  .programa__marcas { position: static; width: min(84vw, 420px); margin-top: 30px; }
   .cta { position: static; margin: 34px 0 0; width: auto; gap: 22px; padding: 0 9px 0 30px; }
 
   .parceiros { padding: 56px 0 72px; }
@@ -652,13 +672,14 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .pilulas { flex-direction: row; flex-wrap: wrap; gap: 12px 14px; }
   .pilula__rot { font-size: 13px; padding: 0 20px; }
   .presente__acoes { padding-bottom: 20vw; }
-  .letreiro__frase { font-size: clamp(30px, 5.2vw, 44px); }
+  .letreiro__frase { font-size: 5vw; }
+  .chamada { font-size: 8.6vw; } /* aqui cada metade cabe numa linha, como no desktop */
   .como__grade .t2 { font-size: clamp(36px, 6.2vw, 52px); }
   .presente__texto .t2 { font-size: clamp(40px, 6.6vw, 56px); }
   .publicos { padding-block: 64px 72px; }
   .publicos__lista { --vao: 18px; max-width: 600px; margin-inline: auto; }
   .publico { padding: 32px 30px 34px; }
-  .publico__sinal { width: 36px; margin-bottom: 16px; }
+  .publico__sinal { --t: 62px; margin-bottom: 20px; }
   .publico__nome::after { margin: 14px auto 16px; }
   .publico__nome { font-size: 27px; }
   .publico__texto { font-size: 18px; }
@@ -670,7 +691,7 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .frente { padding-block: 30px 28px; }
   .frente__texto { margin-top: 8px; }
   .programa__foto img { width: 150%; margin-left: -22%; }
-  .programa__titulo { width: min(56vw, 440px); margin-top: -9vw; }
+  .programa__titulo { width: min(56vw, 440px); margin-top: -30vw; }
   .parceiros__lista { grid-template-columns: repeat(4, 1fr); gap: 26px 16px; }
   .parceiros__lista img { height: clamp(52px, 9vw, 78px); }
 }
@@ -686,6 +707,6 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .hero__mouse i, .hero__fone i, .hero__rolar svg { animation: none; }
   .menu, .menu-aberto .menu, .menu__nav li, .menu__nav a::before, .menu__pe, .menu-aberto .menu__pe, .roll, .roll-t, .pilula, .cta { transition: none; }
   .frente__pulso { display: none; }
-  .publico, .publico::before, .publico::after, .publico__sinal, .ps-fio, .ps-cor, .publico__nome::after { transition: none; }
+  .publico, .publico::before, .publico::after, .publico__sinal, .publico__sinal::before, .publico__nome::after { transition: none; }
   .marco__tela, .marco__capa, .marco__fundo, .marco__tracos, .marco__play, .marco__botao, .marco__video, .parceiros__lista img, .rodape__credito img { transition: none; }
 }

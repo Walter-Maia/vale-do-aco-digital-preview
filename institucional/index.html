@@ -24,8 +24,8 @@
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <link rel="preload" as="image" href="assets/img/hero-poster-inicio.jpg" fetchpriority="high">
   <link rel="preload" as="font" type="font/woff2" href="assets/fonts/montserrat-latin-400-700.woff2" crossorigin>
-  <link rel="stylesheet" href="assets/css/abertura.css?v=1.3">
-  <link rel="stylesheet" href="assets/css/site.css?v=1.4">
+  <link rel="stylesheet" href="assets/css/abertura.css?v=1.5">
+  <link rel="stylesheet" href="assets/css/site.css?v=1.5">
   <script>
     (function (d) {
       var c = 'js hero-top', seen = false;
@@ -260,7 +260,7 @@
     <!-- 2 · Como construímos: o letreiro atravessa a troca de fundo e anda com a rolagem -->
     <section class="como" id="como" aria-labelledby="t-como" data-tema="claro">
       <div class="letreiro" data-px-track>
-        <p class="letreiro__palavra" aria-hidden="true" data-px-x="-150" data-px-x-m="-70" data-px-gpu><span>DIGITALIZAR</span></p>
+        <p class="letreiro__palavra" aria-hidden="true" data-px-x="-150" data-px-x-m="-420" data-px-gpu><span>DIGITALIZAR</span></p>
         <p class="letreiro__frase" data-px="-34" data-px-gpu data-rv="linhas">
           <span class="sr-only">Digitalizar </span>
           <span class="ln" style="--i:0"><span>O Vale do Aço</span></span>
@@ -287,29 +287,22 @@
 
     <!-- 3 · Para quem é: responde à chamada "é para você que…". Os três cartões chegam empilhados, como um baralho, e abrem para as
          suas casas quando a pilha está à vista (site.js liga .is-in; --k é a casa de cada um: -1 esquerda, 0 centro, 1 direita).
-         O sinal de cada cartão é uma peça da assinatura do movimento — triângulo, meio-disco e ponto —, em traço; no hover ela se
-         enche com a cor da marca (site.css). -->
+         Cada cartão abre com um selo na cor da marca e um ícone de traço do público (prédio, notebook com código, pessoas). -->
     <section class="publicos grao" id="publicos" aria-labelledby="t-publicos" data-tema="escuro">
       <h2 class="sr-only" id="t-publicos">Para quem é o Vale do Aço Digital</h2>
-      <svg class="publicos__defs" width="0" height="0" aria-hidden="true" focusable="false">
-        <defs>
-          <linearGradient id="ps-vermelho" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#ba2819"/><stop offset=".3" stop-color="#e41a18"/><stop offset="1" stop-color="#f0401a"/></linearGradient>
-          <linearGradient id="ps-laranja" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#e62f21"/><stop offset=".45" stop-color="#ea5f1b"/><stop offset="1" stop-color="#f39316"/></linearGradient>
-        </defs>
-      </svg>
       <ul class="publicos__lista">
         <li class="publico" style="--k:-1">
-          <svg class="publico__sinal" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path class="ps-cor" fill="url(#ps-vermelho)" d="M9 6L39 42H9Z"/><path class="ps-fio" d="M9 6L39 42H9Z"/></svg>
+          <span class="publico__sinal" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M3.5 20.5h17"/><path d="M5.5 20.5v-15A1.5 1.5 0 0 1 7 4h6.5A1.5 1.5 0 0 1 15 5.5v15"/><path d="M15 9.5h2.5A1.5 1.5 0 0 1 19 11v9.5"/><path d="M8.5 8h3.5M8.5 11.5h3.5M8.5 15h3.5"/></svg></span>
           <h3 class="publico__nome">Empresas</h3>
           <p class="publico__texto">Negócios que precisam de estabilidade, segurança e crescimento digital.</p>
         </li>
         <li class="publico" style="--k:0">
-          <svg class="publico__sinal" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path class="ps-cor" fill="url(#ps-laranja)" d="M15 42V6A18 18 0 0 1 15 42Z"/><path class="ps-fio" d="M15 42V6A18 18 0 0 1 15 42Z"/></svg>
+          <span class="publico__sinal" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3.5" y="4.5" width="17" height="11.5" rx="1.6"/><path d="M1.8 19.5h20.4"/><path d="M10 8.2 7.6 10.25 10 12.3M14 8.2l2.4 2.05L14 12.3"/></svg></span>
           <h3 class="publico__nome">Profissionais</h3>
           <p class="publico__texto">Quem trabalha com tecnologia ou quer crescer nesse mercado.</p>
         </li>
         <li class="publico" style="--k:1">
-          <svg class="publico__sinal" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><circle class="ps-cor" fill="url(#ps-vermelho)" cx="24" cy="24" r="15"/><circle class="ps-fio" cx="24" cy="24" r="15"/></svg>
+          <span class="publico__sinal" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="9" cy="8.3" r="3.3"/><path d="M3.2 19.6c.6-3.4 2.9-5.3 5.8-5.3s5.2 1.9 5.8 5.3"/><circle cx="16.8" cy="9.3" r="2.6"/><path d="M16 14.4c2.8-.2 4.6 1.5 5.1 4.7"/></svg></span>
           <h3 class="publico__nome">Pessoas</h3>
           <p class="publico__texto">Quem usa tecnologia todos os dias e quer mais segurança e oportunidades.</p>
         </li>
@@ -536,7 +529,7 @@
     <p class="rodape__credito"><a href="https://siteflux.com.br/" target="_blank" rel="noopener noreferrer">Site feito por <img src="assets/img/logo-siteflux-fundo-escuro.svg" width="435" height="96" alt="Siteflux" loading="lazy" decoding="async"><span class="sr-only"> (abre o site da Siteflux)</span></a></p>
   </footer>
 
-  <script src="assets/js/abertura.js?v=1.3" defer></script>
-  <script src="assets/js/site.js?v=1.4" defer></script>
+  <script src="assets/js/abertura.js?v=1.5" defer></script>
+  <script src="assets/js/site.js?v=1.5" defer></script>
 </body>
 </html>

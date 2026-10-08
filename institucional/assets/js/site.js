@@ -214,10 +214,12 @@
      YouTube (a capa é um arquivo local). No clique a tela cresce até a largura do palco, por transform, enquanto dentro dela só há
      a capa; 650 ms depois ela assume a medida real (.is-pronto) e só então o iframe nasce, já no tamanho final — o arranque do
      player não disputa os quadros da abertura. Sem JS o link abre o vídeo no YouTube; em file:// também, porque ali o YouTube
-     recusa a incorporação (erro 153: a página não tem endereço para informar como referenciador). */
+     recusa a incorporação (erro 153: a página não tem endereço para informar como referenciador).
+     No toque o player embutido fica de fora e o link segue para o YouTube (aba nova ou o app): no celular o YouTube não começa
+     sozinho dentro do iframe, e o player aberto parecia travado à espera de um segundo toque. */
   var palco = document.querySelector('.marco__palco'), play = palco && palco.querySelector('.marco__play');
   if (palco) { aoVer(palco, 0.3, function () { palco.classList.add('is-in'); }); }
-  if (play && location.protocol !== 'file:') {
+  if (play && location.protocol !== 'file:' && fine.matches) {
     var aquecido = false;
     var aquecer = function () { // a intenção de assistir (ponteiro, foco, dedo) adianta a conexão com o YouTube
       if (aquecido) { return; }

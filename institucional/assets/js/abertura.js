@@ -33,6 +33,15 @@
   }
 
   if (!introDone) {
+    /* a câmera parte de 5× sobre o ícone da marca. Isso cabe no desktop; no celular em pé o ícone passava da largura da tela e
+       os traços apareciam cortados. --zk encolhe a aproximação (escala = 1 + (s − 1) × --zk, em abertura.css) até o ícone, no
+       maior zoom, ocupar no máximo 94% da largura e 92% da altura da tela. No desktop o resultado é 1 (nada muda). */
+    var mark = intro.querySelector('.intro__mark');
+    if (mark) {
+      var mr = mark.getBoundingClientRect();
+      var caber = Math.min(0.94 * window.innerWidth / (mr.width * 185 / 368.14), 0.92 * window.innerHeight / (mr.width * 129.34 / 368.14));
+      if (mr.width && caber < 5) { intro.style.setProperty('--zk', Math.max(0.12, (caber - 1) / 4).toFixed(3)); }
+    }
     // dois quadros de folga para o primeiro paint não engolir o início das transições
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {

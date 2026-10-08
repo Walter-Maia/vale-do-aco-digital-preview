@@ -40,9 +40,11 @@
 .intro-lock, .intro-lock body { overflow: hidden; }
 .intro.is-leaving { opacity: 0; visibility: hidden; pointer-events: none; }
 .intro__stage { width: min(78vw, 460px); }
+@media (max-width: 600px) { .intro__stage { width: 84vw; } } /* celular em pé: a assinatura final ganha corpo */
 .intro__mark { display: block; width: 100%; height: auto; overflow: visible; }
 
-.im-cam { transform-origin: 104.6px 72.7px; transform: translate(79.5px, 0) scale(5); }
+/* --zk (abertura.js) encolhe a aproximação onde o ícone a 5× não cabe na tela: escala = 1 + (s − 1) × --zk */
+.im-cam { transform-origin: 104.6px 72.7px; transform: translate(79.5px, 0) scale(calc(1 + 4 * var(--zk, 1))); }
 .im-lines path, .im-trace, .im-outline path, .im-sweep { fill: none; stroke-linecap: round; stroke-linejoin: round; }
 /* sem vector-effect: non-scaling-stroke — no Chromium ele força repintura a cada quadro do zoom e, combinado a
    pathLength + dasharray, chegou a travar a pintura. As espessuras estão em unidades do viewBox: as linhas afinam
@@ -82,10 +84,10 @@
 
 /* câmera: close extremo nos traços → zoom-out contínuo → desliza para a posição da assinatura */
 @keyframes im-cam {
-  0% { transform: translate(79.5px, 0) scale(5); }
-  34% { transform: translate(79.5px, 0) scale(4.3); animation-timing-function: cubic-bezier(0.2, 0.6, 0.3, 1); }
-  61% { transform: translate(79.5px, 0) scale(2.9); animation-timing-function: linear; }
-  88.6% { transform: translate(79.5px, 0) scale(2.2); animation-timing-function: cubic-bezier(0.6, 0, 0.2, 1); }
+  0% { transform: translate(79.5px, 0) scale(calc(1 + 4 * var(--zk, 1))); }
+  34% { transform: translate(79.5px, 0) scale(calc(1 + 3.3 * var(--zk, 1))); animation-timing-function: cubic-bezier(0.2, 0.6, 0.3, 1); }
+  61% { transform: translate(79.5px, 0) scale(calc(1 + 1.9 * var(--zk, 1))); animation-timing-function: linear; }
+  88.6% { transform: translate(79.5px, 0) scale(calc(1 + 1.2 * var(--zk, 1))); animation-timing-function: cubic-bezier(0.6, 0, 0.2, 1); }
   100% { transform: translate(0, 0) scale(1); }
 }
 @keyframes im-spark { 0% { stroke-dashoffset: 0.06; opacity: 1; } 90% { opacity: 1; } 100% { stroke-dashoffset: -0.62; opacity: 0; } }
