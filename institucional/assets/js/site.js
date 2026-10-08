@@ -307,11 +307,15 @@
      figura do mapa (com will-change num ancestral o Chromium deixa de refazer o raster do que muda de escala dentro do SVG:
      com a antiga câmera de 30× o mapa regional saía borrado, e os halos dos nós ainda pulsam por escala).
      Trilho: seletor em data-px-track do próprio elemento, senão o ancestral com data-px-track, senão o elemento.
-     Escreve só `translate` (as entradas usam `transform`), só nos elementos perto da tela, e o laço dorme ao assentar. */
+     Escreve só `translate` (as entradas usam `transform`), só nos elementos perto da tela, e o laço dorme ao assentar.
+     data-px-m-css: no celular, onde o navegador tem animação conduzida pela rolagem (animation-timeline: view()), o deslize
+     desse elemento é do CSS (site.css, "deslizes do celular") e roda no compositor, colado ao dedo; aqui ele fica parado.
+     No toque a rolagem já é suave: o laço segue a posição real, sem a inércia de 80 ms do mouse (que no celular atrasava os planos). */
+  var deslizeCss = !!(window.CSS && CSS.supports && CSS.supports('animation-timeline: view()')), toque = window.matchMedia('(hover: none)');
   var items = all('[data-px], [data-px-x]').map(function (el) {
     var own = el.getAttribute('data-px-track'), pxm = el.getAttribute('data-px-x-m');
     var track = own ? el.closest(own) : (el.parentElement && el.parentElement.closest('[data-px-track]'));
-    return { el: el, track: track || el, py: parseFloat(el.getAttribute('data-px')) || 0, px: parseFloat(el.getAttribute('data-px-x')) || 0, pxm: pxm === null ? null : parseFloat(pxm) || 0, gpu: el.hasAttribute('data-px-gpu'), on: !hasIO, top: 0, h: 1, ay: 0, ax: 0, last: '' };
+    return { el: el, track: track || el, py: parseFloat(el.getAttribute('data-px')) || 0, px: parseFloat(el.getAttribute('data-px-x')) || 0, pxm: pxm === null ? null : parseFloat(pxm) || 0, gpu: el.hasAttribute('data-px-gpu'), css: el.hasAttribute('data-px-m-css'), on: !hasIO, top: 0, h: 1, ay: 0, ax: 0, last: '' };
   });
   var sections = all('[data-tema]').map(function (el) { return { el: el, top: 0, bottom: 0 }; });
   var vh = 1, y = window.pageYOffset, target = y, raf = 0, lastT = 0, tema = '', foraHero = false, rolando = false;
@@ -322,7 +326,8 @@
     items.forEach(function (it) { it.el.style.translate = ''; it.last = ''; });
     items.forEach(function (it) {
       var r = it.track.getBoundingClientRect();
-      it.top = r.top + sy; it.h = r.height; it.ay = it.py * u * k; it.ax = estreita && it.pxm !== null ? it.pxm * u : it.px * u * k;
+      var doCss = estreita && deslizeCss && it.css;
+      it.top = r.top + sy; it.h = r.height; it.ay = doCss ? 0 : it.py * u * k; it.ax = doCss ? 0 : estreita && it.pxm !== null ? it.pxm * u : it.px * u * k;
     });
     sections.forEach(function (s) { var r = s.el.getBoundingClientRect(); s.top = r.top + sy; s.bottom = r.bottom + sy; });
   }
@@ -344,7 +349,7 @@
   function frame(now) {
     raf = 0;
     var dt = lastT ? Math.min(50, now - lastT) : 16.7; lastT = now;
-    y += (target - y) * (1 - Math.exp(-dt / 80));
+    y = toque.matches ? target : y + (target - y) * (1 - Math.exp(-dt / 80));
     if (Math.abs(target - y) < 0.4) { y = target; }
     paint();
     if (y !== target) { raf = requestAnimationFrame(frame); }

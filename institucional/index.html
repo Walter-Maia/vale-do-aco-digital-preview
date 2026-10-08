@@ -25,7 +25,7 @@
   <link rel="preload" as="image" href="assets/img/hero-poster-inicio.jpg" fetchpriority="high">
   <link rel="preload" as="font" type="font/woff2" href="assets/fonts/montserrat-latin-400-700.woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/abertura.css?v=1.5">
-  <link rel="stylesheet" href="assets/css/site.css?v=1.7">
+  <link rel="stylesheet" href="assets/css/site.css?v=1.9">
   <script>
     (function (d) {
       var c = 'js hero-top', seen = false;
@@ -291,7 +291,7 @@
     <!-- 2 · Como construímos: o letreiro atravessa a troca de fundo e anda com a rolagem -->
     <section class="como" id="como" aria-labelledby="t-como" data-tema="claro">
       <div class="letreiro" data-px-track>
-        <p class="letreiro__palavra" aria-hidden="true" data-px-x="-150" data-px-x-m="-55" data-px-gpu><span>DIGITALIZAR</span></p>
+        <p class="letreiro__palavra" aria-hidden="true" data-px-x="-150" data-px-x-m="-55" data-px-gpu data-px-m-css><span>DIGITALIZAR</span></p>
         <p class="letreiro__frase" data-px="-34" data-px-gpu data-rv="linhas">
           <span class="sr-only">Digitalizar </span>
           <span class="ln" style="--i:0"><span class="contorno-m">O Vale do Aço</span></span>
@@ -311,8 +311,8 @@
       </div>
 
       <p class="chamada" data-rv="linhas" data-px-track>
-        <span class="ln" style="--i:0" data-px-x="-44" data-px-gpu><span>Esse movimento</span></span>
-        <span class="ln" style="--i:1" data-px-x="44" data-px-gpu><span>é para você que…</span></span>
+        <span class="ln" style="--i:0" data-px-x="-44" data-px-gpu data-px-m-css><span><span class="cl">Esse</span> <span class="cl">movimento</span></span></span>
+        <span class="ln" style="--i:1" data-px-x="44" data-px-gpu data-px-m-css><span><span class="cl">é para</span> <span class="cl">você que…</span></span></span>
       </p>
     </section>
 
@@ -574,6 +574,6 @@
   </footer>
 
   <script src="assets/js/abertura.js?v=1.5" defer></script>
-  <script src="assets/js/site.js?v=1.7" defer></script>
+  <script src="assets/js/site.js?v=1.9" defer></script>
 </body>
 </html>
