@@ -3,8 +3,10 @@
 Prévia de apresentação (não indexada).
 
 - Versão atual: https://walter-maia.github.io/vale-do-aco-digital-preview/
+  - 08/10/2026: chat do OdinChat, o mesmo do institucional, com as cores desta página e o ícone do chat (`assets/img/chat-icone.svg`, a partir de ICON_ODIN.svg); `programa.css?v=3.11`.
 - Versão anterior (backup v6): https://walter-maia.github.io/vale-do-aco-digital-preview/backup-v6/
-- Site institucional (v1.9, 08/10/2026): https://walter-maia.github.io/vale-do-aco-digital-preview/institucional/
+- Site institucional (v1.10, 08/10/2026): https://walter-maia.github.io/vale-do-aco-digital-preview/institucional/
+  - v1.10: o botão do chat usa o ícone do chat (anel laranja, balão creme, pontos laranja-avermelhados) sobre fundo escuro.
   - v1.9 (celular): o parallax da seção "Como construímos" foi refeito. DIGITALIZAR e "O Vale do Aço por completo!" entram pela direita e assentam inteiros na faixa de leitura; as linhas do título entram de lados opostos; "Esse movimento é para você que…" chega em zigue-zague, linha a linha, alinha e se abre de novo ao sair. Os deslizes são conduzidos pela rolagem no próprio navegador (animation-timeline), colados ao dedo; onde não há suporte fica o deslize do site.js, que no toque deixou de suavizar a rolagem (o atraso de 80 ms fazia os planos ficarem para trás).
   - v1.8: a janela do chat ficou menor (400 × 600 px, era 494 × 676) e nunca passa da área visível; numa tela de notebook o topo dela saía da tela. Em tela baixa (celular deitado) ela abre em tela cheia; a sombra roxa do widget virou a do site.
   - v1.7: chat do OdinChat (botão no canto inferior direito, com as cores do site; sai de cena durante a intro e com o menu aberto); no celular "DIGITALIZAR" aparece inteiro, na largura da tela (o corpo é medido na fonte do aparelho), com "O Vale do Aço" em contorno por cima; os contornos ("Conectando", "O Vale do Aço") passaram a ser feitos por filtro, porque no Android o -webkit-text-stroke desenhava fios dentro das letras.

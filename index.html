@@ -62,8 +62,40 @@
   </script>
   <!-- a assinatura (h1) vem depois das 12 fotos no HTML; o preload a pede primeiro, antes de elas disputarem a rede -->
   <link rel="preload" as="image" href="assets/img/programa/k-title.webp" fetchpriority="high">
-  <link rel="stylesheet" href="assets/css/programa.css?v=3.10">
+  <link rel="stylesheet" href="assets/css/programa.css?v=3.11">
   <link rel="stylesheet" href="assets/css/programa-fx.css?v=3.7">
+  <!-- chat (OdinChat), o mesmo do site institucional. O carregador sai já no início, sem travar a página (async, conexão adiantada); a
+       janela da conversa só carrega quando a pessoa abre o chat. As cores do painel do OdinChat (roxo e ciano) e o ícone do botão são
+       trocados aqui pelos desta página: o carregador grava a configuração em window.__WIDGET_CONFIG e este setter mistura a do site
+       antes de o widget desenhar o botão; se o carregador mudar, o load aplica o mesmo pela API do widget (MyWidget.setConfig).
+       O tamanho da janela da conversa está no fim de programa.css. -->
+  <link rel="preconnect" href="https://api.odinchat.com.br">
+  <script>
+    (function (w) {
+      var site = {
+        // botão: o ícone do chat (anel laranja, balão creme) cobre o botão. O anel é um pouco mais largo que alto (256 × 244): o fundo
+        // leva o mesmo degradê dele, na mesma direção, para a fresta de cima e de baixo não aparecer como uma borda escura
+        buttonColor: 'linear-gradient(135deg, #ffa51c 0%, #f4541a 50%, #d92011 100%)', buttonBorderColor: '#ea2117', buttonIcon: 'assets/img/chat-icone.svg', buttonIconScale: 'full',
+        theme: {
+          headerBackground: '#260f06', headerTextColor: '#fff5d3', chatBackground: '#fffaf0',
+          userMessageBackground: '#ea2117', userMessageTextColor: '#ffffff', agentMessageBackground: '#ffffff', agentMessageTextColor: '#260f06',
+          inputBackground: '#ffffff', inputBorderColor: '#f1d9b5', inputTextColor: '#260f06', sendButtonBackground: '#ea2117', sendButtonIconColor: '#ffffff',
+          closeButtonIconColor: '#fff5d3', closeButtonHoverBackground: '#fff5d3',
+          fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif', borderRadius: '20px'
+        }
+      };
+      var misturar = function (v) { v = v || {}; return Object.assign({}, v, site, { theme: Object.assign({}, v.theme, site.theme) }); };
+      var cfg;
+      try {
+        Object.defineProperty(w, '__WIDGET_CONFIG', { configurable: true, enumerable: true, get: function () { return cfg; }, set: function (v) { cfg = misturar(v); } });
+      } catch (e) {}
+      w.addEventListener('load', function () {
+        var m = w.MyWidget;
+        if (m && m.getConfig && m.getConfig().buttonColor !== site.buttonColor) { m.setConfig(misturar({})); }
+      });
+    })(window);
+  </script>
+  <script async src="https://api.odinchat.com.br/webchat/widgets/383715161568972800/loader.js"></script>
 </head>
 <body>
   <a class="skip" href="#conteudo">Ir para o conteúdo</a>

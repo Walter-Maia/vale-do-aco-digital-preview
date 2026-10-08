@@ -754,10 +754,7 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
 }
 
 /* ---------- chat (OdinChat) ---------- */
-/* o widget traz o balão do botão com roxo e ciano fixos no SVG: aqui ele ganha as cores do site (CSS vence o atributo do SVG).
-   O resto (botão em degradê, cabeçalho, mensagens, campo) vem da configuração montada no <head> do index.html */
-#my-widget-button svg path:first-child { fill: #ffeed2; stroke: #ffeed2; }
-#my-widget-button svg path:nth-child(2) { stroke: #ffffff; }
+/* cores, ícone do botão (assets/img/chat-icone.svg) e tema da conversa vêm da configuração montada no <head> do index.html */
 /* fora de cena durante a intro e com o menu aberto: o widget usa z-index 999999 e ficaria por cima dos dois */
 #my-widget-container { transition: opacity 0.4s ease, visibility 0s; }
 .intro-on #my-widget-container, .menu-aberto #my-widget-container { opacity: 0; visibility: hidden; transition: opacity 0.25s ease, visibility 0s 0.25s; }

@@ -25,7 +25,7 @@
   <link rel="preload" as="image" href="assets/img/hero-poster-inicio.jpg" fetchpriority="high">
   <link rel="preload" as="font" type="font/woff2" href="assets/fonts/montserrat-latin-400-700.woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/abertura.css?v=1.5">
-  <link rel="stylesheet" href="assets/css/site.css?v=1.9">
+  <link rel="stylesheet" href="assets/css/site.css?v=1.10">
   <script>
     (function (d) {
       var c = 'js hero-top', seen = false;
@@ -39,15 +39,17 @@
     })(document.documentElement);
   </script>
   <!-- chat (OdinChat). O carregador sai já no início, sem travar a página (async, conexão adiantada); a janela da conversa só
-       carrega quando a pessoa abre o chat. As cores do painel do OdinChat (roxo e ciano) são trocadas aqui pelas do site: o
+       carrega quando a pessoa abre o chat. As cores do painel do OdinChat (roxo e ciano) e o ícone do botão são trocados aqui pelos do site: o
        carregador grava a configuração em window.__WIDGET_CONFIG e este setter mistura o tema do site antes de o widget desenhar o
        botão (e antes de mandar a configuração para a janela da conversa). Se um dia o carregador mudar, o load aplica o mesmo
-       tema pela API do widget (MyWidget.setConfig). O balão do ícone e a saída de cena durante a intro e o menu estão em site.css. -->
+       tema pela API do widget (MyWidget.setConfig). O tamanho da janela e a saída de cena durante a intro e o menu estão em site.css. -->
   <link rel="preconnect" href="https://api.odinchat.com.br">
   <script>
     (function (w) {
       var site = {
-        buttonColor: 'linear-gradient(135deg, #e3291a 0%, #f4541a 55%, #fb8f12 100%)', buttonBorderColor: '#f0401a',
+        // botão: o ícone do chat (anel laranja, balão creme) cobre o botão. O anel é um pouco mais largo que alto (256 × 244): o fundo
+        // leva o mesmo degradê dele, na mesma direção, para a fresta de cima e de baixo não aparecer como uma borda escura
+        buttonColor: 'linear-gradient(135deg, #ffa51c 0%, #f4541a 50%, #d92011 100%)', buttonBorderColor: '#f0401a', buttonIcon: 'assets/img/chat-icone.svg', buttonIconScale: 'full',
         theme: {
           headerBackground: '#2d1604', headerTextColor: '#ffeed2', chatBackground: '#fff6e8',
           userMessageBackground: '#e8401a', userMessageTextColor: '#ffffff', agentMessageBackground: '#ffffff', agentMessageTextColor: '#2d1604',
