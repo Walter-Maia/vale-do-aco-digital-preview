@@ -242,7 +242,15 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
 
 .presente__acoes { position: relative; margin-top: calc(34 * var(--u)); }
 .presente__powered { width: calc(570 * var(--u)); margin-left: calc(328 * var(--u)); }
-.pilulas { display: flex; flex-wrap: wrap; gap: calc(27 * var(--u)); margin-top: calc(40 * var(--u)); padding-left: calc(284 * var(--u)); }
+/* as chamadas ficam numa barra de vidro escuro sobre a divisa entre os cartões e o mapa: metade sobre o degradê, metade sobre o
+   escuro (ela é da seção dos cartões, que fica por cima da do mapa). A barra borra o que passa por trás e ganha uma sombra funda */
+.pilulas {
+  position: absolute; left: 50%; bottom: 0; z-index: 3; translate: -50% 50%;
+  display: flex; gap: max(10px, calc(16 * var(--u))); padding: max(8px, calc(12 * var(--u))); border-radius: 99px;
+  background: rgba(36, 15, 2, 0.58); -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+  box-shadow: 0 calc(24 * var(--u)) calc(60 * var(--u)) rgba(20, 6, 0, 0.45), inset 0 1px 0 rgba(255, 238, 210, 0.14);
+}
+.pilulas li { flex: none; }
 
 .pilula { --h: max(46px, calc(75 * var(--u))); display: inline-flex; align-items: center; gap: max(4px, calc(7 * var(--u))); text-decoration: none; }
 /* resposta ao clique: comprime e volta (com ponteiro fino, site.js junta esta transição à do ímã) */
@@ -285,20 +293,18 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
 /* Três cartões no modelo da arte: marrom com fio creme sobre o degradê. Com JS e movimento permitido eles esperam empilhados na casa
    do meio, como um baralho, e abrem quando a pilha está à vista (site.js liga .is-in). --k é a casa de cada um (-1 esquerda, 0 centro,
    1 direita) e também a altura na pilha: o da direita fica por cima, um pouco para cima e para a direita. Só transform e opacity.
-   Acabamento: a borda é um degradê (creme → âmbar → creme) pintado em border-box; no alto de cada cartão vai uma peça da assinatura
-   do movimento, em traço (triângulo, meio-disco, ponto), e sob o título um fio curto. Com ponteiro fino o cartão responde ao cursor:
-   sobe um pouco, a sombra aprofunda, uma luz acompanha o ponteiro (--mx/--my, escritos por site.js), a peça se enche da cor da
-   marca e o fio se estende. As duas camadas do hover (::before, a luz; ::after, a sombra funda) já estão prontas e só mudam de
+   Acabamento: o cartão é de uma cor só, sem borda (a borda clara saiu em 08/10/2026); no alto vai o selo do público e sob o título
+   um fio curto. Com ponteiro fino o cartão responde ao cursor: sobe um pouco, a sombra aprofunda, uma luz acompanha o ponteiro
+   (--mx/--my, escritos por site.js), o selo gira e o fio se estende. As duas camadas do hover (::before, a luz; ::after, a sombra funda) já estão prontas e só mudam de
    opacidade — nada de animar box-shadow. */
-.publicos { position: relative; padding: calc(126 * var(--u)) calc(150 * var(--u)) calc(140 * var(--u)); background: var(--grad); }
+.publicos { position: relative; z-index: 2; padding: calc(126 * var(--u)) calc(150 * var(--u)) calc(140 * var(--u)); background: var(--grad); }
 .publicos__defs { position: absolute; }
 .publicos__lista { --vao: calc(64 * var(--u)); --leque: calc(15 * var(--u)); position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--vao); }
 .publico {
   --mx: 50%; --my: 0px;
   position: relative; z-index: calc(2 + var(--k)); display: flex; flex-direction: column; align-items: center; justify-content: center;
   min-height: calc(384 * var(--u)); padding: calc(46 * var(--u)) calc(50 * var(--u)) calc(50 * var(--u)); text-align: center;
-  border: 1px solid transparent; border-radius: calc(38 * var(--u));
-  background: linear-gradient(180deg, #2a1003 0%, #2e1203 46%, #4b1d04 100%) padding-box, linear-gradient(160deg, rgba(255, 238, 210, 0.95), rgba(255, 174, 24, 0.42) 48%, rgba(255, 238, 210, 0.78)) border-box;
+  border-radius: calc(38 * var(--u)); background: #2a1104;
   box-shadow: 0 calc(26 * var(--u)) calc(64 * var(--u)) rgba(92, 14, 0, 0.36);
   transition: translate 0.6s var(--sai);
 }
@@ -345,10 +351,25 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
    O brilho quente atrás dele é o que o prende à página: é fundo da seção, não um elemento — assim nunca passa da largura da janela
    (como elemento, no celular ele empurrava a página 66 px para o lado). O SVG e a animação estão em abertura.css. */
 .regiao {
-  position: relative; padding: calc(150 * var(--u)) 0 calc(130 * var(--u));
-  background: radial-gradient(ellipse 31% 43% at 50% 51%, rgba(255, 122, 26, 0.17), rgba(255, 122, 26, 0.05) 62%, rgba(255, 122, 26, 0)) var(--escuro);
+  position: relative; overflow-x: clip; padding: calc(150 * var(--u)) 0 calc(130 * var(--u));
+  background: radial-gradient(ellipse 31% 43% at 69% 51%, rgba(255, 122, 26, 0.17), rgba(255, 122, 26, 0.05) 62%, rgba(255, 122, 26, 0)) var(--escuro);
 }
-.mapa { position: relative; width: calc(800 * var(--u)); margin-inline: auto; }
+/* o mapa vai para a direita; à esquerda, o letreiro "Conectando o Vale do Aço" em três linhas que deslizam com a rolagem em ritmos e
+   sentidos diferentes (data-px-x no HTML) e passam por cima do mapa. A primeira linha é só contorno; as outras, no degradê das letras
+   grandes. O letreiro funde com o que está atrás (screen): sobre o fundo escuro ele fica como é, e onde cruza o mapa os fios e os
+   nós acendem através das letras. */
+.mapa { position: relative; width: calc(800 * var(--u)); margin: 0 calc(140 * var(--u)) 0 auto; }
+.regiao__titulo {
+  --lh: 0.86; position: absolute; z-index: 2; left: calc(150 * var(--u)); top: 50%; translate: 0 -50%; margin: 0;
+  font-weight: 700; letter-spacing: -0.035em; text-transform: uppercase; pointer-events: none; mix-blend-mode: screen;
+}
+.regiao__titulo .ln { white-space: nowrap; }
+.regiao__titulo .ln > span { width: max-content; padding-right: 0.06em; }
+.regiao__l1 { font-size: calc(150 * var(--u)); }
+.regiao__l1 > span { color: transparent; -webkit-text-stroke: max(1px, calc(2 * var(--u))) rgba(255, 226, 184, 0.82); }
+.regiao__l2, .regiao__l3 { font-size: calc(250 * var(--u)); }
+.regiao__l2 > span, .regiao__l3 > span { background: var(--grad-texto); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.regiao__l3 { padding-left: calc(330 * var(--u)); }
 .mapa svg.net--map { width: 100%; height: auto; }
 
 /* ---------- 5 · marco zero ---------- */
@@ -363,12 +384,13 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
 .marco__palco {
   --marca: polygon(0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 100%, 0% 100%, 0% 100%, 0% 100%, 0% 100%, 0% 100%, 0% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 99.93% 95.02%, 99.73% 90.06%, 99.4% 85.13%, 98.93% 80.23%, 98.33% 75.38%, 97.61% 70.59%, 96.75% 65.88%, 95.77% 61.26%, 94.67% 56.74%, 93.44% 52.33%, 92.1% 48.04%, 90.64% 43.88%, 89.08% 39.87%, 87.41% 36.02%, 85.63% 32.32%, 83.76% 28.8%, 81.8% 25.47%, 79.75% 22.32%, 77.62% 19.38%, 75.41% 16.64%, 73.13% 14.11%, 70.79% 11.81%, 68.39% 9.73%, 65.93% 7.89%, 63.43% 6.28%, 60.88% 4.91%, 58.31% 3.78%, 55.7% 2.9%, 53.08% 2.28%, 50.44% 1.9%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 47.8%);
   --tela: polygon(10.8% 35.29%, 9.64% 35.5%, 8.55% 36.11%, 7.62% 37.08%, 6.9% 38.35%, 6.45% 39.83%, 6.3% 41.42%, 6.3% 90.62%, 6.45% 92.2%, 6.9% 93.68%, 7.62% 94.95%, 8.55% 95.93%, 9.64% 96.54%, 10.8% 96.75%, 82% 96.75%, 83.16% 96.54%, 84.25% 95.93%, 85.18% 94.95%, 85.9% 93.68%, 86.35% 92.2%, 86.5% 90.62%, 86.5% 89.03%, 86.5% 87.44%, 86.5% 85.86%, 86.5% 84.27%, 86.5% 82.68%, 86.5% 81.09%, 86.5% 79.51%, 86.5% 77.92%, 86.5% 76.33%, 86.5% 74.75%, 86.5% 73.16%, 86.5% 71.57%, 86.5% 69.98%, 86.5% 68.4%, 86.5% 66.81%, 86.5% 65.22%, 86.5% 63.64%, 86.5% 62.05%, 86.5% 60.46%, 86.5% 58.87%, 86.5% 57.29%, 86.5% 55.7%, 86.5% 54.11%, 86.5% 52.53%, 86.5% 50.94%, 86.5% 49.35%, 86.5% 47.77%, 86.5% 46.18%, 86.5% 44.59%, 86.5% 43%, 86.5% 41.42%, 86.35% 39.83%, 85.9% 38.35%, 85.18% 37.08%, 84.25% 36.11%, 83.16% 35.5%, 82% 35.29%, 47.8% 35.29%);
-  /* a largura também respeita a altura da janela (1,3624 = 200 / 146,8): numa janela baixa o palco inteiro continua cabendo,
-     e com ele o vídeo aberto. svh onde existe; vh para navegador mais antigo. */
-  --alto: calc((100vh - 56px) * 1.3624);
-  position: relative; width: min(calc(1160 * var(--u)), var(--alto)); aspect-ratio: 200 / 146.8; margin: calc(96 * var(--u)) auto 0;
+  /* a largura também respeita a altura da janela (1,3624 = 200 / 146,8): numa janela baixa o palco inteiro continua cabendo
+     (com 20 px de folga), e com ele o vídeo aberto. svh onde existe; vh para navegador mais antigo. Em 08/10/2026 o palco cresceu
+     (era 1160 da arte e 56 px de folga), a pedido do Walter. */
+  --alto: calc((100vh - 20px) * 1.3624);
+  position: relative; width: min(calc(1300 * var(--u)), var(--alto)); aspect-ratio: 200 / 146.8; margin: calc(96 * var(--u)) auto 0;
 }
-@supports (height: 100svh) { .marco__palco { --alto: calc((100svh - 56px) * 1.3624); } }
+@supports (height: 100svh) { .marco__palco { --alto: calc((100svh - 20px) * 1.3624); } }
 .marco__fundo, .marco__cor, .marco__tracos { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 /* as cores da marca, bem leves atrás da tela: mantêm a marca acesa depois que a cor cheia vira vídeo; no hover elas sobem */
 .marco__fundo { opacity: 0.16; transition: opacity 0.5s ease; }
@@ -586,7 +608,10 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .presente__texto .corpo { order: 3; margin-top: 0; font-size: 17px; line-height: 1.38; }
   .presente__acoes { margin-top: 44px; padding: 44px var(--lado) 24vw; background: var(--grad); }
   .presente__powered { width: min(100%, 320px); margin: 0; }
-  .pilulas { flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 28px; padding: 0; }
+  /* no celular a barra empilha as três chamadas, todas da largura da maior; a do meio fica sobre a divisa */
+  .pilulas { flex-direction: column; gap: 10px; padding: 10px; border-radius: 36px; }
+  .pilulas .pilula { display: flex; }
+  .pilulas .pilula__rot { flex: 1; justify-content: center; }
   .pilula { --h: 52px; }
   /* encolhe abaixo de ~380 px: em 320 a terceira pílula passava 6 px da tela (15 px com o rótulo em negrito) */
   .pilula__rot { font-size: clamp(10.5px, 3.4vw, 13px); padding: 0 clamp(12px, 4.4vw, 20px); }
@@ -609,7 +634,8 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .chamada .ln > span { width: auto; padding: 0.22em 0.06em 0.16em 0; line-height: var(--lh); text-wrap: balance; }
 
   /* cartões em coluna; a pilha se forma na casa do meio (o de cima desce, o de baixo sobe) e abre na vertical */
-  .publicos { padding: 52px var(--lado) 60px; }
+  /* embaixo, espaço para a metade de cima da barra das chamadas (196 px de altura) */
+  .publicos { padding: 52px var(--lado) 158px; }
   .publicos__lista { --vao: 14px; --leque: 9px; grid-template-columns: 1fr; grid-auto-rows: 1fr; }
   .publico { min-height: 0; padding: 26px 22px 28px; border-radius: 24px; }
   .publico__sinal { --t: 58px; margin-bottom: 16px; }
@@ -617,15 +643,21 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .publico__nome::after { margin: 10px auto 12px; }
   .publico__texto { max-width: 20em; font-size: 16px; line-height: 1.4; }
 
-  .regiao { padding: 60px 14px 44px; background: radial-gradient(ellipse 64% 44% at 50% 52%, rgba(255, 122, 26, 0.17), rgba(255, 122, 26, 0.05) 62%, rgba(255, 122, 26, 0)) var(--escuro); }
-  .mapa { width: min(100%, 520px); }
+  /* no celular o letreiro vem em cima, na largura da tela, e o mapa sobe por baixo das últimas letras, encostado à direita */
+  .regiao { padding: 138px 0 44px; background: radial-gradient(ellipse 70% 36% at 58% 68%, rgba(255, 122, 26, 0.17), rgba(255, 122, 26, 0.05) 62%, rgba(255, 122, 26, 0)) var(--escuro); }
+  .regiao__titulo { --lh: 0.88; position: relative; left: auto; top: auto; translate: none; padding: 0 var(--lado); }
+  .regiao__l1 { font-size: 12.2vw; }
+  .regiao__l1 > span { -webkit-text-stroke-width: 1.2px; }
+  .regiao__l2, .regiao__l3 { font-size: 20vw; }
+  .regiao__l3 { padding-left: 6vw; }
+  .mapa { width: min(90%, 520px); margin: -30vw 2vw 0 auto; }
 
   .marco { padding: 30px 0 68px; }
   .marco__grade { display: block; padding: 0 var(--lado); }
   .marco__grade .t2 { font-size: clamp(24px, 7.4vw, 44px); }
   .marco__grade .corpo { padding-top: 24px; font-size: 17px; line-height: 1.38; }
   /* o palco passa da margem do texto: no celular cada pixel de largura do vídeo conta */
-  .marco__palco { width: min(100% - 28px, var(--alto)); margin: 38px auto 0; }
+  .marco__palco { width: min(100% - 16px, var(--alto)); margin: 38px auto 0; }
   .marco__botao { width: clamp(50px, 8.6vw, 78px); }
 
   .frentes { padding: 44px 0 56px; }
@@ -669,25 +701,27 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .foto { aspect-ratio: 1 / 1; }
   .presente__texto .corpo, .como__grade .corpo, .frente__texto { font-size: clamp(18px, 2.5vw, 21px); line-height: 1.42; max-width: 34em; }
   .presente__powered { width: min(100%, 400px); }
-  .pilulas { flex-direction: row; flex-wrap: wrap; gap: 12px 14px; }
   .pilula__rot { font-size: 13px; padding: 0 20px; }
   .presente__acoes { padding-bottom: 20vw; }
   .letreiro__frase { font-size: 5vw; }
   .chamada { font-size: 8.6vw; } /* aqui cada metade cabe numa linha, como no desktop */
   .como__grade .t2 { font-size: clamp(36px, 6.2vw, 52px); }
   .presente__texto .t2 { font-size: clamp(40px, 6.6vw, 56px); }
-  .publicos { padding-block: 64px 72px; }
+  .publicos { padding-block: 64px 170px; }
   .publicos__lista { --vao: 18px; max-width: 600px; margin-inline: auto; }
   .publico { padding: 32px 30px 34px; }
   .publico__sinal { --t: 62px; margin-bottom: 20px; }
   .publico__nome::after { margin: 14px auto 16px; }
   .publico__nome { font-size: 27px; }
   .publico__texto { font-size: 18px; }
-  .regiao { padding: 76px var(--lado) 56px; }
-  .mapa { width: min(100%, 600px); }
+  .regiao { padding: 150px 0 56px; }
+  .regiao__l1 { font-size: 10vw; }
+  .regiao__l2, .regiao__l3 { font-size: 16.5vw; }
+  .regiao__l3 { padding-left: 10vw; }
+  .mapa { width: min(78%, 600px); margin: -22vw var(--lado) 0 auto; }
   .marco__grade .t2 { font-size: clamp(36px, 6.2vw, 52px); }
   .marco__grade .corpo { font-size: clamp(18px, 2.5vw, 21px); line-height: 1.42; max-width: 34em; }
-  .marco__palco { width: min(100% - 2 * var(--lado), var(--alto)); }
+  .marco__palco { width: min(100% - var(--lado), var(--alto)); }
   .frente { padding-block: 30px 28px; }
   .frente__texto { margin-top: 8px; }
   .programa__foto img { width: 150%; margin-left: -22%; }
