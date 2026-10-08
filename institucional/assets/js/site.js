@@ -278,6 +278,24 @@
     }
   }
 
+  /* ---------------- letreiro no celular: a palavra inteira de margem a margem ----------------
+     Abaixo de 900 px "DIGITALIZAR" tem de caber na tela. A largura da palavra muda com a fonte do aparelho (Helvetica, Roboto,
+     Arial), então o corpo sai da medida real: mede o texto (um Range mede as letras; o span é bloco e ocupa a linha) e escala até
+     a largura útil. Roda antes do parallax, que mede a altura do letreiro, e de novo quando as fontes chegam e a tela muda. */
+  var palavra = document.querySelector('.letreiro__palavra'), palavraTexto = palavra && palavra.querySelector('span');
+  function ajustarPalavra() {
+    if (!palavraTexto) { return; }
+    palavra.style.fontSize = '';
+    if (window.innerWidth >= 900) { return; }
+    var cs = getComputedStyle(palavra), r = document.createRange();
+    r.selectNodeContents(palavraTexto);
+    var largura = r.getBoundingClientRect().width, util = palavra.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if (largura > 0 && util > 0) { palavra.style.fontSize = (parseFloat(cs.fontSize) * util / largura).toFixed(2) + 'px'; }
+  }
+  ajustarPalavra();
+  window.addEventListener('resize', ajustarPalavra);
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(ajustarPalavra); }
+
   /* ---------------- parallax ----------------
      data-px="n" / data-px-x="n": deslocamento máximo, em px da arte (1920), quando o trilho cruza a tela.
      Positivo acompanha a rolagem (plano distante); negativo anda contra ela (plano próximo).

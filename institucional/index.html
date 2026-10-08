@@ -25,7 +25,7 @@
   <link rel="preload" as="image" href="assets/img/hero-poster-inicio.jpg" fetchpriority="high">
   <link rel="preload" as="font" type="font/woff2" href="assets/fonts/montserrat-latin-400-700.woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/abertura.css?v=1.5">
-  <link rel="stylesheet" href="assets/css/site.css?v=1.6">
+  <link rel="stylesheet" href="assets/css/site.css?v=1.7">
   <script>
     (function (d) {
       var c = 'js hero-top', seen = false;
@@ -38,6 +38,36 @@
       d.className = d.className.replace('no-js', c);
     })(document.documentElement);
   </script>
+  <!-- chat (OdinChat). O carregador sai já no início, sem travar a página (async, conexão adiantada); a janela da conversa só
+       carrega quando a pessoa abre o chat. As cores do painel do OdinChat (roxo e ciano) são trocadas aqui pelas do site: o
+       carregador grava a configuração em window.__WIDGET_CONFIG e este setter mistura o tema do site antes de o widget desenhar o
+       botão (e antes de mandar a configuração para a janela da conversa). Se um dia o carregador mudar, o load aplica o mesmo
+       tema pela API do widget (MyWidget.setConfig). O balão do ícone e a saída de cena durante a intro e o menu estão em site.css. -->
+  <link rel="preconnect" href="https://api.odinchat.com.br">
+  <script>
+    (function (w) {
+      var site = {
+        buttonColor: 'linear-gradient(135deg, #e3291a 0%, #f4541a 55%, #fb8f12 100%)', buttonBorderColor: '#f0401a',
+        theme: {
+          headerBackground: '#2d1604', headerTextColor: '#ffeed2', chatBackground: '#fff6e8',
+          userMessageBackground: '#e8401a', userMessageTextColor: '#ffffff', agentMessageBackground: '#ffffff', agentMessageTextColor: '#2d1604',
+          inputBackground: '#ffffff', inputBorderColor: '#f1d9b5', inputTextColor: '#2d1604', sendButtonBackground: '#e8401a', sendButtonIconColor: '#ffffff',
+          closeButtonIconColor: '#ffeed2', closeButtonHoverBackground: '#ffeed2',
+          fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif', borderRadius: '20px'
+        }
+      };
+      var misturar = function (v) { v = v || {}; return Object.assign({}, v, site, { theme: Object.assign({}, v.theme, site.theme) }); };
+      var cfg;
+      try {
+        Object.defineProperty(w, '__WIDGET_CONFIG', { configurable: true, enumerable: true, get: function () { return cfg; }, set: function (v) { cfg = misturar(v); } });
+      } catch (e) {}
+      w.addEventListener('load', function () {
+        var m = w.MyWidget;
+        if (m && m.getConfig && m.getConfig().buttonColor !== site.buttonColor) { m.setConfig(misturar({})); }
+      });
+    })(window);
+  </script>
+  <script async src="https://api.odinchat.com.br/webchat/widgets/383715161568972800/loader.js"></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -88,6 +118,12 @@
 </head>
 <body id="topo">
   <a class="skip" href="#conteudo">Ir para o conteúdo</a>
+  <!-- contornos de texto (.regiao__l1, a primeira linha do letreiro no celular): o filtro alarga a letra cheia e tira a letra do meio,
+       sobrando só o anel de fora. Com -webkit-text-stroke, no Android (fonte do sistema variável) apareciam fios dentro das letras -->
+  <svg class="defs-contorno" width="0" height="0" aria-hidden="true" focusable="false">
+    <filter id="contorno" x="-5%" y="-10%" width="110%" height="120%" color-interpolation-filters="sRGB"><feMorphology in="SourceAlpha" operator="dilate" radius="1.6" result="maior"/><feComposite in="maior" in2="SourceAlpha" operator="out" result="anel"/><feFlood flood-color="#ffe2b8" flood-opacity=".88"/><feComposite in2="anel" operator="in"/></filter>
+    <filter id="contorno-fino" x="-5%" y="-10%" width="110%" height="120%" color-interpolation-filters="sRGB"><feMorphology in="SourceAlpha" operator="dilate" radius="1.3" result="maior"/><feComposite in="maior" in2="SourceAlpha" operator="out" result="anel"/><feFlood flood-color="#fff0dc" flood-opacity=".95"/><feComposite in2="anel" operator="in"/></filter>
+  </svg>
 
   <!-- INTRO: só aparece com JS, uma vez por sessão e sem reduced motion (ver script no <head>) -->
   <div class="intro" id="intro">
@@ -255,10 +291,10 @@
     <!-- 2 · Como construímos: o letreiro atravessa a troca de fundo e anda com a rolagem -->
     <section class="como" id="como" aria-labelledby="t-como" data-tema="claro">
       <div class="letreiro" data-px-track>
-        <p class="letreiro__palavra" aria-hidden="true" data-px-x="-150" data-px-x-m="-420" data-px-gpu><span>DIGITALIZAR</span></p>
+        <p class="letreiro__palavra" aria-hidden="true" data-px-x="-150" data-px-x-m="-55" data-px-gpu><span>DIGITALIZAR</span></p>
         <p class="letreiro__frase" data-px="-34" data-px-gpu data-rv="linhas">
           <span class="sr-only">Digitalizar </span>
-          <span class="ln" style="--i:0"><span>O Vale do Aço</span></span>
+          <span class="ln" style="--i:0"><span class="contorno-m">O Vale do Aço</span></span>
           <span class="ln" style="--i:1"><span>por completo!</span></span>
         </p>
       </div>
@@ -538,6 +574,6 @@
   </footer>
 
   <script src="assets/js/abertura.js?v=1.5" defer></script>
-  <script src="assets/js/site.js?v=1.5" defer></script>
+  <script src="assets/js/site.js?v=1.7" defer></script>
 </body>
 </html>

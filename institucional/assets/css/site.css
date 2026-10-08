@@ -59,6 +59,7 @@ button { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--amber); outline-offset: 4px; border-radius: 4px; }
 
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+.defs-contorno { position: absolute; width: 0; height: 0; overflow: hidden; } /* filtros dos contornos (index.html, logo após o "pular") */
 .skip { position: absolute; left: 16px; top: -64px; z-index: 100; padding: 10px 16px; border-radius: 8px; background: var(--creme); color: var(--tinta); text-decoration: none; }
 .skip:focus { top: 12px; }
 
@@ -366,7 +367,9 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
 .regiao__titulo .ln { white-space: nowrap; }
 .regiao__titulo .ln > span { width: max-content; padding-right: 0.06em; }
 .regiao__l1 { font-size: calc(150 * var(--u)); }
-.regiao__l1 > span { color: transparent; -webkit-text-stroke: max(1px, calc(2 * var(--u))) rgba(255, 226, 184, 0.82); }
+/* contorno por filtro (#contorno, no HTML), não por -webkit-text-stroke: no Android a fonte do sistema é variável e o traço
+   desenhava os contornos sobrepostos de dentro de cada letra (fios no N, no E, no A). A cor é só o que aparece sem filtro */
+.regiao__l1 > span { color: #ffe2b8; filter: url(#contorno); }
 .regiao__l2, .regiao__l3 { font-size: calc(250 * var(--u)); }
 .regiao__l2 > span, .regiao__l3 > span { background: var(--grad-texto); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .regiao__l3 { padding-left: calc(330 * var(--u)); }
@@ -606,7 +609,7 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   /* texto corrido do celular: 17 px com entrelinha de leitura, e quebras que evitam palavra sozinha na última linha */
   .corpo, .frente__texto { text-wrap: pretty; }
   .presente__texto .corpo { order: 3; margin-top: 0; font-size: 17px; line-height: 1.38; }
-  .presente__acoes { margin-top: 44px; padding: 44px var(--lado) 24vw; background: var(--grad); }
+  .presente__acoes { margin-top: 44px; padding: 44px var(--lado) 30vw; background: var(--grad); } /* embaixo: a frase do letreiro */
   .presente__powered { width: min(100%, 320px); margin: 0; }
   /* no celular a barra empilha as três chamadas, todas da largura da maior; a do meio fica sobre a divisa */
   .pilulas { flex-direction: column; gap: 10px; padding: 10px; border-radius: 36px; }
@@ -616,14 +619,16 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   /* encolhe abaixo de ~380 px: em 320 a terceira pílula passava 6 px da tela (15 px com o rótulo em negrito) */
   .pilula__rot { font-size: clamp(10.5px, 3.4vw, 13px); padding: 0 clamp(12px, 4.4vw, 20px); }
 
-  /* como no desktop, a palavra é maior que a tela (a 22vw lê-se "DIGITALIZA") e o deslize com a rolagem mostra o resto: no celular
-     ele é do tamanho do que sobra da palavra (data-px-x-m no HTML). Cruza a troca de fundo no último quarto da altura.
-     A frase fica sobre o alto da palavra, em branco, como na arte, e acima da troca de fundo mesmo com o deslize vertical
-     (-34 → até 2,8vw): termina em 7,5vw, a troca está em 10,5vw. Entrelinha mais aberta que a da arte: a 1,04 a cedilha de
-     "AÇO" pousava sobre o E de "COMPLETO" e lia-se um acento. */
-  .letreiro { height: auto; top: -10.5vw; margin-bottom: -10.5vw; }
-  .letreiro__palavra { position: relative; left: 0; padding-left: 7vw; font-size: 22vw; }
-  .letreiro__frase { --lh: 1.12; left: auto; right: var(--lado); top: -5vw; font-size: 5.6vw; }
+  /* a palavra inteira, de margem a margem: site.js mede a palavra na fonte do aparelho (Helvetica no iPhone, Roboto no Android,
+     Arial no Windows têm larguras diferentes) e acerta o corpo; 15vw é o que vale sem JS. O deslize com a rolagem é menor que a
+     margem (data-px-x-m no HTML: ±2,9vw), para nenhuma letra sair da tela. Cruza a troca de fundo no último terço da altura.
+     A frase fica por cima da palavra, encostada no alto dela e sempre acima da troca de fundo, mesmo com o deslize vertical
+     (-34 → até 2,8vw): termina em 1,3vw, só encostando nas letras; a troca está em 8vw. "O Vale do Aço" vai em contorno (.contorno-m); "por completo!",
+     cheio. Entrelinha mais aberta que a da arte: a 1,04 a cedilha de "AÇO" pousava sobre o E de "COMPLETO". */
+  .letreiro { height: auto; top: -8vw; margin-bottom: -8vw; }
+  .letreiro__palavra { position: relative; left: 0; padding: 0 4vw; font-size: 15vw; }
+  .letreiro__frase { --lh: 1.12; left: auto; right: var(--lado); top: -13vw; font-size: 6.4vw; }
+  .letreiro__frase .contorno-m { color: #fff0dc; text-shadow: none; filter: url(#contorno-fino); }
   .como__grade { display: block; padding: 56px var(--lado) 0; }
   .como__grade .t2 { font-size: clamp(24px, 7.4vw, 44px); }
   .como__grade .corpo { padding-top: 26px; font-size: 17px; line-height: 1.38; }
@@ -647,7 +652,7 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .regiao { padding: 138px 0 44px; background: radial-gradient(ellipse 70% 36% at 58% 68%, rgba(255, 122, 26, 0.17), rgba(255, 122, 26, 0.05) 62%, rgba(255, 122, 26, 0)) var(--escuro); }
   .regiao__titulo { --lh: 0.88; position: relative; left: auto; top: auto; translate: none; padding: 0 var(--lado); }
   .regiao__l1 { font-size: 12.2vw; }
-  .regiao__l1 > span { -webkit-text-stroke-width: 1.2px; }
+  .regiao__l1 > span { filter: url(#contorno-fino); }
   .regiao__l2, .regiao__l3 { font-size: 20vw; }
   .regiao__l3 { padding-left: 6vw; }
   .mapa { width: min(90%, 520px); margin: -30vw 2vw 0 auto; }
@@ -702,8 +707,8 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .presente__texto .corpo, .como__grade .corpo, .frente__texto { font-size: clamp(18px, 2.5vw, 21px); line-height: 1.42; max-width: 34em; }
   .presente__powered { width: min(100%, 400px); }
   .pilula__rot { font-size: 13px; padding: 0 20px; }
-  .presente__acoes { padding-bottom: 20vw; }
-  .letreiro__frase { font-size: 5vw; }
+  .presente__acoes { padding-bottom: 24vw; }
+  .letreiro__frase { top: -9.6vw; font-size: 5vw; }
   .chamada { font-size: 8.6vw; } /* aqui cada metade cabe numa linha, como no desktop */
   .como__grade .t2 { font-size: clamp(36px, 6.2vw, 52px); }
   .presente__texto .t2 { font-size: clamp(40px, 6.6vw, 56px); }
@@ -744,3 +749,14 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .publico, .publico::before, .publico::after, .publico__sinal, .publico__sinal::before, .publico__nome::after { transition: none; }
   .marco__tela, .marco__capa, .marco__fundo, .marco__tracos, .marco__play, .marco__botao, .marco__video, .parceiros__lista img, .rodape__credito img { transition: none; }
 }
+
+/* ---------- chat (OdinChat) ---------- */
+/* o widget traz o balão do botão com roxo e ciano fixos no SVG: aqui ele ganha as cores do site (CSS vence o atributo do SVG).
+   O resto (botão em degradê, cabeçalho, mensagens, campo) vem da configuração montada no <head> do index.html */
+#my-widget-button svg path:first-child { fill: #ffeed2; stroke: #ffeed2; }
+#my-widget-button svg path:nth-child(2) { stroke: #ffffff; }
+/* fora de cena durante a intro e com o menu aberto: o widget usa z-index 999999 e ficaria por cima dos dois */
+#my-widget-container { transition: opacity 0.4s ease, visibility 0s; }
+.intro-on #my-widget-container, .menu-aberto #my-widget-container { opacity: 0; visibility: hidden; transition: opacity 0.25s ease, visibility 0s 0.25s; }
+/* até 480 px a conversa abre em tela cheia e já tem o seu × no alto; o botão flutuante (que vira um X) cobria o microfone do campo */
+@media (max-width: 480px) { #my-widget-container:has(#my-widget-window.open) #my-widget-button { opacity: 0; visibility: hidden; pointer-events: none; } }
