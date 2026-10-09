@@ -243,15 +243,15 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
 
 .presente__acoes { position: relative; margin-top: calc(34 * var(--u)); }
 .presente__powered { width: calc(570 * var(--u)); margin-left: calc(328 * var(--u)); }
-/* as chamadas ficam numa barra de vidro escuro sobre a divisa entre os cartões e o mapa: metade sobre o degradê, metade sobre o
-   escuro (ela é da seção dos cartões, que fica por cima da do mapa). A barra borra o que passa por trás e ganha uma sombra funda */
+/* as chamadas ficam soltas sobre a divisa entre os cartões e o mapa: metade sobre o degradê, metade sobre o escuro (elas são da
+   seção dos cartões, que fica por cima da do mapa). A barra de vidro escuro que as reunia saiu em 09/10/2026; cada pílula leva
+   agora uma sombra quente própria, que a descola do degradê vermelho onde a cor das duas primeiras quase se confunde com o fundo */
 .pilulas {
   position: absolute; left: 50%; bottom: 0; z-index: 3; translate: -50% 50%;
-  display: flex; gap: max(10px, calc(16 * var(--u))); padding: max(8px, calc(12 * var(--u))); border-radius: 99px;
-  background: rgba(36, 15, 2, 0.58); -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
-  box-shadow: 0 calc(24 * var(--u)) calc(60 * var(--u)) rgba(20, 6, 0, 0.45), inset 0 1px 0 rgba(255, 238, 210, 0.14);
+  display: flex; gap: max(10px, calc(16 * var(--u)));
 }
 .pilulas li { flex: none; }
+.pilulas .pilula__rot, .pilulas .pilula__seta { box-shadow: 0 calc(14 * var(--u)) calc(34 * var(--u)) rgba(64, 8, 0, 0.34); }
 
 .pilula { --h: max(46px, calc(75 * var(--u))); display: inline-flex; align-items: center; gap: max(4px, calc(7 * var(--u))); text-decoration: none; }
 /* resposta ao clique: comprime e volta (com ponteiro fino, site.js junta esta transição à do ímã) */
@@ -356,9 +356,9 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   background: radial-gradient(ellipse 31% 43% at 69% 51%, rgba(255, 122, 26, 0.17), rgba(255, 122, 26, 0.05) 62%, rgba(255, 122, 26, 0)) var(--escuro);
 }
 /* o mapa vai para a direita; à esquerda, o letreiro "Conectando o Vale do Aço" em três linhas que deslizam com a rolagem em ritmos e
-   sentidos diferentes (data-px-x no HTML) e passam por cima do mapa. A primeira linha é só contorno; as outras, no degradê das letras
-   grandes. O letreiro funde com o que está atrás (screen): sobre o fundo escuro ele fica como é, e onde cruza o mapa os fios e os
-   nós acendem através das letras. */
+   sentidos diferentes (data-px-x no HTML) e passam por cima do mapa. A primeira linha é cheia, em creme, na mesma letra das outras
+   (o contorno saiu em 09/10/2026: vazada, ela parecia de outra fonte); as outras, no degradê das letras grandes. O letreiro funde com
+   o que está atrás (screen): sobre o fundo escuro ele fica como é, e onde cruza o mapa os fios e os nós acendem através das letras. */
 .mapa { position: relative; width: calc(800 * var(--u)); margin: 0 calc(140 * var(--u)) 0 auto; }
 .regiao__titulo {
   --lh: 0.86; position: absolute; z-index: 2; left: calc(150 * var(--u)); top: 50%; translate: 0 -50%; margin: 0;
@@ -367,9 +367,7 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
 .regiao__titulo .ln { white-space: nowrap; }
 .regiao__titulo .ln > span { width: max-content; padding-right: 0.06em; }
 .regiao__l1 { font-size: calc(150 * var(--u)); }
-/* contorno por filtro (#contorno, no HTML), não por -webkit-text-stroke: no Android a fonte do sistema é variável e o traço
-   desenhava os contornos sobrepostos de dentro de cada letra (fios no N, no E, no A). A cor é só o que aparece sem filtro */
-.regiao__l1 > span { color: #ffe2b8; filter: url(#contorno); }
+.regiao__l1 > span { color: var(--creme); }
 .regiao__l2, .regiao__l3 { font-size: calc(250 * var(--u)); }
 .regiao__l2 > span, .regiao__l3 > span { background: var(--grad-texto); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .regiao__l3 { padding-left: calc(330 * var(--u)); }
@@ -611,8 +609,8 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .presente__texto .corpo { order: 3; margin-top: 0; font-size: 17px; line-height: 1.38; }
   .presente__acoes { margin-top: 44px; padding: 44px var(--lado) 30vw; background: var(--grad); } /* embaixo: a frase do letreiro */
   .presente__powered { width: min(100%, 320px); margin: 0; }
-  /* no celular a barra empilha as três chamadas, todas da largura da maior; a do meio fica sobre a divisa */
-  .pilulas { flex-direction: column; gap: 10px; padding: 10px; border-radius: 36px; }
+  /* no celular as três chamadas se empilham, todas da largura da maior; a do meio fica sobre a divisa */
+  .pilulas { flex-direction: column; gap: 10px; }
   .pilulas .pilula { display: flex; }
   .pilulas .pilula__rot { flex: 1; justify-content: center; }
   .pilula { --h: 52px; }
@@ -641,8 +639,8 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .como__grade { overflow-x: clip; } /* as linhas do título entram de fora da tela (deslizes do celular, abaixo) */
 
   /* cartões em coluna; a pilha se forma na casa do meio (o de cima desce, o de baixo sobe) e abre na vertical */
-  /* embaixo, espaço para a metade de cima da barra das chamadas (196 px de altura) */
-  .publicos { padding: 52px var(--lado) 158px; }
+  /* embaixo, espaço para a metade de cima da pilha das chamadas (176 px de altura) */
+  .publicos { padding: 52px var(--lado) 148px; }
   .publicos__lista { --vao: 14px; --leque: 9px; grid-template-columns: 1fr; grid-auto-rows: 1fr; }
   .publico { min-height: 0; padding: 26px 22px 28px; border-radius: 24px; }
   .publico__sinal { --t: 58px; margin-bottom: 16px; }
@@ -654,7 +652,6 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .regiao { padding: 138px 0 44px; background: radial-gradient(ellipse 70% 36% at 58% 68%, rgba(255, 122, 26, 0.17), rgba(255, 122, 26, 0.05) 62%, rgba(255, 122, 26, 0)) var(--escuro); }
   .regiao__titulo { --lh: 0.88; position: relative; left: auto; top: auto; translate: none; padding: 0 var(--lado); }
   .regiao__l1 { font-size: 12.2vw; }
-  .regiao__l1 > span { filter: url(#contorno-fino); }
   .regiao__l2, .regiao__l3 { font-size: 20vw; }
   .regiao__l3 { padding-left: 6vw; }
   .mapa { width: min(90%, 520px); margin: -30vw 2vw 0 auto; }
@@ -715,7 +712,7 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .chamada .cl { display: inline-block; }
   .como__grade .t2 { font-size: clamp(36px, 6.2vw, 52px); }
   .presente__texto .t2 { font-size: clamp(40px, 6.6vw, 56px); }
-  .publicos { padding-block: 64px 170px; }
+  .publicos { padding-block: 64px 160px; }
   .publicos__lista { --vao: 18px; max-width: 600px; margin-inline: auto; }
   .publico { padding: 32px 30px 34px; }
   .publico__sinal { --t: 62px; margin-bottom: 20px; }
