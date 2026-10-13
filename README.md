@@ -2,6 +2,13 @@
 
 Prévia de apresentação (não indexada).
 
+## Produção — valedoacodigital.com.br (13/10/2026)
+
+- **Site institucional na página inicial** (https://valedoacodigital.com.br/): a v1.12 desta prévia, posta na raiz por cima do WordPress (que continua no servidor, com  e as páginas antigas). Entraram  e , e no , antes do bloco do WordPress, a linha  (no servidor o  tinha prioridade). Para voltar à home do WordPress: tirar essa linha ou o  da raiz.
+- **Diferenças da produção para a prévia:**  "index, follow" (a prévia é noindex); as três chamadas e a pílula do menu abrem o WhatsApp do movimento com a mensagem de cada perfil (os formulários desta prévia não enviam as respostas e não foram para o ar).
+- **Comércio Digital** (https://valedoacodigital.com.br/programa-digital/): ganhou o chat. A versão do ar é mais nova que o  da raiz desta prévia (programa.css v3.16 e um ajuste de celular de 01/10): o chat foi acrescentado aos arquivos do servidor ( v3.17 = v3.16 + as regras do chat), sem subir os desta prévia.
+- Cópias dos arquivos substituídos ficam fora do site público, em  no servidor.
+
 - Versão atual: https://walter-maia.github.io/vale-do-aco-digital-preview/
   - 08/10/2026: chat do OdinChat, o mesmo do institucional, com as cores desta página e o ícone do chat (`assets/img/chat-icone.svg`, a partir de ICON_ODIN.svg); `programa.css?v=3.11`.
 - Versão anterior (backup v6): https://walter-maia.github.io/vale-do-aco-digital-preview/backup-v6/
