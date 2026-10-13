@@ -374,99 +374,43 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
 .mapa svg.net--map { width: 100%; height: auto; }
 
 /* ---------- 5 · marco zero ---------- */
-.marco { position: relative; padding: calc(40 * var(--u)) 0 calc(170 * var(--u)); background: var(--escuro); }
-.marco__grade { display: grid; grid-template-columns: calc(787 * var(--u)) calc(700 * var(--u)); align-items: start; padding-left: calc(268 * var(--u)); }
-.marco__grade .corpo { padding-top: calc(4 * var(--u)); }
-/* Palco no desenho do Walter (07/10/2026): a marca em contorno — triângulo + vela, um quarto de elipse cujo arco termina no canto do
-   triângulo — com a tela 16:9 de cantos arredondados encaixada dentro dela. Tudo sai de um palco de 200 × 146,8: a tela ocupa
-   x 12,6–173 e y 51,8–142 (6,3% / 35,29% / 80,2% / 61,46% do palco) e o raio de 9 vira 5,61% / 9,98% da própria tela.
-   --marca e --tela são o mesmo polígono de 59 pontos em duas posições (a silhueta da marca e a tela): por isso o clip-path da
-   camada de cor interpola de uma para a outra, e a cabeça da marca se recolhe para dentro da tela. */
-.marco__palco {
-  --marca: polygon(0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 100%, 0% 100%, 0% 100%, 0% 100%, 0% 100%, 0% 100%, 0% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 99.93% 95.02%, 99.73% 90.06%, 99.4% 85.13%, 98.93% 80.23%, 98.33% 75.38%, 97.61% 70.59%, 96.75% 65.88%, 95.77% 61.26%, 94.67% 56.74%, 93.44% 52.33%, 92.1% 48.04%, 90.64% 43.88%, 89.08% 39.87%, 87.41% 36.02%, 85.63% 32.32%, 83.76% 28.8%, 81.8% 25.47%, 79.75% 22.32%, 77.62% 19.38%, 75.41% 16.64%, 73.13% 14.11%, 70.79% 11.81%, 68.39% 9.73%, 65.93% 7.89%, 63.43% 6.28%, 60.88% 4.91%, 58.31% 3.78%, 55.7% 2.9%, 53.08% 2.28%, 50.44% 1.9%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 1.77%, 47.8% 47.8%);
-  --tela: polygon(10.8% 35.29%, 9.64% 35.5%, 8.55% 36.11%, 7.62% 37.08%, 6.9% 38.35%, 6.45% 39.83%, 6.3% 41.42%, 6.3% 90.62%, 6.45% 92.2%, 6.9% 93.68%, 7.62% 94.95%, 8.55% 95.93%, 9.64% 96.54%, 10.8% 96.75%, 82% 96.75%, 83.16% 96.54%, 84.25% 95.93%, 85.18% 94.95%, 85.9% 93.68%, 86.35% 92.2%, 86.5% 90.62%, 86.5% 89.03%, 86.5% 87.44%, 86.5% 85.86%, 86.5% 84.27%, 86.5% 82.68%, 86.5% 81.09%, 86.5% 79.51%, 86.5% 77.92%, 86.5% 76.33%, 86.5% 74.75%, 86.5% 73.16%, 86.5% 71.57%, 86.5% 69.98%, 86.5% 68.4%, 86.5% 66.81%, 86.5% 65.22%, 86.5% 63.64%, 86.5% 62.05%, 86.5% 60.46%, 86.5% 58.87%, 86.5% 57.29%, 86.5% 55.7%, 86.5% 54.11%, 86.5% 52.53%, 86.5% 50.94%, 86.5% 49.35%, 86.5% 47.77%, 86.5% 46.18%, 86.5% 44.59%, 86.5% 43%, 86.5% 41.42%, 86.35% 39.83%, 85.9% 38.35%, 85.18% 37.08%, 84.25% 36.11%, 83.16% 35.5%, 82% 35.29%, 47.8% 35.29%);
-  /* a largura também respeita a altura da janela (1,3624 = 200 / 146,8): numa janela baixa o palco inteiro continua cabendo
-     (com 20 px de folga), e com ele o vídeo aberto. svh onde existe; vh para navegador mais antigo. Em 08/10/2026 o palco cresceu
-     (era 1160 da arte e 56 px de folga), a pedido do Walter. */
-  --alto: calc((100vh - 20px) * 1.3624);
-  position: relative; width: min(calc(1300 * var(--u)), var(--alto)); aspect-ratio: 200 / 146.8; margin: calc(96 * var(--u)) auto 0;
-}
-@supports (height: 100svh) { .marco__palco { --alto: calc((100svh - 20px) * 1.3624); } }
-.marco__fundo, .marco__cor, .marco__tracos { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-/* as cores da marca, bem leves atrás da tela: mantêm a marca acesa depois que a cor cheia vira vídeo; no hover elas sobem */
-.marco__fundo { opacity: 0.16; transition: opacity 0.5s ease; }
-/* a cor cheia da fase "logo": em repouso já virou tela e está apagada */
-.marco__cor { opacity: 0; clip-path: var(--tela); }
-.marco__tela { position: absolute; left: 6.3%; top: 35.29%; width: 80.2%; height: 61.46%; overflow: hidden; border-radius: 5.61% / 9.98%; background: #1d0d02; transition: transform 0.6s var(--vai); }
-.marco__capa, .marco__video { position: absolute; inset: 0; width: 100%; height: 100%; }
-.marco__capa { object-fit: cover; transition: scale 1.4s var(--sai); }
-.marco__video { border: 0; opacity: 0; transition: opacity 0.5s ease; }
-.marco__tracos { overflow: visible; transition: opacity 0.35s ease; }
-/* espessuras em unidades do viewBox (200 de largura): ≈1,9 px no palco de 1160 px da arte; os degraus abaixo seguram ≥ 1 px nas
-   janelas menores (traço abaixo de 1 px de tela já travou a pintura do Chromium na intro). O intervalo do tracejado é 2, não 1:
-   com 1, o fim do caminho coincidia com o começo de um traço e a ponta redonda deixava um ponto no fio ainda por desenhar. */
-.mz-fio, .mz-ecos path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.mz-fio { stroke: #ffe3b8; stroke-width: 0.32px; stroke-dasharray: 1 2; }
-.mz-b, .mz-e, .mz-ecos { opacity: 0; } /* a diagonal e a haste atrás da tela, e os ecos: só existem na fase "logo" */
-.mz-ecos path { stroke: #ffd08a; stroke-width: 0.22px; opacity: calc(0.64 - var(--e) * 0.13); }
-@media (max-width: 1500px) { .mz-fio { stroke-width: 0.44px; } .mz-ecos path { stroke-width: 0.32px; } }
-@media (max-width: 600px) { .mz-fio { stroke-width: 0.8px; } .mz-ecos path { stroke-width: 0.6px; } }
-/* o link ocupa o palco inteiro (clicar na marca também toca); o botão fica no centro da tela, com um anel escuro que o separa da capa */
-.marco__play { position: absolute; inset: 0; border-radius: calc(20 * var(--u)); color: #fff; -webkit-tap-highlight-color: transparent; transition: opacity 0.3s ease, visibility 0s; }
+/* Só o vídeo do encontro, de ponta a ponta (em 13/10/2026 saíram a marca em traço, a tela recortada e, depois, o texto e o véu).
+   .marco__fundo leva a capa local e, por cima dela, o vídeo do YouTube mudo e em loop (site.js). O vídeo é um iframe 16:9 que cobre a
+   caixa como object-fit: cover (unidades de contêiner) e cresce 18% para os cantos do player (título, logo) ficarem fora da tela; a
+   capa só sai quando o player avisa que está tocando e os controles dele já sumiram (.is-tocando). A seção tem a proporção do vídeo
+   (16:9) até a altura da tela; o fundo é 7% mais alto em cima e embaixo, folga para o parallax. */
+.marco { position: relative; isolation: isolate; overflow: hidden; height: min(100vh, 56.25vw); background: #1d0d02; }
+@supports (height: 100svh) { .marco { height: min(100svh, 56.25vw); } }
+.marco__fundo { position: absolute; inset: -7% 0; z-index: -1; overflow: hidden; container-type: size; }
+.marco__capa, .marco__fundo iframe { position: absolute; left: 50%; top: 50%; translate: -50% -50%; border: 0; pointer-events: none; }
+.marco__capa { width: 100%; height: 100%; object-fit: cover; transition: opacity 1.2s ease; }
+.marco__fundo iframe { width: max(100cqw, 177.78cqh); height: max(56.25cqw, 100cqh); scale: 1.18; }
+.marco.is-tocando .marco__capa { opacity: 0; }
+/* a seção inteira é o link para assistir com som; o play só aparece no hover e no foco do teclado */
+.marco__play { position: absolute; inset: 0; display: grid; place-items: center; color: #e8401a; -webkit-tap-highlight-color: transparent; }
 .marco__botao {
-  position: absolute; left: 46.4%; top: 66.02%; translate: -50% -50%; display: grid; place-items: center; width: max(50px, calc(112 * var(--u))); aspect-ratio: 1; border-radius: 50%;
-  background: var(--creme); color: #e8401a; box-shadow: 0 calc(12 * var(--u)) calc(34 * var(--u)) rgba(10, 4, 0, 0.5), 0 0 0 max(7px, calc(15 * var(--u))) rgba(20, 9, 2, 0.3);
-  transition: scale 0.5s var(--mola), background-color 0.3s ease;
+  display: grid; place-items: center; width: max(64px, calc(112 * var(--u))); aspect-ratio: 1; border-radius: 50%; background: rgba(255, 238, 210, 0.94);
+  box-shadow: 0 calc(12 * var(--u)) calc(34 * var(--u)) rgba(10, 4, 0, 0.45); opacity: 0; scale: 0.82; transition: opacity 0.35s ease, scale 0.5s var(--mola);
 }
-.marco__botao svg { width: 46%; height: 46%; fill: currentColor; }
-.marco__play:active .marco__botao { scale: 0.94; }
-@media (hover: hover) and (pointer: fine) {
-  .marco__palco:hover .marco__fundo { opacity: 0.44; }
-  .marco__palco:hover .marco__capa { scale: 1.05; }
-  .marco__palco:hover .marco__botao { scale: 1.1; background: #fff; }
+.marco__botao svg { width: 44%; height: 44%; fill: currentColor; translate: 6% 0; }
+@media (hover: hover) and (pointer: fine) { .marco__play:hover .marco__botao { opacity: 1; scale: 1; } }
+.marco__play:focus-visible .marco__botao { opacity: 1; scale: 1; }
+/* o vídeo com som, numa janela sobre a página (só com mouse; site.js monta e desmonta) */
+.marco-modal {
+  position: fixed; inset: 0; z-index: 120; display: grid; place-items: center; padding: 72px 24px 32px;
+  background: rgba(20, 9, 2, 0.9); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); opacity: 0; transition: opacity 0.35s ease;
 }
-.marco__play:focus-visible .marco__botao { scale: 1.1; background: #fff; }
-/* aberta (site.js, no clique): a tela cresce até a largura do palco — por transform, enquanto dentro dela só existe a capa — e o
-   traço e as cores saem. .is-pronto troca o transform pela medida real (o mesmo retângulo, sem escala) e só então entra o iframe;
-   o player aparece quando termina de carregar (.is-tocando). */
-.marco__palco.is-aberto .marco__tela { transform: translate(4.49%, -26.06%) scale(1.24688); }
-.marco__palco.is-pronto .marco__tela { left: 0; top: 11.68%; width: 100%; height: 76.63%; transform: none; transition: none; }
-.marco__palco.is-aberto :is(.marco__tracos, .marco__fundo, .marco__cor) { opacity: 0; }
-.marco__palco.is-aberto .marco__capa { scale: 1; }
-.marco__palco.is-aberto .marco__play { opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
-.marco__palco.is-tocando .marco__video { opacity: 1; }
-@media (prefers-reduced-motion: no-preference) {
-  /* espera → entrada (site.js liga .is-in com 30% do palco na tela), em segundos:
-     0–1,2    o traço desenha a marca (diagonal, lado e base, haste, arco)
-     0,5–1,1  a marca se enche de cor, com os ecos por dentro: é o logo
-     1,9–2,8  a cor se recolhe para dentro da tela e se apaga sobre a capa do vídeo; a diagonal e a haste somem atrás dela,
-              o contorno da tela se desenha e as cores leves da marca acendem ao fundo
-     2,6      o botão assenta
-     As animações só preenchem para trás: ao terminarem, cada propriedade volta ao valor da regra e fica livre para hover e clique. */
-  .js .marco__palco:not(.is-in) :is(.marco__fundo, .marco__tela, .marco__tracos, .marco__botao) { opacity: 0; }
-  .js .marco__palco.is-in .mz-a { animation: mz-desenha 0.3s linear backwards; }
-  .js .marco__palco.is-in .mz-b { animation: mz-b 2.5s linear backwards; }
-  .js .marco__palco.is-in .mz-c { animation: mz-desenha 0.95s cubic-bezier(0.45, 0, 0.2, 1) 0.1s backwards; }
-  .js .marco__palco.is-in .mz-e { animation: mz-e 2.5s linear backwards; }
-  .js .marco__palco.is-in .mz-d { animation: mz-desenha 0.28s linear 0.42s backwards; }
-  .js .marco__palco.is-in .mz-f { animation: mz-desenha 0.5s cubic-bezier(0.45, 0, 0.2, 1) 0.7s backwards; }
-  .js .marco__palco.is-in .mz-g { animation: mz-desenha 0.9s cubic-bezier(0.45, 0, 0.2, 1) 1.9s backwards; }
-  .js .marco__palco.is-in .mz-ecos { animation: mz-ecos 2.3s linear backwards; }
-  .js .marco__palco.is-in .marco__cor { animation: mz-cor 3s linear backwards, mz-forma 0.9s var(--vai) 1.9s backwards; }
-  /* a tela só aparece quando a cor começa a se recolher: antes, o canto dela sobrava no vão entre a diagonal e a haste */
-  .js .marco__palco.is-in .marco__tela { animation: mz-surge 0.4s ease 1.95s backwards; }
-  .js .marco__palco.is-in .marco__fundo { animation: mz-surge 0.9s ease 2s backwards; }
-  .js .marco__palco.is-in .marco__botao { animation: mz-botao 0.6s var(--mola) 2.6s backwards; }
-  .js .marco__palco.is-aberto :is(.mz-fio, .mz-ecos, .marco__cor, .marco__tela, .marco__fundo, .marco__botao) { animation: none; }
+.marco-modal.is-aberto { opacity: 1; }
+.marco-modal__tela {
+  position: relative; width: min(100%, calc((100vh - 120px) * 16 / 9), 1280px); aspect-ratio: 16 / 9; overflow: hidden; border-radius: 18px;
+  background: #000; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5); scale: 0.96; transition: scale 0.5s var(--sai);
 }
-@keyframes mz-desenha { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-@keyframes mz-b { 0%, 12% { opacity: 1; stroke-dashoffset: 1; } 34%, 78% { opacity: 1; stroke-dashoffset: 0; } 94%, 100% { opacity: 0; stroke-dashoffset: 0; } }
-@keyframes mz-e { 0%, 12% { opacity: 1; stroke-dashoffset: 1; } 17%, 78% { opacity: 1; stroke-dashoffset: 0; } 94%, 100% { opacity: 0; stroke-dashoffset: 0; } }
-@keyframes mz-ecos { 0%, 35% { opacity: 0; } 52%, 78% { opacity: 1; } 91%, 100% { opacity: 0; } }
-@keyframes mz-cor { 0%, 16.7% { opacity: 0; } 36.7%, 70% { opacity: 1; } 95%, 100% { opacity: 0; } }
-@keyframes mz-forma { from { clip-path: var(--marca); } to { clip-path: var(--tela); } }
-@keyframes mz-surge { from { opacity: 0; } }
-@keyframes mz-botao { from { opacity: 0; scale: 0.8; } }
+.marco-modal.is-aberto .marco-modal__tela { scale: 1; }
+.marco-modal__tela iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.marco-modal__fechar { position: absolute; top: 16px; right: 16px; display: grid; place-items: center; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 50%; background: var(--creme); color: var(--tinta); cursor: pointer; transition: scale 0.3s var(--mola); }
+.marco-modal__fechar:hover, .marco-modal__fechar:focus-visible { scale: 1.08; }
+.marco-modal__fechar svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+.marco-modal-aberto { overflow: hidden; }
 
 /* ---------- 6 · três frentes ---------- */
 .frentes { position: relative; padding: calc(128 * var(--u)) 0 calc(150 * var(--u)); background: var(--grad); }
@@ -656,13 +600,8 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .regiao__l3 { padding-left: 6vw; }
   .mapa { width: min(90%, 520px); margin: -30vw 2vw 0 auto; }
 
-  .marco { padding: 30px 0 68px; }
-  .marco__grade { display: block; padding: 0 var(--lado); }
-  .marco__grade .t2 { font-size: clamp(24px, 7.4vw, 44px); }
-  .marco__grade .corpo { padding-top: 24px; font-size: 17px; line-height: 1.38; }
-  /* o palco passa da margem do texto: no celular cada pixel de largura do vídeo conta */
-  .marco__palco { width: min(100% - 16px, var(--alto)); margin: 38px auto 0; }
-  .marco__botao { width: clamp(50px, 8.6vw, 78px); }
+  /* no celular a faixa vai a 4:5: mostra o centro do quadro (as pessoas) em vez de uma tira estreita de 16:9 */
+  .marco { height: auto; aspect-ratio: 4 / 5; max-height: 86svh; }
 
   .frentes { padding: 44px 0 56px; }
   .frente { display: block; padding: 26px var(--lado) 24px; }
@@ -724,9 +663,7 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .regiao__l2, .regiao__l3 { font-size: 16.5vw; }
   .regiao__l3 { padding-left: 10vw; }
   .mapa { width: min(78%, 600px); margin: -22vw var(--lado) 0 auto; }
-  .marco__grade .t2 { font-size: clamp(36px, 6.2vw, 52px); }
-  .marco__grade .corpo { font-size: clamp(18px, 2.5vw, 21px); line-height: 1.42; max-width: 34em; }
-  .marco__palco { width: min(100% - var(--lado), var(--alto)); }
+  .marco { aspect-ratio: 16 / 10; }
   .frente { padding-block: 30px 28px; }
   .frente__texto { margin-top: 8px; }
   .programa__foto img { width: 150%; margin-left: -22%; }
@@ -747,14 +684,14 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .menu, .menu-aberto .menu, .menu__nav li, .menu__nav a::before, .menu__pe, .menu-aberto .menu__pe, .roll, .roll-t, .pilula, .cta { transition: none; }
   .frente__pulso { display: none; }
   .publico, .publico::before, .publico::after, .publico__sinal, .publico__sinal::before, .publico__nome::after { transition: none; }
-  .marco__tela, .marco__capa, .marco__fundo, .marco__tracos, .marco__play, .marco__botao, .marco__video, .parceiros__lista img, .rodape__credito img { transition: none; }
+  .marco__capa, .marco__play, .marco__botao, .marco-modal, .marco-modal__tela, .parceiros__lista img, .rodape__credito img { transition: none; }
 }
 
 /* ---------- chat (OdinChat) ---------- */
 /* cores, ícone do botão (assets/img/chat-icone.svg) e tema da conversa vêm da configuração montada no <head> do index.html */
 /* fora de cena durante a intro e com o menu aberto: o widget usa z-index 999999 e ficaria por cima dos dois */
 #my-widget-container { transition: opacity 0.4s ease, visibility 0s; }
-.intro-on #my-widget-container, .menu-aberto #my-widget-container { opacity: 0; visibility: hidden; transition: opacity 0.25s ease, visibility 0s 0.25s; }
+.intro-on #my-widget-container, .menu-aberto #my-widget-container, .marco-modal-aberto #my-widget-container { opacity: 0; visibility: hidden; transition: opacity 0.25s ease, visibility 0s 0.25s; }
 /* janela da conversa: o widget a abre com 494 × 676 px fixos e 100 px embaixo para o botão, sem limite de altura. Numa tela de
    notebook (≈ 650 px úteis de altura) o topo saía da tela. Aqui ela fica menor (400 × 600) e nunca passa da área visível; a sombra
    roxa do widget vira a do site. Em tela baixa (celular deitado) ela abre em tela cheia, como o próprio widget faz até 480 px de

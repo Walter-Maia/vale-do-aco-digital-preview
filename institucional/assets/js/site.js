@@ -209,47 +209,109 @@
     });
   }
 
-  /* ---------------- marco zero: a marca vira tela e o vídeo do YouTube carrega nela ----------------
-     A entrada (traço → logo → tela com a capa) é CSS, ligada por .is-in. Fachada: até o clique não existe iframe nem pedido ao
-     YouTube (a capa é um arquivo local). No clique a tela cresce até a largura do palco, por transform, enquanto dentro dela só há
-     a capa; 650 ms depois ela assume a medida real (.is-pronto) e só então o iframe nasce, já no tamanho final — o arranque do
-     player não disputa os quadros da abertura. Sem JS o link abre o vídeo no YouTube; em file:// também, porque ali o YouTube
-     recusa a incorporação (erro 153: a página não tem endereço para informar como referenciador).
-     No toque o player embutido fica de fora e o link segue para o YouTube (aba nova ou o app): no celular o YouTube não começa
-     sozinho dentro do iframe, e o player aberto parecia travado à espera de um segundo toque. */
-  var palco = document.querySelector('.marco__palco'), play = palco && palco.querySelector('.marco__play');
-  if (palco) { aoVer(palco, 0.3, function () { palco.classList.add('is-in'); }); }
-  if (play && location.protocol !== 'file:' && fine.matches) {
+  /* ---------------- marco zero: o vídeo do encontro é o fundo da seção ----------------
+     Fundo: quando a seção chega a 600 px da tela, entra por cima da capa um iframe do YouTube mudo, em loop, sem controles, a partir
+     dos 30 s (youtube-nocookie); até lá não há pedido ao YouTube. A capa só sai quando o player avisa, pela API de mensagens do
+     embed, que está tocando, e ainda 3,8 s depois (.is-tocando): nos primeiros ~3 s o YouTube mostra os controles (⏮ ⏸ ⏭) sobre o
+     vídeo, mesmo sem controles, e somem antes de 4,5 s (medido no desktop e no celular). Se o navegador não deixar o vídeo começar
+     sozinho, a capa fica. A uma tela de distância, com a aba oculta ou com a janela do vídeo aberta, o fundo pausa e a capa volta
+     (ao retomar, os controles aparecem de novo e a espera se repete). Sem vídeo de fundo (fica a capa): movimento reduzido, economia de dados e file:// (lá o YouTube recusa a
+     incorporação, erro 153).
+     "Assistir ao vídeo": com mouse, o vídeo com som numa janela sobre a página (Esc, × ou clique fora fecham, o foco volta ao botão)
+     e o fundo pausa enquanto isso. No toque o link segue para o YouTube (aba nova ou o app): no celular o YouTube não começa sozinho
+     dentro do iframe e o player aberto parecia travado à espera de um segundo toque. */
+  var marco = document.querySelector('.marco'), marcoFundo = marco && marco.querySelector('.marco__fundo'), play = marco && marco.querySelector('.marco__play');
+  var podeEmbutir = /^https?:$/.test(location.protocol), fundoVideo = null, marcoNaTela = false, modal = null;
+  var embed = function (id, params) { return 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) + '?' + params; };
+  var mandar = function (func) { // comando para o vídeo de fundo (API de mensagens do embed)
+    if (fundoVideo && fundoVideo.contentWindow) { fundoVideo.contentWindow.postMessage(JSON.stringify({ event: 'command', func: func, args: [] }), '*'); }
+  };
+  var revelar = 0;
+  var sincronizarFundo = function () {
+    var tocar = marcoNaTela && !document.hidden && !modal;
+    if (!tocar && marco) { clearTimeout(revelar); revelar = 0; marco.classList.remove('is-tocando'); }
+    mandar(tocar ? 'playVideo' : 'pauseVideo');
+  };
+  var economia = navigator.connection && navigator.connection.saveData;
+  if (marcoFundo && play && podeEmbutir && hasIO && !reduced.matches && !economia) {
+    var idVideo = play.getAttribute('data-video'), inicio = parseInt(play.getAttribute('data-inicio'), 10) || 0;
+    var montarFundo = function () {
+      if (fundoVideo) { return; }
+      fundoVideo = document.createElement('iframe');
+      fundoVideo.title = 'Vídeo de fundo: O Marco Zero do Vale do Aço Digital';
+      fundoVideo.setAttribute('aria-hidden', 'true');
+      fundoVideo.tabIndex = -1;
+      fundoVideo.allow = 'autoplay; encrypted-media; picture-in-picture';
+      fundoVideo.referrerPolicy = 'strict-origin-when-cross-origin';
+      fundoVideo.src = embed(idVideo, 'autoplay=1&mute=1&loop=1&playlist=' + encodeURIComponent(idVideo) + '&controls=0&disablekb=1&fs=0&iv_load_policy=3&cc_load_policy=0&rel=0&playsinline=1&enablejsapi=1&start=' + inicio + '&origin=' + encodeURIComponent(location.origin));
+      fundoVideo.addEventListener('load', function () { // pede ao player que passe a avisar o estado
+        fundoVideo.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 'marco-fundo', channel: 'widget' }), '*');
+        sincronizarFundo();
+      });
+      marcoFundo.appendChild(fundoVideo);
+    };
+    window.addEventListener('message', function (e) {
+      if (!fundoVideo || e.source !== fundoVideo.contentWindow) { return; }
+      var d; try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (err) { return; }
+      var estado = d && (d.event === 'onStateChange' ? d.info : d.info && d.info.playerState);
+      if (estado === 1 && !revelar && !marco.classList.contains('is-tocando')) { revelar = setTimeout(function () { revelar = 0; marco.classList.add('is-tocando'); }, 3800); }
+    });
+    // a uma tela de distância (acima ou abaixo) o vídeo monta e toca; mais longe, pausa
+    new IntersectionObserver(function (en) {
+      marcoNaTela = en[0].isIntersecting;
+      if (marcoNaTela) { montarFundo(); }
+      sincronizarFundo();
+    }, { rootMargin: '100% 0px 100% 0px' }).observe(marco);
+    document.addEventListener('visibilitychange', sincronizarFundo);
+  }
+  if (play && podeEmbutir && fine.matches) {
     var aquecido = false;
-    var aquecer = function () { // a intenção de assistir (ponteiro, foco, dedo) adianta a conexão com o YouTube
+    var aquecer = function () { // a intenção de assistir (ponteiro, foco) adianta a conexão com o YouTube
       if (aquecido) { return; }
       aquecido = true;
       ['https://www.youtube-nocookie.com', 'https://i.ytimg.com'].forEach(function (href) {
         var l = document.createElement('link'); l.rel = 'preconnect'; l.href = href; document.head.appendChild(l);
       });
     };
+    var teclas = function (e) { if (e.key === 'Escape') { fecharModal(); } };
+    var fecharModal = function () {
+      if (!modal) { return; }
+      var m = modal; modal = null;
+      m.classList.remove('is-aberto');
+      root.classList.remove('marco-modal-aberto');
+      document.removeEventListener('keydown', teclas);
+      setTimeout(function () { m.remove(); }, reduced.matches ? 0 : 380); // o iframe sai junto: o som para
+      sincronizarFundo();
+      play.focus();
+    };
     play.addEventListener('pointerenter', aquecer);
     play.addEventListener('focus', aquecer);
-    play.addEventListener('touchstart', aquecer, { passive: true });
     play.addEventListener('click', function (e) {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) { return; } // quem pede outra aba continua indo para o YouTube
       e.preventDefault();
-      if (palco.classList.contains('is-aberto')) { return; }
+      if (modal) { return; }
       aquecer();
-      palco.classList.add('is-in', 'is-aberto');
+      modal = document.createElement('div');
+      modal.className = 'marco-modal';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      modal.setAttribute('aria-label', play.getAttribute('data-titulo') || 'Vídeo');
+      modal.innerHTML = '<button class="marco-modal__fechar" type="button" aria-label="Fechar o vídeo"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div class="marco-modal__tela"></div>';
       var f = document.createElement('iframe');
-      f.className = 'marco__video';
       f.title = play.getAttribute('data-titulo') || 'Vídeo';
       f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
       f.allowFullscreen = true;
       f.referrerPolicy = 'strict-origin-when-cross-origin';
-      f.addEventListener('load', function () { palco.classList.add('is-tocando'); });
-      setTimeout(function () {
-        palco.classList.add('is-pronto');
-        f.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(play.getAttribute('data-video')) + '?autoplay=1&rel=0&playsinline=1&start=' + (parseInt(play.getAttribute('data-inicio'), 10) || 0);
-        palco.querySelector('.marco__tela').appendChild(f);
-        f.focus(); // o link sai de cena: o foco segue para o player
-      }, reduced.matches ? 0 : 650);
+      f.src = embed(play.getAttribute('data-video'), 'autoplay=1&rel=0&playsinline=1&start=' + (parseInt(play.getAttribute('data-inicio'), 10) || 0));
+      modal.querySelector('.marco-modal__tela').appendChild(f);
+      modal.addEventListener('click', function (ev) { if (ev.target === modal) { fecharModal(); } });
+      modal.querySelector('.marco-modal__fechar').addEventListener('click', fecharModal);
+      document.body.appendChild(modal);
+      root.classList.add('marco-modal-aberto');
+      document.addEventListener('keydown', teclas);
+      sincronizarFundo(); // o fundo pausa enquanto o vídeo com som toca
+      requestAnimationFrame(function () { if (modal) { modal.classList.add('is-aberto'); } });
+      modal.querySelector('.marco-modal__fechar').focus(); // não o iframe: com o foco no player (outro domínio) o Esc não chegaria aqui
     });
   }
 

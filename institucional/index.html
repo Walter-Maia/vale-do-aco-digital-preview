@@ -25,7 +25,7 @@
   <link rel="preload" as="image" href="assets/img/hero-poster-inicio.jpg" fetchpriority="high">
   <link rel="preload" as="font" type="font/woff2" href="assets/fonts/montserrat-latin-400-700.woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/abertura.css?v=1.5">
-  <link rel="stylesheet" href="assets/css/site.css?v=1.11">
+  <link rel="stylesheet" href="assets/css/site.css?v=1.12">
   <script>
     (function (d) {
       var c = 'js hero-top', seen = false;
@@ -460,60 +460,20 @@
       </figure>
     </section>
 
-    <!-- 5 · Marco Zero: primeiro o traço desenha a marca do movimento (triângulo + vela, no desenho do Walter) e ela se enche de
-         cor; depois a cor se recolhe para dentro da tela de cantos arredondados e vira o vídeo, com a marca em contorno em volta.
-         No clique a tela cresce até a largura do palco e o player do YouTube carrega ali, a partir dos 30 s (site.js); até lá
-         não existe iframe nem pedido ao YouTube. Sem JS (e em file://, onde o YouTube recusa a incorporação) o link abre o
-         vídeo no YouTube. Textos: descrição oficial do vídeo. Medidas e polígonos: palco de 200 × 146,8 (ver site.css). -->
+    <!-- 5 · Marco Zero: só o vídeo do encontro, tocando de fundo, de ponta a ponta (sem título, texto nem botão à vista, a pedido do
+         Walter em 13/10/2026). Atrás, a capa local; por cima dela o vídeo do YouTube, mudo e em loop, entra quando a seção se
+         aproxima (site.js). A seção inteira é o link "assistir com som": com mouse, o vídeo com som numa janela sobre a página (um
+         play aparece no hover); no toque, sem JS e em file:// (onde o YouTube recusa a incorporação), o link abre o YouTube.
+         O título fica para leitor de tela e para a estrutura da página. -->
     <section class="marco" id="marco-zero" aria-labelledby="t-marco" data-tema="escuro">
-      <div class="marco__grade">
-        <h2 class="t2" id="t-marco" data-rv="linhas" data-px="18">
-          <span class="ln" style="--i:0"><span>O Marco Zero do</span></span>
-          <span class="ln" style="--i:1"><span>Vale do Aço Digital.</span></span>
-        </h2>
-        <div class="corpo" data-px="-18">
-          <p data-rv="sobe" style="--i:0">O Marco Zero reuniu empresários, profissionais e parceiros com um propósito em comum: preparar a nossa região para um futuro mais conectado, seguro e competitivo.</p>
-          <p data-rv="sobe" style="--i:1">Esse encontro foi apenas o primeiro passo de um movimento que nasce para fortalecer negócios, ampliar o acesso à tecnologia e construir uma base digital sólida para quem vive e empreende aqui.</p>
-        </div>
+      <h2 class="sr-only" id="t-marco">O Marco Zero do Vale do Aço Digital</h2>
+      <div class="marco__fundo" aria-hidden="true" data-px="40" data-px-track=".marco" data-px-gpu>
+        <img class="marco__capa" src="assets/img/marco-zero-capa.webp" width="1280" height="720" alt="" loading="lazy" decoding="async">
       </div>
-
-      <div class="marco__palco">
-        <!-- as cores da marca: bem leves atrás de tudo (fundo) e cheias na fase "logo" (cor), antes de virarem a tela -->
-        <svg class="marco__fundo" viewBox="0 0 200 146.8" preserveAspectRatio="none" aria-hidden="true" focusable="false"><use href="#mz-vela"/><use href="#mz-tri"/></svg>
-        <div class="marco__tela">
-          <img class="marco__capa" src="assets/img/marco-zero-capa.webp" width="1280" height="720" alt="" loading="lazy" decoding="async">
-        </div>
-        <svg class="marco__cor" viewBox="0 0 200 146.8" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-          <defs>
-            <linearGradient id="mz-g-tri" gradientUnits="userSpaceOnUse" x1="0" y1="146.8" x2="120" y2="20"><stop offset="0" stop-color="#ba2819"/><stop offset=".22" stop-color="#e41a18"/><stop offset="1" stop-color="#e62821"/></linearGradient>
-            <linearGradient id="mz-g-vela" gradientUnits="userSpaceOnUse" x1="110" y1="146.8" x2="180" y2="10"><stop offset="0" stop-color="#e62f21"/><stop offset=".45" stop-color="#ea5f1b"/><stop offset="1" stop-color="#f39316"/></linearGradient>
-            <clipPath id="mz-vela-recorte"><path d="M95.6 70.17V2.6A104.4 144.2 0 0 1 200 146.8Z"/></clipPath>
-          </defs>
-          <path id="mz-vela" fill="url(#mz-g-vela)" d="M95.6 70.17V2.6A104.4 144.2 0 0 1 200 146.8Z"/>
-          <path id="mz-tri" fill="url(#mz-g-tri)" d="M0 0L200 146.8H0Z"/>
-        </svg>
-        <!-- o traço: a/b = diagonal acima/abaixo do topo da tela, c = lado esquerdo + base, d/e = haste acima/abaixo, f = arco,
-             g = tela. b e "e" só existem na fase "logo": somem quando a tela se forma, como no desenho. -->
-        <svg class="marco__tracos" viewBox="0 0 200 146.8" aria-hidden="true" focusable="false">
-          <g class="mz-ecos">
-            <path style="--e:1" d="M0 18L175.48 146.8"/><path style="--e:2" d="M0 36L150.95 146.8"/><path style="--e:3" d="M0 54L126.43 146.8"/>
-            <g clip-path="url(#mz-vela-recorte)">
-              <path style="--e:1" d="M95.6 17.02A93.96 129.78 0 0 1 189.56 146.8"/><path style="--e:2" d="M95.6 31.44A83.52 115.36 0 0 1 179.12 146.8"/><path style="--e:3" d="M95.6 45.86A73.08 100.94 0 0 1 168.68 146.8"/>
-            </g>
-          </g>
-          <path class="mz-fio mz-a" pathLength="1" d="M0 0L70.57 51.8"/>
-          <path class="mz-fio mz-b" pathLength="1" d="M70.57 51.8L200 146.8"/>
-          <path class="mz-fio mz-c" pathLength="1" d="M0 0V146.8H200"/>
-          <path class="mz-fio mz-e" pathLength="1" d="M95.6 70.17V51.8"/>
-          <path class="mz-fio mz-d" pathLength="1" d="M95.6 51.8V2.6"/>
-          <path class="mz-fio mz-f" pathLength="1" d="M95.6 2.6A104.4 144.2 0 0 1 200 146.8"/>
-          <path class="mz-fio mz-g" pathLength="1" d="M21.6 51.8H164A9 9 0 0 1 173 60.8V133.03A9 9 0 0 1 164 142.03H21.6A9 9 0 0 1 12.6 133.03V60.8A9 9 0 0 1 21.6 51.8Z"/>
-        </svg>
-        <a class="marco__play" href="https://www.youtube.com/watch?v=ofgeqVFlSOc&amp;t=30s" target="_blank" rel="noopener noreferrer" data-video="ofgeqVFlSOc" data-inicio="30" data-titulo="O Marco Zero do Vale do Aço Digital (vídeo do YouTube)">
-          <span class="marco__botao" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8.6 5.4v13.2L19.4 12z"/></svg></span>
-          <span class="sr-only">Assistir ao vídeo: O Marco Zero do Vale do Aço Digital, 1 minuto e 30 segundos</span>
-        </a>
-      </div>
+      <a class="marco__play" href="https://www.youtube.com/watch?v=ofgeqVFlSOc&amp;t=30s" target="_blank" rel="noopener noreferrer" data-video="ofgeqVFlSOc" data-inicio="30" data-titulo="O Marco Zero do Vale do Aço Digital (vídeo do YouTube)">
+        <span class="marco__botao" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8.6 5.4v13.2L19.4 12z"/></svg></span>
+        <span class="sr-only">Assistir com som ao vídeo O Marco Zero do Vale do Aço Digital, 1 minuto e 30 segundos</span>
+      </a>
     </section>
 
     <!-- 6 · Três frentes: com JS cada nome entra letra a letra e um pulso de luz percorre o fio (site.js) -->
@@ -576,6 +536,6 @@
   </footer>
 
   <script src="assets/js/abertura.js?v=1.5" defer></script>
-  <script src="assets/js/site.js?v=1.9" defer></script>
+  <script src="assets/js/site.js?v=1.12" defer></script>
 </body>
 </html>

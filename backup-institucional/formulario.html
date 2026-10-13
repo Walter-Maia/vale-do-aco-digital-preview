@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- prévia: os três formulários de participação (movimento, empresas, profissionais), escolhidos por ?tipo= no endereço -->
+  <meta name="robots" content="noindex, nofollow">
+  <title>Participe — Vale do Aço Digital</title>
+  <meta name="theme-color" content="#2d1604">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/montserrat-latin-400-700.woff2" crossorigin>
+  <!-- site.css: tokens, Montserrat e as pílulas do site; formulario.css: o resto desta página -->
+  <link rel="stylesheet" href="assets/css/site.css?v=1.11">
+  <link rel="stylesheet" href="assets/css/formulario.css?v=1.0">
+</head>
+<body class="tf">
+  <div class="tf-fundo grao" aria-hidden="true"></div>
+  <!-- a teia: um nó para cada pergunta, ligado ao centro (o Vale) quando a pergunta é respondida. formulario.js desenha -->
+  <svg class="tf-teia" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"></svg>
+
+  <div class="tf-progresso" role="progressbar" aria-label="Progresso do formulário" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div>
+
+  <header class="tf-topo">
+    <a class="tf-marca" href="index.html#publicos"><img src="assets/img/vad-assinatura-icone.webp" width="210" height="146" alt=""><span>Vale do Aço Digital</span></a>
+    <span class="tf-nome" id="tf-nome"></span>
+    <a class="tf-sair" href="index.html#publicos"><span>Voltar ao site</span><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18"/></svg></a>
+  </header>
+
+  <main class="tf-palco" id="palco">
+    <form class="tf-form" id="tf-form" novalidate></form>
+    <noscript>
+      <div class="tf-sem-js">
+        <p>Este formulário precisa de JavaScript ligado no navegador.</p>
+        <p><a href="https://wa.me/5531989048888?text=Ol%C3%A1!%20Quero%20participar%20do%20movimento%20Vale%20do%20A%C3%A7o%20Digital.">Fale com o movimento pelo WhatsApp</a> ou <a href="index.html">volte ao site</a>.</p>
+      </div>
+    </noscript>
+  </main>
+
+  <nav class="tf-nav" aria-label="Navegar entre as perguntas">
+    <span class="tf-conta" id="tf-conta" aria-hidden="true"></span>
+    <button type="button" data-acao="voltar" aria-label="Pergunta anterior"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 15l6-6 6 6"/></svg></button>
+    <button type="button" data-acao="seguir" aria-label="Próxima pergunta"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg></button>
+  </nav>
+
+  <p class="tf-previa">Prévia: as respostas não são enviadas</p>
+  <p class="sr-only" id="tf-anuncio" aria-live="polite"></p>
+
+  <script src="assets/js/formulario.js?v=1.0" defer></script>
+</body>
+</html>
