@@ -65,7 +65,8 @@
      Hero — três modos, decididos por capacidade e preferência, nunca por userAgent:
        scrub  (mouse e toque): o scroll conduz o vídeo. Um seek por vez, alvo quantizado em quadros do vídeo,
               suavização por tempo decorrido (igual em 60, 144 ou 240 Hz), laço dorme quando não há o que aproximar.
-              No toque o arquivo vem inteiro para a memória (blob) antes do primeiro seek, e três seeks de prova medem o aparelho.
+              No toque o arquivo vem inteiro para a memória (blob) antes do primeiro seek, um play mudo pausado na hora abre o
+              decodificador (iPhone: openDecoder) e três seeks de prova medem o aparelho.
        play   (toque em aparelho que não acompanha o seek): hero em fluxo normal (100svh); o vídeo toca uma vez, mudo e inline.
        static (reduced motion, economia de dados, sem MP4, vídeo com erro ou lento demais): quadro final + frase + CTAs.
      Texto e CTAs nunca esperam o vídeo: enquanto ele não chega, a rolagem dissolve do quadro inicial para o final (.hero__alt).
@@ -165,14 +166,15 @@
     return narrow.matches || (coarse.matches && Math.min(window.innerWidth, window.innerHeight) < 600) ? '720' : '1080';
   }
   function loadVideo(kind) {
-    videoAsked = true; videoReady = false; srcKind = kind; srcMode = mode; playGate = false; probe = null;
+    videoAsked = true; videoReady = false; srcKind = kind; srcMode = mode; playGate = false; probe = null; decoderOpen = false;
     seekInFlight = false; shownFrame = requestedFrame = -1;
     video.muted = true; video.loop = false;
     video.preload = 'auto';
     // scrub: keyframe a cada 4 quadros (6 no retrato) e sem B-frames (seek barato). play: mesma imagem com GOP normal, ~40% do peso
-    // (o retrato não tem versão play: só toca sozinho o aparelho que já baixou o arquivo de scrub e não acompanhou o seek)
+    // (o retrato não tem versão play: só toca sozinho o aparelho que já baixou o arquivo de scrub e não acompanhou o seek).
+    // No toque o pedido já saiu do <head> (preload, index.html) com este mesmo endereço: o fetch abaixo o reaproveita
     var url = 'assets/video/hero-' + kind + (mode === 'play' && kind !== 'm' ? '-play' : '') + '.mp4';
-    if (mode === 'scrub' && coarse.matches && window.fetch && window.URL && URL.createObjectURL) { fetchVideo(url); } else { video.src = url; }
+    if (mode === 'scrub' && coarse.matches && window.fetch && window.URL && URL.createObjectURL) { fetchVideo(url); } else { video.src = url; openDecoder(); }
     armLoadTimer();
   }
   /* toque: o arquivo inteiro vai para a memória antes do primeiro seek. No celular o navegador não garante adiantar o download de
@@ -188,10 +190,44 @@
         releaseBlob();
         blobUrl = URL.createObjectURL(blob.type === 'video/mp4' ? blob : blob.slice(0, blob.size, 'video/mp4'));
         video.src = blobUrl;
+        openDecoder();
       })
-      .catch(function () { if (fetchCtl === ctl) { fetchCtl = null; video.src = url; } });
+      .catch(function () { if (fetchCtl === ctl) { fetchCtl = null; video.src = url; openDecoder(); } });
   }
   function releaseBlob() { if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = ''; } }
+  /* iPhone (Safari): um <video> que nunca tocou pode não carregar os dados nem trocar o pôster pelo quadro pedido no seek. Num
+     iPhone 14 Pro (Walter, 14/10/2026, site no ar) o hero ficou no pôster e a rolagem caiu na dissolução de reserva para o quadro
+     final; esta é a causa provável (no Chromium não se reproduz: lá o seek aparece sem play).
+     No toque, assim que o arquivo está no <video>, um play() mudo é pausado no instante em que começa: abre o decodificador e o
+     scrub segue por seek. O quadro 0 é o do pôster e a pausa vem antes de a cena andar. Se o navegador recusar (iPhone em modo de
+     pouca energia não deixa vídeo nenhum começar sem gesto), cada toque na página tenta de novo até passar (o fim de um arrasto
+     costuma não contar como gesto; uma tocada conta); até lá a rolagem conta a cena com os dois quadros, como num vídeo que ainda
+     não chegou. Chrome e Android já mostram o seek sem isso: lá não muda nada. */
+  var decoderOpen = false, playRefused = false, waitingGesture = false, GESTURES = ['touchend', 'click', 'keydown'];
+  function openDecoder() {
+    if (decoderOpen || mode !== 'scrub' || !coarse.matches || !video.getAttribute('src')) { return; }
+    var attempt;
+    try { attempt = video.play(); } catch (e) { attempt = null; }
+    if (!attempt || !attempt.then) { video.pause(); decoderOpen = true; return; } // play() sem promessa (navegador antigo)
+    attempt.then(function () {
+      decoderOpen = true; playRefused = false;
+      if (mode !== 'scrub') { return; } // virou play enquanto isso: segue tocando
+      video.pause();
+      if (!seekInFlight) { shownFrame = -1; } // a cena pode ter andado um quadro: o próximo tick volta ao quadro da rolagem
+      wake();
+    }, function (err) {
+      if (err && err.name === 'AbortError') { return; } // o arquivo trocou (a tela virou): o play do arquivo novo é que vale
+      playRefused = true;
+      if (waitingGesture) { return; }
+      waitingGesture = true;
+      GESTURES.forEach(function (n) { document.addEventListener(n, onGesture, true); });
+    });
+  }
+  function onGesture() {
+    GESTURES.forEach(function (n) { document.removeEventListener(n, onGesture, true); });
+    waitingGesture = false;
+    openDecoder();
+  }
   /* o prazo de carregamento só conta com a aba visível: em segundo plano o navegador adia o download do vídeo, e a página aberta
      numa aba de fundo caía no quadro estático para sempre (medido no Chrome: hero is-static, src removido, sem reduced motion).
      No toque não há prazo: sem vídeo a rolagem continua contando a cena com os dois quadros (.hero__alt), e encurtar o hero
@@ -286,7 +322,8 @@
   function endProbe() {
     var t = probe.times.slice().sort(function (a, b) { return a - b; }), median = t[Math.floor(t.length / 2)];
     probe = null;
-    if (median <= SLOW_SEEK_MS) { return; }
+    // play recusado (pouca energia): tocar sozinho também seria recusado e o hero pararia no quadro final; fica o scrub, mesmo lento
+    if (median <= SLOW_SEEK_MS || playRefused) { return; }
     // aparelho lento para seek: em vez de um scrub aos trancos, o vídeo toca uma vez sozinho — com o arquivo que já está na memória
     touchPlay = true; srcMode = 'play'; playGate = true;
     syncHeroMode();

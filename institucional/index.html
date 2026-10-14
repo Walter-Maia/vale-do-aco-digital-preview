@@ -25,7 +25,7 @@
   <link rel="preload" as="image" href="assets/img/hero-poster-inicio.jpg" fetchpriority="high">
   <link rel="preload" as="font" type="font/woff2" href="assets/fonts/montserrat-latin-400-700.woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/abertura.css?v=1.5">
-  <link rel="stylesheet" href="assets/css/site.css?v=1.12">
+  <link rel="stylesheet" href="assets/css/site.css?v=1.13">
   <script>
     (function (d) {
       var c = 'js hero-top', seen = false;
@@ -34,7 +34,19 @@
       if (!seen && !location.hash && !(window.pageYOffset > 4) && !still) { c += ' intro-on intro-lock'; }
       /* hero longo + sticky só no modo scrub (mouse e toque; sem reduced motion nem economia de dados); abertura.js confirma ou desfaz */
       var conn = navigator.connection;
-      if (!still && !(conn && (conn.saveData || /2g$/.test(conn.effectiveType || '')))) { c += ' hero-scrub'; }
+      if (!still && !(conn && (conn.saveData || /2g$/.test(conn.effectiveType || '')))) {
+        c += ' hero-scrub';
+        /* no toque o vídeo do hero vem inteiro para a memória antes do primeiro quadro (abertura.js). O pedido sai daqui, junto com o
+           HTML, e não depois dos scripts: no celular os 2 MB chegavam com a pessoa já rolando, e a rolagem caía na reserva (quadro
+           final). Mesmo arquivo que abertura.js escolhe (wantedKind); quem chega por âncora, recarga ou voltar não baixa nada agora. */
+        var mm = function (q) { return matchMedia(q).matches; }, nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+        if (mm('(hover: none) and (pointer: coarse)') && !location.hash && !(nav && nav.type !== 'navigate')) {
+          var l = document.createElement('link');
+          l.rel = 'preload'; l.as = 'fetch'; l.crossOrigin = 'anonymous';
+          l.href = 'assets/video/hero-' + (mm('(max-aspect-ratio: 4/5)') ? 'm' : mm('(max-width: 768px)') || Math.min(innerWidth, innerHeight) < 600 ? '720' : '1080') + '.mp4';
+          document.head.appendChild(l);
+        }
+      }
       d.className = d.className.replace('no-js', c);
     })(document.documentElement);
   </script>
@@ -267,7 +279,7 @@
       <div class="presente__grade">
         <!-- a janela (filho) leva o recorte da entrada: recortado, o próprio <figure> nunca seria visto pelo IntersectionObserver -->
         <figure class="foto" data-rv="clip">
-          <span class="foto__janela"><img data-px="62" data-px-gpu src="assets/img/registro-oficial.webp" width="819" height="1024" alt="Dois representantes do movimento diante do painel do Vale do Aço Digital, com as marcas Onex e BR net" decoding="async"></span>
+          <span class="foto__janela"><img data-px="62" data-px-gpu data-px-m-css src="assets/img/registro-oficial.webp" width="819" height="1024" alt="Dois representantes do movimento diante do painel do Vale do Aço Digital, com as marcas Onex e BR net" decoding="async"></span>
         </figure>
 
         <div class="presente__texto" data-px="-26">
@@ -355,11 +367,11 @@
          próprios (data-px-x) e as letras passam por cima do mapa, que aparece através delas (mix-blend-mode, site.css). -->
     <section class="regiao" id="regiao" aria-labelledby="t-regiao" data-tema="escuro">
       <h2 class="regiao__titulo" id="t-regiao" data-rv="linhas" data-px-track>
-        <span class="ln regiao__l1" style="--i:0" data-px-x="80" data-px-x-m="40" data-px-gpu><span>Conectando</span></span>
-        <span class="ln regiao__l2" style="--i:1" data-px-x="-120" data-px-x-m="-60" data-px-gpu><span>o Vale</span></span>
-        <span class="ln regiao__l3" style="--i:2" data-px-x="160" data-px-x-m="70" data-px-gpu><span>do Aço</span></span>
+        <span class="ln regiao__l1" style="--i:0" data-px-x="80" data-px-x-m="40" data-px-gpu data-px-m-css><span>Conectando</span></span>
+        <span class="ln regiao__l2" style="--i:1" data-px-x="-120" data-px-x-m="-60" data-px-gpu data-px-m-css><span>o Vale</span></span>
+        <span class="ln regiao__l3" style="--i:2" data-px-x="160" data-px-x-m="70" data-px-gpu data-px-m-css><span>do Aço</span></span>
       </h2>
-      <figure class="mapa" data-rv="sobe" data-px="-30">
+      <figure class="mapa" data-rv="sobe" data-px="-30" data-px-m-css>
         <svg class="net net--map" viewBox="88 22 524 576" role="img" aria-labelledby="net-map-t net-map-d">
 <title id="net-map-t">Vale do Aço: os municípios da região ligados por uma teia de conexões</title>
 <desc id="net-map-d">Contornos do IBGE. Diagrama conceitual: do núcleo da Região Metropolitana do Vale do Aço partem fios até os municípios vizinhos; as conexões são ilustrativas.</desc>
@@ -464,10 +476,11 @@
          Walter em 13/10/2026). Atrás, a capa local; por cima dela o vídeo do YouTube, mudo e em loop, entra quando a seção se
          aproxima (site.js). A seção inteira é o link "assistir com som": com mouse, o vídeo com som numa janela sobre a página (um
          play aparece no hover); no toque, sem JS e em file:// (onde o YouTube recusa a incorporação), o link abre o YouTube.
+         No celular o vídeo aparece inteiro (16:9), num palco mais alto, e anda com a rolagem (site.css, "deslizes do celular").
          O título fica para leitor de tela e para a estrutura da página. -->
     <section class="marco" id="marco-zero" aria-labelledby="t-marco" data-tema="escuro">
       <h2 class="sr-only" id="t-marco">O Marco Zero do Vale do Aço Digital</h2>
-      <div class="marco__fundo" aria-hidden="true" data-px="40" data-px-track=".marco" data-px-gpu>
+      <div class="marco__fundo" aria-hidden="true" data-px="40" data-px-track=".marco" data-px-gpu data-px-m-css>
         <img class="marco__capa" src="assets/img/marco-zero-capa.webp" width="1280" height="720" alt="" loading="lazy" decoding="async">
       </div>
       <a class="marco__play" href="https://www.youtube.com/watch?v=ofgeqVFlSOc&amp;t=30s" target="_blank" rel="noopener noreferrer" data-video="ofgeqVFlSOc" data-inicio="30" data-titulo="O Marco Zero do Vale do Aço Digital (vídeo do YouTube)">
@@ -499,9 +512,9 @@
          A imagem do título não é lazy: ela entra por recorte (data-rv="varre") e o navegador não carrega imagem lazy enquanto está toda recortada. -->
     <section class="programa" id="programa" aria-labelledby="t-programa" data-tema="escuro">
       <div class="programa__cena" data-px-track>
-        <div class="programa__foto" data-px="-30" data-px-gpu><img src="assets/img/programa-foto.webp" width="1920" height="1029" alt="Comerciante sorridente recebe o pagamento de um cliente pelo celular; ao fundo, outros comerciantes em suas lojas" loading="lazy" decoding="async"></div>
-        <h2 class="programa__titulo" id="t-programa" data-px="-74" data-px-gpu data-rv="varre"><img src="assets/img/programa-titulo.webp" width="639" height="518" alt="Programa Comércio Digital: mais conectado, mais competitivo." decoding="async"></h2>
-        <img class="programa__marcas" data-px="-52" data-px-gpu data-rv="sobe" src="assets/img/programa-marcas.webp" width="672" height="124" alt="Vale do Aço Digital, powered by BR net / Onex, e Sindcomércio MG Vale do Aço — Sindicato Empresarial do Sistema Comércio" loading="lazy" decoding="async">
+        <div class="programa__foto" data-px="-30" data-px-gpu data-px-m-css><img src="assets/img/programa-foto.webp" width="1920" height="1029" alt="Comerciante sorridente recebe o pagamento de um cliente pelo celular; ao fundo, outros comerciantes em suas lojas" loading="lazy" decoding="async"></div>
+        <h2 class="programa__titulo" id="t-programa" data-px="-74" data-px-gpu data-px-m-css data-rv="varre"><img src="assets/img/programa-titulo.webp" width="639" height="518" alt="Programa Comércio Digital: mais conectado, mais competitivo." decoding="async"></h2>
+        <img class="programa__marcas" data-px="-52" data-px-gpu data-px-m-css data-rv="sobe" src="assets/img/programa-marcas.webp" width="672" height="124" alt="Vale do Aço Digital, powered by BR net / Onex, e Sindcomércio MG Vale do Aço — Sindicato Empresarial do Sistema Comércio" loading="lazy" decoding="async">
         <a class="cta" data-ima href="https://valedoacodigital.com.br/programa-digital/"><span class="cta__rot">Clique e conheça</span><span class="cta__seta" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span></a>
       </div>
     </section>
@@ -535,7 +548,7 @@
     <p class="rodape__credito"><a href="https://siteflux.com.br/" target="_blank" rel="noopener noreferrer">Site feito por <img src="assets/img/logo-siteflux-fundo-escuro.svg" width="435" height="96" alt="Siteflux" loading="lazy" decoding="async"><span class="sr-only"> (abre o site da Siteflux)</span></a></p>
   </footer>
 
-  <script src="assets/js/abertura.js?v=1.5" defer></script>
+  <script src="assets/js/abertura.js?v=1.6" defer></script>
   <script src="assets/js/site.js?v=1.12" defer></script>
 </body>
 </html>
