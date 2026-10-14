@@ -313,13 +313,13 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
 .publico::before { background: radial-gradient(circle max(180px, calc(300 * var(--u))) at var(--mx) var(--my), rgba(255, 190, 90, 0.2), rgba(255, 122, 26, 0.07) 46%, rgba(255, 122, 26, 0) 72%); }
 .publico::after { z-index: -1; box-shadow: 0 calc(46 * var(--u)) calc(84 * var(--u)) rgba(64, 8, 0, 0.5); }
 .publico > * { position: relative; }
-/* selo do cartão: círculo na cor da marca, com brilho no alto e sombra quente, um anel fino em volta e o ícone do público em traço
-   branco. No hover o selo gira um pouco e cresce, e o anel se abre. */
+/* selo do cartão: círculo na cor da marca, com sombra quente, um anel fino em volta e o ícone do público em traço branco (o brilho
+   branco no alto saiu em 14/10/2026, a pedido do Walter). No hover o selo gira um pouco e cresce, e o anel se abre. */
 .publico__sinal {
   --t: max(56px, calc(88 * var(--u)));
   display: grid; place-items: center; width: var(--t); height: var(--t); margin-bottom: calc(28 * var(--u)); border-radius: 50%;
-  background: radial-gradient(circle at 30% 22%, rgba(255, 242, 218, 0.62), rgba(255, 242, 218, 0) 50%), linear-gradient(150deg, #ffa51c 0%, #ff6c16 44%, #e3291a 100%);
-  box-shadow: 0 calc(12 * var(--u)) calc(30 * var(--u)) rgba(214, 52, 10, 0.42), inset 0 1px 0 rgba(255, 248, 232, 0.6), inset 0 -3px 8px rgba(120, 22, 0, 0.32);
+  background: linear-gradient(150deg, #ffa51c 0%, #ff6c16 44%, #e3291a 100%);
+  box-shadow: 0 calc(12 * var(--u)) calc(30 * var(--u)) rgba(214, 52, 10, 0.42), inset 0 -3px 8px rgba(120, 22, 0, 0.32);
   transition: scale 0.6s var(--mola), rotate 0.6s var(--mola);
 }
 .publico__sinal::before { content: ""; position: absolute; inset: calc(var(--t) * -0.13); border-radius: 50%; border: 1px solid rgba(255, 208, 138, 0.34); transition: scale 0.6s var(--sai), border-color 0.45s ease; }
@@ -757,7 +757,9 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
     .foto { view-timeline: --foto; }
     .foto__janela img { animation-name: pz-foto; animation-timeline: --foto; }
     .programa__foto { view-timeline: --programa-foto; }
-    .programa__foto img { transform-origin: 44% 50%; animation-name: pg-foto; animation-timeline: --programa-foto; } /* 44%: o centro da parte à vista */
+    /* 44%: o centro da parte à vista; 0: o zoom cresce para baixo, a partir do alto da foto, e a cabeça da comerciante (que sai da
+       colagem e encosta no alto da imagem) nunca passa da borda da moldura */
+    .programa__foto img { transform-origin: 44% 0; animation-name: pg-foto; animation-timeline: --programa-foto; }
     .programa__titulo { animation-name: pg-titulo; }
     .programa__marcas { animation-name: pg-marcas; }
     .marco__fundo { animation-name: mz-curso, mz-abre; animation-timeline: --marco, --marco; }
@@ -821,10 +823,11 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   36%, 76% { translate: 0 0; animation-timing-function: cubic-bezier(0.55, 0, 0.8, 0.45); }
   100% { translate: 4vw 0; }
 }
-/* planos: lineares, como a rolagem. A foto do movimento tem 14% de folga em cima e embaixo (site.css, "até 899 px"); a do Programa,
-   a do zoom (1,28 → 1,14: 14% → 7% de cada lado) */
+/* planos: lineares, como a rolagem. A foto do movimento tem 14% de folga em cima e embaixo (site.css, "até 899 px"). A do Programa
+   se afasta (1,12 → 1) e desce dentro da moldura (0 → 8%), nunca sobe: em cima o que se abre é a faixa transparente da imagem, e
+   embaixo o corte fica sob o degradê. Na v1.13 ela ampliava a partir do centro e cortava a cabeça da comerciante. */
 @keyframes pz-foto { from { translate: 0 -10%; } to { translate: 0 10%; } }
-@keyframes pg-foto { from { translate: 0 -6%; scale: 1.28; } to { translate: 0 6%; scale: 1.14; } }
+@keyframes pg-foto { from { translate: 0 0; scale: 1.12; } to { translate: 0 8%; scale: 1; } }
 @keyframes pg-titulo { from { translate: 0 16vw; } to { translate: 0 -16vw; } }
 @keyframes pg-marcas { from { translate: 0 6vw; } to { translate: 0 -6vw; } }
 @keyframes rz-mapa { from { translate: 0 16vw; } to { translate: 0 -16vw; } }
