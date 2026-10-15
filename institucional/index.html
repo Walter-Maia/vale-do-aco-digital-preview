@@ -25,7 +25,7 @@
   <link rel="preload" as="image" href="assets/img/hero-poster-inicio.jpg" fetchpriority="high">
   <link rel="preload" as="font" type="font/woff2" href="assets/fonts/montserrat-latin-400-700.woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/abertura.css?v=1.5">
-  <link rel="stylesheet" href="assets/css/site.css?v=1.14">
+  <link rel="stylesheet" href="assets/css/site.css?v=1.15">
   <script>
     (function (d) {
       var c = 'js hero-top', seen = false;
@@ -317,7 +317,7 @@
           <span class="ln" style="--i:0"><span>Como construímos</span></span>
           <span class="ln" style="--i:1"><span>o futuro digital.</span></span>
         </h2>
-        <div class="corpo corpo--tinta" data-px="-18">
+        <div class="corpo corpo--tinta" data-px="-18" data-px-m-css>
           <p data-rv="sobe" style="--i:0">O desenvolvimento digital de uma região depende de estrutura, conhecimento e segurança. Por isso, o movimento se apoia em três frentes principais.</p>
           <p data-rv="sobe" style="--i:1">Aqui, tradição e inovação caminham juntas. Aqui, o desenvolvimento ganha uma nova linguagem. Aqui, o futuro começa a ser construído agora.</p>
         </div>
@@ -472,21 +472,26 @@
       </figure>
     </section>
 
-    <!-- 5 · Marco Zero: só o vídeo do encontro, tocando de fundo, de ponta a ponta (sem título, texto nem botão à vista, a pedido do
-         Walter em 13/10/2026). Atrás, a capa local; por cima dela o vídeo do YouTube, mudo e em loop, entra quando a seção se
-         aproxima (site.js). A seção inteira é o link "assistir com som": com mouse, o vídeo com som numa janela sobre a página (um
+    <!-- 5 · Marco Zero: só o vídeo do encontro, tocando de fundo (sem título, texto nem botão à vista, a pedido do Walter em
+         13/10/2026). Atrás, a capa local; por cima dela o vídeo do YouTube, mudo e em loop, entra quando a seção se aproxima (site.js).
+         Com JS e movimento permitido, o vídeo chega como um cartão no meio da tela e, com a rolagem, cresce até preencher a tela
+         inteira, num palco preso no alto enquanto a seção passa (site.css, "o vídeo preenche a tela"). Sem JS e com movimento reduzido
+         fica o quadro parado. A janela do vídeo é o link "assistir com som": com mouse, o vídeo com som numa janela sobre a página (um
          play aparece no hover); no toque, sem JS e em file:// (onde o YouTube recusa a incorporação), o link abre o YouTube.
-         No celular o vídeo aparece inteiro (16:9), num palco mais alto, e anda com a rolagem (site.css, "deslizes do celular").
          O título fica para leitor de tela e para a estrutura da página. -->
     <section class="marco" id="marco-zero" aria-labelledby="t-marco" data-tema="escuro">
       <h2 class="sr-only" id="t-marco">O Marco Zero do Vale do Aço Digital</h2>
-      <div class="marco__fundo" aria-hidden="true" data-px="40" data-px-track=".marco" data-px-gpu data-px-m-css>
-        <img class="marco__capa" src="assets/img/marco-zero-capa.webp" width="1280" height="720" alt="" loading="lazy" decoding="async">
+      <div class="marco__palco">
+        <div class="marco__janela">
+          <div class="marco__fundo" aria-hidden="true">
+            <img class="marco__capa" src="assets/img/marco-zero-capa.webp" width="1280" height="720" alt="" loading="lazy" decoding="async">
+          </div>
+          <a class="marco__play" href="https://www.youtube.com/watch?v=ofgeqVFlSOc&amp;t=30s" target="_blank" rel="noopener noreferrer" data-video="ofgeqVFlSOc" data-inicio="30" data-titulo="O Marco Zero do Vale do Aço Digital (vídeo do YouTube)">
+            <span class="marco__botao" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8.6 5.4v13.2L19.4 12z"/></svg></span>
+            <span class="sr-only">Assistir com som ao vídeo O Marco Zero do Vale do Aço Digital, 1 minuto e 30 segundos</span>
+          </a>
+        </div>
       </div>
-      <a class="marco__play" href="https://www.youtube.com/watch?v=ofgeqVFlSOc&amp;t=30s" target="_blank" rel="noopener noreferrer" data-video="ofgeqVFlSOc" data-inicio="30" data-titulo="O Marco Zero do Vale do Aço Digital (vídeo do YouTube)">
-        <span class="marco__botao" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8.6 5.4v13.2L19.4 12z"/></svg></span>
-        <span class="sr-only">Assistir com som ao vídeo O Marco Zero do Vale do Aço Digital, 1 minuto e 30 segundos</span>
-      </a>
     </section>
 
     <!-- 6 · Três frentes: com JS cada nome entra letra a letra e um pulso de luz percorre o fio (site.js) -->
@@ -549,6 +554,6 @@
   </footer>
 
   <script src="assets/js/abertura.js?v=1.6" defer></script>
-  <script src="assets/js/site.js?v=1.12" defer></script>
+  <script src="assets/js/site.js?v=1.13" defer></script>
 </body>
 </html>

@@ -286,9 +286,18 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
 .como__grade { display: grid; grid-template-columns: calc(787 * var(--u)) calc(700 * var(--u)); padding: calc(122 * var(--u)) 0 0 calc(268 * var(--u)); align-items: start; }
 .como__grade .corpo { padding-top: calc(4 * var(--u)); }
 
-.chamada { --lh: 0.89; margin-top: calc(96 * var(--u)); padding: 0 0 calc(4 * var(--u)) calc(345 * var(--u)); font-size: calc(146 * var(--u)); font-weight: 700; letter-spacing: -0.028em; text-transform: uppercase; overflow-x: clip; }
+.chamada { --lh: 0.97; margin-top: calc(96 * var(--u)); padding: 0 0 calc(4 * var(--u)) calc(345 * var(--u)); font-size: calc(146 * var(--u)); font-weight: 700; letter-spacing: -0.028em; text-transform: uppercase; overflow-x: clip; }
 .chamada .ln { white-space: nowrap; }
 .chamada .ln > span { width: max-content; padding-right: 0.06em; background: var(--grad-texto); -webkit-background-clip: text; background-clip: text; color: transparent; }
+/* acentos (É, Ê): o degradê (background-clip: text) só pinta dentro da caixa de quem o leva, e a caixa de 1.3em da linha mal chegava
+   ao alto dos acentos — numa tela de 903 px eles saíam cortados (15/10/2026). A linha ganha 0.2em em cima, devolvidos pela margem:
+   as letras ficam onde estavam. No celular quem leva o degradê é cada parte (.cl, "até 899 px"). Inteiros, os acentos sobem a 0.93em
+   da linha de base (Arial, medido) e, com a entrelinha de 0.89 de antes, entravam nas letras de cima: daí os 0.97 (aqui e no celular). */
+@media (min-width: 900px) {
+  .chamada .ln > span { padding-top: 0.2em; }
+  .chamada .ln { margin-top: -0.2em; }
+  .chamada .ln + .ln { margin-top: calc((var(--lh) - 1.3) * 1em - 0.2em); }
+}
 
 /* ---------- 3 · para quem é ---------- */
 /* Três cartões no modelo da arte: marrom com fio creme sobre o degradê. Com JS e movimento permitido eles esperam empilhados na casa
@@ -378,11 +387,13 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
    .marco__fundo leva a capa local e, por cima dela, o vídeo do YouTube mudo e em loop (site.js). O vídeo é um iframe 16:9 que cobre a
    caixa como object-fit: cover (unidades de contêiner) e cresce 18% para os cantos do player (título, logo) ficarem fora da tela; a
    capa fica por cima do vídeo (z-index: o iframe entra depois dela no HTML) e só sai quando o player avisa que está tocando e os
-   controles dele já sumiram (.is-tocando). A seção tem a proporção do vídeo (16:9) até a altura da tela; o fundo é 7% mais alto em
-   cima e embaixo, folga para o parallax. No celular o vídeo aparece inteiro, num palco mais alto (ver "até 899 px"). */
+   controles dele já sumiram (.is-tocando). Este é o quadro parado (sem JS e com movimento reduzido): a seção tem a proporção do
+   vídeo (16:9) até a altura da tela; no celular o vídeo aparece inteiro, num palco mais alto (ver "até 899 px"). Com movimento, o
+   vídeo cresce de cartão até a tela inteira (logo abaixo, "o vídeo preenche a tela"). */
 .marco { position: relative; isolation: isolate; overflow: hidden; height: min(100vh, 56.25vw); background: #1d0d02; }
 @supports (height: 100svh) { .marco { height: min(100svh, 56.25vw); } }
-.marco__fundo { position: absolute; inset: -7% 0; z-index: -1; overflow: hidden; container-type: size; }
+.marco__palco, .marco__janela { position: absolute; inset: 0; }
+.marco__fundo { position: absolute; inset: 0; z-index: -1; overflow: hidden; container-type: size; }
 .marco__capa, .marco__fundo iframe { position: absolute; left: 50%; top: 50%; translate: -50% -50%; border: 0; pointer-events: none; }
 .marco__capa { z-index: 1; width: 100%; height: 100%; object-fit: cover; transition: opacity 1.2s ease; }
 .marco__fundo iframe { width: max(100cqw, 177.78cqh); height: max(56.25cqw, 100cqh); scale: 1.18; }
@@ -396,6 +407,49 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
 .marco__botao svg { width: 44%; height: 44%; fill: currentColor; translate: 6% 0; }
 @media (hover: hover) and (pointer: fine) { .marco__play:hover .marco__botao { opacity: 1; scale: 1; } }
 .marco__play:focus-visible .marco__botao { opacity: 1; scale: 1; }
+/* o vídeo preenche a tela (com JS e movimento permitido: site.js põe .marco--expande e mede o cartão). A seção ganha duas telas de
+   altura e o palco, do tamanho da tela, fica preso no alto enquanto ela passa (sticky). O vídeo chega como um cartão 16:9 de cantos
+   redondos no meio da tela e cresce até a tela inteira: a janela abre por recorte (clip-path, de --mz-y/--mz-x até --mz-yf/0) e o
+   vídeo cresce junto (scale, de --mz-s até --mz-sf), na mesma curva, o que o mantém cobrindo a janela a cada quadro. No cartão ele
+   aparece inteiro; no fim, como capa da tela cheia. Na tela em pé (celular, tablet), onde a capa cortaria os lados do vídeo, ele
+   termina na largura toda, inteiro, numa faixa no meio da tela (--mz-yf, --mz-sf; sem o site.js, 0 e 1 = tela cheia).
+   Ritmo (faixas da linha do tempo da seção): o crescimento começa com o cartão ainda subindo (entry 70%), para o movimento emendar no
+   da página, e termina na metade do trecho preso (contain 50%); a curva sai devagar e assenta sem tranco. A outra metade segura o
+   vídeo cheio; na saída, a janela inteira (recorte e vídeo) anda mais devagar que a página (parallax) — se só o vídeo andasse, a
+   faixa da tela em pé ficaria vazia em cima. A rolagem conduz tudo no próprio navegador (animation-timeline); onde não há, as mesmas
+   animações ficam paradas e o site.js as posiciona pelo progresso (--mz-a, --mz-b). */
+@media (prefers-reduced-motion: no-preference) {
+  .marco.marco--expande {
+    --mz-r: max(16px, calc(28 * var(--u))); --mz-curva: cubic-bezier(0.45, 0, 0.3, 1);
+    height: 200vh; overflow: visible; background: var(--escuro); view-timeline: --marco;
+  }
+  .marco.marco--expande::before { content: none; }
+  .marco--expande .marco__palco {
+    position: sticky; top: 0; height: 100vh; overflow: hidden;
+    background: radial-gradient(ellipse 46% 40% at 50% 50%, rgba(255, 122, 26, 0.2), rgba(243, 49, 23, 0.07) 60%, rgba(243, 49, 23, 0)) var(--escuro);
+  }
+  .marco--expande .marco__janela { clip-path: inset(var(--mz-y, 18%) var(--mz-x, 22%) round var(--mz-r)); }
+  /* o vídeo é o retângulo 16:9 que cobre o palco, inteiro (sem o recorte do .marco__fundo: quem recorta é a janela); --mz-s o
+     reduz até a largura do cartão */
+  .marco--expande .marco__fundo { inset: 0; width: auto; height: auto; margin: 0; overflow: visible; box-shadow: none; scale: var(--mz-s, 0.56); }
+  .marco--expande .marco__capa { width: max(100cqw, 177.78cqh); height: max(56.25cqw, 100cqh); max-width: none; }
+  .marco--expande .marco__fundo iframe { width: max(100cqw, 177.78cqh); height: max(56.25cqw, 100cqh); scale: 1.18; }
+  .marco--expande .marco__janela, .marco--expande .marco__fundo { animation-fill-mode: both; animation-timing-function: var(--mz-curva); }
+  .marco--expande .marco__janela { animation-name: mz-janela, mz-sai; animation-timing-function: var(--mz-curva), linear; }
+  .marco--expande .marco__fundo { animation-name: mz-video; }
+  @supports (animation-timeline: view()) {
+    .marco--expande .marco__janela, .marco--expande .marco__fundo { animation-duration: auto; animation-timeline: --marco; animation-range: entry 70% contain 50%; }
+    .marco--expande .marco__janela { animation-timeline: --marco, --marco; animation-range: entry 70% contain 50%, exit 0% exit 100%; }
+  }
+  @supports not (animation-timeline: view()) {
+    .marco--expande .marco__janela, .marco--expande .marco__fundo { animation-duration: 1s; animation-play-state: paused; }
+    .marco--expande .marco__janela { animation-delay: calc(var(--mz-a, 0) * -1s), calc(var(--mz-b, 0) * -1s); }
+    .marco--expande .marco__fundo { animation-delay: calc(var(--mz-a, 0) * -1s); }
+  }
+}
+@keyframes mz-janela { from { clip-path: inset(var(--mz-y, 18%) var(--mz-x, 22%) round var(--mz-r)); } to { clip-path: inset(var(--mz-yf, 0px) 0px round 0px); } }
+@keyframes mz-video { from { scale: var(--mz-s, 0.56); } to { scale: var(--mz-sf, 1); } }
+@keyframes mz-sai { from { translate: 0 0; } to { translate: 0 24vh; } }
 /* o vídeo com som, numa janela sobre a página (só com mouse; site.js monta e desmonta) */
 .marco-modal {
   position: fixed; inset: 0; z-index: 120; display: grid; place-items: center; padding: 72px 24px 32px;
@@ -578,10 +632,13 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .como__grade .corpo { padding-top: 26px; font-size: 17px; line-height: 1.38; }
   /* a chamada com corpo de manchete, como no desktop: cada metade quebra em duas linhas (ESSE / MOVIMENTO, É PARA / VOCÊ QUE…).
      A linha interna leva a entrelinha (--lh) e um respiro acima e abaixo que a máscara de .ln guarda para os acentos (É, Ê) */
-  .chamada { --lh: 0.92; margin-top: 64px; padding: 0 var(--lado) 6px; font-size: 13.6vw; }
+  .chamada { --lh: 0.97; margin-top: 64px; padding: 0 var(--lado) 6px; font-size: 13.6vw; }
   .chamada .ln { white-space: normal; }
   .chamada .ln > span { width: auto; padding: 0.22em 0 0.16em 0; line-height: var(--lh); }
   .chamada .cl { display: block; width: max-content; padding-right: 0.06em; white-space: nowrap; }
+  /* cada parte leva o degradê (fim da folha) e a caixa dela tem só a entrelinha (0.92em): sem esta folga o alto do É e do Ê ficava
+     sem tinta. Os 0.24em voltam pela margem, e as letras ficam onde estavam */
+  .chamada .cl { padding-top: 0.24em; margin-top: -0.24em; }
   .como__grade { overflow-x: clip; } /* as linhas do título entram de fora da tela (deslizes do celular, abaixo) */
 
   /* cartões em coluna; a pilha se forma na casa do meio (o de cima desce, o de baixo sobe) e abre na vertical */
@@ -602,11 +659,11 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
   .regiao__l3 { padding-left: 6vw; }
   .mapa { width: min(90%, 520px); margin: -30vw 2vw 0 auto; }
 
-  /* no celular o vídeo aparece inteiro: 16:9 na largura da tela (no quadro 4:5 de antes ele perdia dois terços da largura). Ele fica num palco
-     mais alto, no escuro da seção do mapa (sem emenda com ela), com um brilho quente atrás; a folga de cima e de baixo (--mv-curso)
-     é o curso do parallax ("deslizes do celular", no fim da folha). No celular deitado a largura do vídeo para em 150% da altura da
-     tela, para ele caber nela. */
-  .marco { --mv-w: min(100vw, 150vh); --mv-curso: 15vh; --mv-h: calc(var(--mv-w) * 0.5625); height: calc(var(--mv-h) + var(--mv-curso) * 2); background: var(--escuro); view-timeline: --marco; }
+  /* quadro parado do Marco Zero no celular (sem JS e com movimento reduzido; com movimento vale "o vídeo preenche a tela", na
+     seção 5): o vídeo aparece inteiro, 16:9 na largura da tela (no quadro 4:5 de antes ele perdia dois terços da largura), num palco
+     mais alto, no escuro da seção do mapa (sem emenda com ela), com um brilho quente atrás e uma folga em cima e embaixo
+     (--mv-curso). No celular deitado a largura do vídeo para em 150% da altura da tela, para ele caber nela. */
+  .marco { --mv-w: min(100vw, 150vh); --mv-curso: 15vh; --mv-h: calc(var(--mv-w) * 0.5625); height: calc(var(--mv-h) + var(--mv-curso) * 2); background: var(--escuro); }
   @supports (height: 100svh) { .marco { --mv-w: min(100vw, 150svh); --mv-curso: 15svh; } }
   .marco::before {
     content: ""; position: absolute; inset: 0; z-index: -2; pointer-events: none;
@@ -727,15 +784,14 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
      (ESSE ←, MOVIMENTO →, É PARA ←, VOCÊ QUE… →), "Conectando o Vale do Aço" e os nomes das três frentes.
    · imagens em planos: a foto anda mais devagar que a página dentro da sua janela (plano distante), e o que está por cima dela
      (o mapa sob o letreiro, o título e as marcas do Programa) anda mais depressa (plano próximo). No meio da passagem tudo está na
-     posição do desenho. No Marco Zero o vídeo inteiro anda mais devagar que o palco e abre de 80% para a largura toda na faixa de
-     leitura; o brilho atrás dele anda mais devagar ainda.
-   Quem tem janela própria (overflow hidden: a foto do movimento, a do Programa, o palco do Marco Zero) dá nome à linha do tempo
+     posição do desenho. (O Marco Zero tem o efeito próprio, igual no celular e no desktop: "o vídeo preenche a tela", na seção 5.)
+   Quem tem janela própria (overflow hidden: a foto do movimento, a do Programa) dá nome à linha do tempo
    (view-timeline) e o de dentro a usa: view() no de dentro olharia para a janela, que não rola, e a animação ficaria parada.
    Só onde o navegador faz isso; nos outros, e com movimento reduzido, fica o deslize curto do site.js (data-px-m-css no HTML). */
 @media (max-width: 899px) and (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
     .letreiro__palavra, .letreiro__frase .ln, .como__grade .t2 .ln, .chamada .cl, .presente__texto .t2 .ln, .regiao__titulo .ln, .mapa,
-    .frente__nome, .foto__janela img, .programa__foto img, .programa__titulo, .programa__marcas, .marco__fundo, .marco::before {
+    .frente__nome, .foto__janela img, .programa__foto img, .programa__titulo, .programa__marcas {
       animation-duration: auto; animation-fill-mode: both; animation-timing-function: linear;
       animation-timeline: view(); animation-range: cover 0% cover 100%;
     }
@@ -748,6 +804,19 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
     .presente__texto .t2 .ln:nth-child(2) { animation-name: pz-titulo-dir; }
     .chamada .ln .cl:nth-child(1) { animation-name: dz-esq; }
     .chamada .ln .cl:nth-child(2) { animation-name: dz-dir; }
+    /* v1.15: o resto também anda, como no desktop — o texto corrido em plano próximo, o texto de cada frente atrás do nome, as
+       chamadas (pílulas) e o "powered by" entrando de lados alternados */
+    .presente__texto .corpo, .como__grade .corpo, .frente__texto, .pilulas > li, .presente__powered {
+      animation-duration: auto; animation-fill-mode: both; animation-timing-function: linear;
+      animation-timeline: view(); animation-range: cover 0% cover 100%;
+    }
+    .presente__texto .corpo, .como__grade .corpo { animation-name: tz-plano; }
+    .frente:nth-child(odd) .frente__texto { animation-name: fz-texto-dir; }
+    .frente:nth-child(even) .frente__texto { animation-name: fz-texto-esq; }
+    .pilulas > li:nth-child(odd) { animation-name: pl-esq; }
+    .pilulas > li:nth-child(even) { animation-name: pl-dir; }
+    .presente__powered { animation-name: pl-esq; }
+    .publicos { overflow-x: clip; } /* as pílulas entram de fora da tela */
     .regiao__l1 { animation-name: rz-l1; }
     .regiao__l2 { animation-name: rz-l2; }
     .regiao__l3 { animation-name: rz-l3; }
@@ -762,8 +831,6 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
     .programa__foto img { transform-origin: 44% 0; animation-name: pg-foto; animation-timeline: --programa-foto; }
     .programa__titulo { animation-name: pg-titulo; }
     .programa__marcas { animation-name: pg-marcas; }
-    .marco__fundo { animation-name: mz-curso, mz-abre; animation-timeline: --marco, --marco; }
-    .marco::before { animation-name: mz-brilho; animation-timeline: --marco; }
     /* o degradê sai da linha inteira e vai para cada parte: num elemento que desliza ele não acompanharia o texto */
     /* a máscara de cada linha recorta só na vertical: com overflow hidden ela virava contêiner de rolagem e prendia a linha do tempo
        das partes (view() olharia para ela, não para a página); e o recorte lateral cortaria as partes na margem */
@@ -826,17 +893,24 @@ section:focus { outline: none; } /* a seção recebe o foco ao chegar por um lin
 /* planos: lineares, como a rolagem. A foto do movimento tem 14% de folga em cima e embaixo (site.css, "até 899 px"). A do Programa
    se afasta (1,12 → 1) e desce dentro da moldura (0 → 8%), nunca sobe: em cima o que se abre é a faixa transparente da imagem, e
    embaixo o corte fica sob o degradê. Na v1.13 ela ampliava a partir do centro e cortava a cabeça da comerciante. */
-@keyframes pz-foto { from { translate: 0 -10%; } to { translate: 0 10%; } }
+@keyframes pz-foto { from { translate: 0 -10%; scale: 1.12; } to { translate: 0 10%; scale: 1; } } /* v1.15: e se afasta, como a do Programa */
+/* texto corrido em plano próximo: anda um pouco mais depressa que a página (no desktop o bloco de texto tem parallax próprio) */
+@keyframes tz-plano { from { translate: 0 6vh; } to { translate: 0 -6vh; } }
+/* o texto de cada frente vem atrás do nome, do mesmo lado e de menos longe, e assenta um pouco depois dele */
+@keyframes fz-texto-dir {
+  0% { translate: 20vw 0; animation-timing-function: cubic-bezier(0.2, 0.7, 0.25, 1); }
+  44%, 76% { translate: 0 0; animation-timing-function: cubic-bezier(0.55, 0, 0.8, 0.45); }
+  100% { translate: -3vw 0; }
+}
+@keyframes fz-texto-esq {
+  0% { translate: -20vw 0; animation-timing-function: cubic-bezier(0.2, 0.7, 0.25, 1); }
+  44%, 76% { translate: 0 0; animation-timing-function: cubic-bezier(0.55, 0, 0.8, 0.45); }
+  100% { translate: 3vw 0; }
+}
+/* pílulas e "powered by": entram de lados alternados e assentam no terço de baixo da tela */
+@keyframes pl-esq { 0% { translate: -42vw 0; animation-timing-function: cubic-bezier(0.2, 0.7, 0.25, 1); } 34%, 100% { translate: 0 0; } }
+@keyframes pl-dir { 0% { translate: 42vw 0; animation-timing-function: cubic-bezier(0.2, 0.7, 0.25, 1); } 34%, 100% { translate: 0 0; } }
 @keyframes pg-foto { from { translate: 0 0; scale: 1.12; } to { translate: 0 8%; scale: 1; } }
 @keyframes pg-titulo { from { translate: 0 16vw; } to { translate: 0 -16vw; } }
 @keyframes pg-marcas { from { translate: 0 6vw; } to { translate: 0 -6vw; } }
 @keyframes rz-mapa { from { translate: 0 16vw; } to { translate: 0 -16vw; } }
-/* Marco Zero: o curso é a folga do palco (o mesmo 15svh de --mv-curso; mudando um, mudar o outro); o vídeo abre para a largura
-   toda entre 42% e 64% da passagem (a seção no meio da tela) */
-@keyframes mz-curso { from { translate: 0 -15svh; } to { translate: 0 15svh; } }
-@keyframes mz-abre {
-  0% { scale: 0.8; animation-timing-function: cubic-bezier(0.3, 0.3, 0.45, 1); }
-  42%, 64% { scale: 1; animation-timing-function: cubic-bezier(0.55, 0, 0.8, 0.45); }
-  100% { scale: 0.9; }
-}
-@keyframes mz-brilho { 0% { translate: 0 -24svh; opacity: 0.35; } 50% { opacity: 1; } 100% { translate: 0 24svh; opacity: 0.35; } }

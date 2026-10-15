@@ -210,17 +210,68 @@
   }
 
   /* ---------------- marco zero: o vídeo do encontro é o fundo da seção ----------------
-     Fundo: quando a seção chega a 600 px da tela, entra por cima da capa um iframe do YouTube mudo, em loop, sem controles, a partir
-     dos 30 s (youtube-nocookie); até lá não há pedido ao YouTube. A capa só sai quando o player avisa, pela API de mensagens do
-     embed, que está tocando, e ainda 3,8 s depois (.is-tocando): nos primeiros ~3 s o YouTube mostra os controles (⏮ ⏸ ⏭) sobre o
-     vídeo, mesmo sem controles, e somem antes de 4,5 s (medido no desktop e no celular). Se o navegador não deixar o vídeo começar
-     sozinho, a capa fica. A uma tela de distância, com a aba oculta ou com a janela do vídeo aberta, o fundo pausa e a capa volta
-     (ao retomar, os controles aparecem de novo e a espera se repete). Sem vídeo de fundo (fica a capa): movimento reduzido, economia de dados e file:// (lá o YouTube recusa a
-     incorporação, erro 153).
+     Fundo: quando a seção chega a cinco telas de distância, entra por cima da capa um iframe do YouTube mudo, em loop, sem controles,
+     a partir dos 30 s (youtube-nocookie); até lá não há pedido ao YouTube. A capa só sai quando o player avisa, pela API de mensagens
+     do embed, que está tocando, e ainda 3,8 s depois (.is-tocando): nos primeiros ~3 s o YouTube mostra os controles (⏮ ⏸ ⏭) sobre o
+     vídeo, mesmo sem controles, e somem antes de 4,5 s (medido no desktop e no celular). Do iframe montado à capa saindo vão 6 a 7 s;
+     com só uma tela de folga (até 15/10/2026), quem rolava sem parar via a capa até o cartão já estar cheio. Com cinco (a seção fica
+     a ~5.700 px do topo), rolando sem parar desde a abertura a ~750 px/s, a capa sai quando o cartão começa a crescer; mais devagar,
+     o vídeo já toca quando ele aparece; mais depressa, a capa ainda pega o crescimento (Edge, 15/10/2026). Se o navegador não
+     deixar o vídeo começar sozinho, a capa fica. A mais de cinco telas, com a aba oculta ou com a janela do vídeo aberta, o fundo
+     pausa e a capa volta (ao retomar, os controles aparecem de novo e a espera se repete). Sem vídeo de fundo (fica a capa):
+     movimento reduzido, economia de dados e file:// (lá o YouTube recusa a incorporação, erro 153).
      "Assistir ao vídeo": com mouse, o vídeo com som numa janela sobre a página (Esc, × ou clique fora fecham, o foco volta ao botão)
      e o fundo pausa enquanto isso. No toque o link segue para o YouTube (aba nova ou o app): no celular o YouTube não começa sozinho
      dentro do iframe e o player aberto parecia travado à espera de um segundo toque. */
   var marco = document.querySelector('.marco'), marcoFundo = marco && marco.querySelector('.marco__fundo'), play = marco && marco.querySelector('.marco__play');
+
+  /* o vídeo preenche a tela: com movimento permitido a seção ganha .marco--expande (site.css: palco preso no alto e um cartão que
+     cresce até a tela inteira). Aqui se mede o cartão inicial para o tamanho do palco: --mz-x e --mz-y, o recuo da janela, e --mz-s, a
+     escala em que o vídeo (que cobre o palco) cabe inteiro no cartão — o CSS ainda não divide um comprimento por outro. O cartão é
+     16:9: 56% da largura no desktop, 74% no celular em pé, 62% no celular deitado, e nunca mais alto que 64% da tela. Na tela em pé
+     (mais alta que larga) o vídeo termina inteiro na largura toda, numa faixa no meio da tela (--mz-yf, o recuo de cima e de baixo;
+     --mz-sf, a escala final); deitada, termina na tela cheia (0 e 1). O player segue com o tamanho de quem cobre o palco, mesmo em pé:
+     com a largura da tela, os botões que o YouTube às vezes ainda mostra quando a capa sai ocupavam a faixa inteira (Edge,
+     15/10/2026); no tamanho grande eles encolhem com o vídeo. As escalas saem 1% maiores, para nenhum fio do fundo aparecer na borda.
+     A classe entra antes de o parallax medir as seções (mais abaixo), porque a seção fica mais alta.
+     Onde o navegador não conduz animação pela rolagem (Firefox; Safari antes do 26), o progresso vai em --mz-a (crescimento: entry 70%
+     → contain 50%) e --mz-b (saída: exit 0% → 100%), as mesmas faixas do site.css, e as animações, paradas, andam pelo atraso. */
+  var palco = marco && marco.querySelector('.marco__palco');
+  if (palco && !reduced.matches) {
+    marco.classList.add('marco--expande');
+    var medirCartao = function () {
+      var w = palco.clientWidth, h = palco.clientHeight;
+      if (!w || !h) { return; }
+      var emPe = w < h, vw = Math.max(w, h * 16 / 9); // vw: largura do vídeo que cobre o palco
+      var cw = Math.min(w >= 900 ? w * 0.56 : emPe ? w * 0.74 : w * 0.62, h * 0.64 * 16 / 9);
+      marco.style.setProperty('--mz-x', ((w - cw) / 2).toFixed(1) + 'px');
+      marco.style.setProperty('--mz-y', ((h - cw * 9 / 16) / 2).toFixed(1) + 'px');
+      marco.style.setProperty('--mz-s', (cw / vw * 1.01).toFixed(4));
+      marco.style.setProperty('--mz-yf', emPe ? ((h - w * 9 / 16) / 2).toFixed(1) + 'px' : '0px');
+      marco.style.setProperty('--mz-sf', emPe ? (w / vw * 1.01).toFixed(4) : '1');
+    };
+    medirCartao();
+    if ('ResizeObserver' in window) { new ResizeObserver(medirCartao).observe(palco); } else { window.addEventListener('resize', medirCartao); }
+    if (!(window.CSS && CSS.supports && CSS.supports('animation-timeline: view()'))) {
+      var mzRaf = 0, mzUlt = '';
+      var mzPintar = function () {
+        mzRaf = 0;
+        var r = marco.getBoundingClientRect(), alt = window.innerHeight;
+        if (r.bottom < -alt || r.top > 2 * alt) { return; }
+        var t0 = alt * 0.3, t1 = -(r.height - alt) * 0.5;
+        var a = clamp((t0 - r.top) / (t0 - t1), 0, 1).toFixed(4), b = clamp((alt - r.height - r.top) / alt, 0, 1).toFixed(4);
+        if (a + b === mzUlt) { return; }
+        mzUlt = a + b;
+        marco.style.setProperty('--mz-a', a);
+        marco.style.setProperty('--mz-b', b);
+      };
+      var mzPedir = function () { if (!mzRaf) { mzRaf = requestAnimationFrame(mzPintar); } };
+      window.addEventListener('scroll', mzPedir, { passive: true });
+      window.addEventListener('resize', mzPedir);
+      mzPintar();
+    }
+  }
+
   var podeEmbutir = /^https?:$/.test(location.protocol), fundoVideo = null, marcoNaTela = false, modal = null;
   var embed = function (id, params) { return 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) + '?' + params; };
   var mandar = function (func) { // comando para o vídeo de fundo (API de mensagens do embed)
@@ -256,12 +307,12 @@
       var estado = d && (d.event === 'onStateChange' ? d.info : d.info && d.info.playerState);
       if (estado === 1 && !revelar && !marco.classList.contains('is-tocando')) { revelar = setTimeout(function () { revelar = 0; marco.classList.add('is-tocando'); }, 3800); }
     });
-    // a uma tela de distância (acima ou abaixo) o vídeo monta e toca; mais longe, pausa
+    // a cinco telas de distância (acima ou abaixo) o vídeo monta e toca; mais longe, pausa
     new IntersectionObserver(function (en) {
       marcoNaTela = en[0].isIntersecting;
       if (marcoNaTela) { montarFundo(); }
       sincronizarFundo();
-    }, { rootMargin: '100% 0px 100% 0px' }).observe(marco);
+    }, { rootMargin: '500% 0px 500% 0px' }).observe(marco);
     document.addEventListener('visibilitychange', sincronizarFundo);
   }
   if (play && podeEmbutir && fine.matches) {
